@@ -1,0 +1,51 @@
+---
+// src/components/variants/HeroVariant.astro
+export interface Props {
+  entries: any[];
+  collection: string;
+  title?: string;
+  description?: string;
+  className?: string;
+}
+
+const { 
+  entries, 
+  collection,
+  title,
+  description,
+  className = ''
+} = Astro.props;
+
+const hero = entries[0];
+---
+
+<section class={`relative ${className}`}>
+  {hero && (
+    <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+      {hero.data.image && (
+        <div class="absolute inset-0 -z-10">
+          <img 
+            src={hero.data.image.src} 
+            alt={hero.data.image.alt}
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60"></div>
+        </div>
+      )}
+      <div class="relative text-center text-black px-8 max-w-3xl">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">
+          {title || hero.data.title}
+        </h1>
+        <p class="text-xl mb-8 opacity-95">
+          {description || hero.data.description}
+        </p>
+        <a 
+          href={`/${collection}/${hero.slug}`} 
+          class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+        >
+          Learn More
+        </a>
+      </div>
+    </div>
+  )}
+</section>

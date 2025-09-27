@@ -1,0 +1,45 @@
+---
+// src/components/Section.astro
+import { getCollection } from 'astro:content';
+import type { CollectionKey } from 'astro:content';
+import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
+
+// Get all variant components dynamically
+const variantComponents = await getVariantComponents();
+const availableVariants = Object.keys(variantComponents);
+
+export interface Props {
+  collection: CollectionKey;
+  variant?: string;
+  title?: string;
+  description?: string;
+  className?: string;
+  columns?: 1 | 2 | 3 | 4 | 5 | 6;
+  gap?: 'sm' | 'md' | 'lg' | 'xl';
+}
+
+const {
+  collection,
+  variant = 'grid',
+} = Astro.props;
+
+// Fetch entries
+const entries = await getCollection(collection);
+
+// Get variant component
+const VariantComponent = variantComponents[variant.toLowerCase()];
+if (!VariantComponent) {
+  throw new Error(
+    `Variant "${variant}" not found. Available variants: ${availableVariants.join(', ')}. 
+    Make sure you have a file named "${variant.charAt(0).toUpperCase() + variant.slice(1)}Variant.astro" in the variants folder.`
+  );
+}
+
+// Pass ALL props to variant (including title, description, className)
+const variantProps = {
+  entries,
+  collection,
+  ...Astro.props,
+};
+---
+<VariantComponent {...variantProps} />

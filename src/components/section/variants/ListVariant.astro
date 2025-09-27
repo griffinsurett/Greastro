@@ -1,0 +1,58 @@
+---
+// src/components/variants/ListVariant.astro
+export interface Props {
+  entries: any[];
+  collection: string;
+  title?: string;
+  description?: string;
+  className?: string;
+}
+
+const { 
+  entries, 
+  collection,
+  title,
+  description,
+  className = ''
+} = Astro.props;
+---
+
+<section class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && <p class="text-lg text-gray-600 max-w-3xl">{description}</p>}
+    </div>
+  )}
+  
+  <div class="flex flex-col gap-8">
+    {entries.map((entry) => (
+      <article class="flex gap-8 p-6 bg-white rounded-lg shadow-md">
+        {entry.data.image && (
+          <div class="flex-shrink-0">
+            <img 
+              src={entry.data.image.src} 
+              alt={entry.data.image.alt}
+              class="w-48 h-36 object-cover rounded-md"
+            />
+          </div>
+        )}
+        <div class="flex-1">
+          <h3 class="text-2xl font-semibold mb-2">
+            <a href={`/${collection}/${entry.slug}`} class="text-gray-900 hover:text-blue-600 transition-colors">
+              {entry.data.title}
+            </a>
+          </h3>
+          {entry.data.description && (
+            <p class="text-gray-600 leading-relaxed mb-2">{entry.data.description}</p>
+          )}
+          {entry.data.publishDate && (
+            <time class="text-sm text-gray-500">
+              {entry.data.publishDate.toLocaleDateString()}
+            </time>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>

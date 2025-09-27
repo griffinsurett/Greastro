@@ -1,0 +1,51 @@
+---
+// src/components/variants/MasonryVariant.astro
+export interface Props {
+  entries: any[];
+  collection: string;
+  title?: string;
+  description?: string;
+  className?: string;
+}
+
+const { 
+  entries, 
+  collection,
+  title,
+  description,
+  className = ''
+} = Astro.props;
+---
+
+<section class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="text-center mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>}
+    </div>
+  )}
+  
+  <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+    {entries.map((entry) => (
+      <article class="break-inside-avoid mb-6 bg-white rounded-lg overflow-hidden shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
+        {entry.data.image && (
+          <img 
+            src={entry.data.image.src} 
+            alt={entry.data.image.alt}
+            class="w-full h-auto block"
+          />
+        )}
+        <div class="p-5">
+          <h3 class="text-lg font-semibold mb-2">
+            <a href={`/${collection}/${entry.slug}`} class="text-gray-900 hover:text-blue-600 transition-colors">
+              {entry.data.title}
+            </a>
+          </h3>
+          {entry.data.description && (
+            <p class="text-gray-600 text-sm leading-relaxed">{entry.data.description}</p>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>

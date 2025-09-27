@@ -8,7 +8,7 @@ const baseSchema = z.object({
   publishDate: z.date().optional(),
   featured: z.boolean().default(false),
   order: z.number().default(0),
-  image: z.object({
+  featuredImage: z.object({
     src: z.string(),
     alt: z.string(),
   }).optional(),
@@ -18,7 +18,6 @@ const baseSchema = z.object({
 // Define your collections with the base schema - all support MDX
 export const collections = {
   'blog': defineCollection({
-    type: 'content', // Supports .md and .mdx files
     schema: baseSchema.extend({
       author: z.string(),
       tags: z.array(z.string()).default([]),
@@ -26,7 +25,6 @@ export const collections = {
     }),
   }),
   'services': defineCollection({
-    type: 'content', // Supports .md and .mdx files
     schema: baseSchema.extend({
       icon: z.string().optional(),
       price: z.string().optional(),
@@ -34,7 +32,6 @@ export const collections = {
     }),
   }),
   'testimonials': defineCollection({
-    type: 'content', // Changed from 'data' to support .md and .mdx files
     schema: baseSchema.extend({
       author: z.string(),
       role: z.string(),
@@ -43,7 +40,6 @@ export const collections = {
     }),
   }),
   'portfolio': defineCollection({
-    type: 'content', // Supports .md and .mdx files
     schema: baseSchema.extend({
       client: z.string(),
       projectUrl: z.string().url().optional(),

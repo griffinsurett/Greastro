@@ -31,6 +31,9 @@ if (collection) {
 }
 
 const VariantComponent = variantComponents[variant];
+if (!VariantComponent) {
+  throw new Error(`Variant "${variant}" not found. Available: ${Object.keys(variantComponents).join(', ')}`);
+}
 ---
 
 <VariantComponent {...data} />

@@ -1,24 +1,20 @@
 ---
-// src/components/variants/GridVariant.astro
-export interface Props {
-  entries: any[];
-  collection: string;
-  title?: string;
-  description?: string;
-  className?: string;
+// src/components/section/variants/GridVariant.astro  
+import type { BaseVariantProps } from './utils/VariantTypes';
+
+interface Props extends BaseVariantProps {
   columns?: 1 | 2 | 3 | 4 | 5 | 6;
   gap?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const { 
-  entries, 
-  collection, 
+  items = [],
   title,
   description,
   className = '',
   columns = 3, 
   gap = 'md' 
-} = Astro.props;
+} = Astro.props as Props;
 
 const gapClasses = {
   sm: 'gap-2',
@@ -36,6 +32,7 @@ const columnClasses = {
   6: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-6',
 };
 ---
+
 <section class={`py-16 ${className}`}>
   {(title || description) && (
     <div class="text-center mb-12">
@@ -44,27 +41,31 @@ const columnClasses = {
     </div>
   )}
   
-  <div class={`grid ${columnClasses[columns]} ${gapClasses[gap]}`}>
-    {entries.map((entry) => (
-      <article class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-        {entry.data.image && (
-          <img 
-            src={entry.data.image.src} 
-            alt={entry.data.image.alt}
-            class="w-full h-48 object-cover"
-          />
-        )}
-        <div class="p-6">
-          <h3 class="text-xl font-semibold mb-2">
-            <a href={`/${collection}/${entry.slug}`} class="text-gray-900 hover:text-blue-600 transition-colors">
-              {entry.data.title}
-            </a>
-          </h3>
-          {entry.data.description && (
-            <p class="text-gray-600 leading-relaxed">{entry.data.description}</p>
+  {items.length > 0 ? (
+    <div class={`grid ${columnClasses[columns]} ${gapClasses[gap]}`}>
+      {items.map((item) => (
+        <article class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+          {item.image && (
+            <img 
+              src={item.image.src} 
+              alt={item.image.alt}
+              class="w-full h-48 object-cover"
+            />
           )}
-        </div>
-      </article>
-    ))}
-  </div>
+          <div class="p-6">
+            <h3 class="text-xl font-semibold mb-2">
+              <a href={item.url} class="text-gray-900 hover:text-blue-600 transition-colors">
+                {item.title}
+              </a>
+            </h3>
+            {item.description && (
+              <p class="text-gray-600 leading-relaxed">{item.description}</p>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  ) : (
+    <slot />
+  )}
 </section>

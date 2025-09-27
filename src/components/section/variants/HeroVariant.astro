@@ -1,12 +1,8 @@
 ---
 // src/components/section/variants/HeroVariant.astro
-export interface Props {
-  entries?: any[];  // Optional now
-  collection?: string;  // Optional now
-  title?: string;
-  description?: string;
-  className?: string;
-  // Hero-specific props for static content
+import type { BaseVariantProps } from './utils/VariantTypes';
+
+interface Props extends BaseVariantProps {
   image?: {
     src: string;
     alt: string;
@@ -16,52 +12,65 @@ export interface Props {
 }
 
 const { 
-  entries = [], 
-  collection,
+  items = [],
   title,
   description,
   className = '',
+  // Hero-specific static props
   image,
   ctaText = 'Learn More',
   ctaLink
-} = Astro.props;
+} = Astro.props as Props;
 
-// Use first entry from collection OR static content
-const hero = entries[0];
-const hasCollectionContent = hero && collection;
+// Use first item from collection OR static content
+const hero = items[0];
+const hasHeroContent = hero || (title || description || image);
+
+// Safely extract image data
+const heroImage = image || hero?.image;
+const imageSrc = heroImage?.src;
+const imageAlt = heroImage?.alt || '';
+
+// Safely extract link
+const heroLink = ctaLink || hero?.url;
 ---
 
 <section class={`relative ${className}`}>
-  <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
-    {/* Use provided image or hero entry image */}
-    {(image || hero?.data?.image) && (
-      <div class="absolute inset-0 -z-10">
-        <img 
-          src={image?.src || hero.data.image.src} 
-          alt={image?.alt || hero.data.image.alt}
-          class="w-full h-full object-cover"
-        />
-        <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60"></div>
-      </div>
-    )}
-    
-    <div class="relative text-center text-black px-8 max-w-3xl">
-      <h1 class="text-5xl md:text-6xl font-bold mb-4">
-        {title || hero?.data?.title || 'Welcome'}
-      </h1>
-      <p class="text-xl mb-8 opacity-95">
-        {description || hero?.data?.description || ''}
-      </p>
-      
-      {/* Show CTA if we have a link */}
-      {(ctaLink || (hasCollectionContent && hero.slug)) && (
-        <a 
-          href={ctaLink || `/${collection}/${hero.slug}`} 
-          class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
-        >
-          {ctaText}
-        </a>
+  {hasHeroContent && (
+    <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+      {/* Use provided image or hero item image */}
+      {imageSrc && (
+        <div class="absolute inset-0 -z-10">
+          <img 
+            src={imageSrc} 
+            alt={imageAlt}
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60"></div>
+        </div>
       )}
+      
+      <div class="relative text-center text-black px-8 max-w-3xl">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">
+          {title || hero?.title || 'Welcome'}
+        </h1>
+        <p class="text-xl mb-8 opacity-95">
+          {description || hero?.description || ''}
+        </p>
+        
+        {/* Show CTA if we have a link */}
+        {heroLink && (
+          <a 
+            href={heroLink} 
+            class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+          >
+            {ctaText}
+          </a>
+        )}
+      </div>
     </div>
-  </div>
+  )}
+  
+  {/* Allow custom content via slot */}
+  <slot />
 </section>

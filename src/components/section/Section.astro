@@ -3,44 +3,34 @@
 import { getCollection } from 'astro:content';
 import type { CollectionKey } from 'astro:content';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
+import { prepareCollectionData, prepareStaticData } from '@/components/section/variants/utils/DataPreparer';
 
-// Get all variant components dynamically
 const variantComponents = await getVariantComponents();
-const availableVariants = Object.keys(variantComponents);
 
-export interface Props {
-  collection?: CollectionKey;  // Now optional
+// Astro needs Props defined IN the component for type checking
+interface Props {
+  collection?: CollectionKey;
   variant?: string;
-  title?: string;
-  description?: string;
-  className?: string;
-  columns?: 1 | 2 | 3 | 4 | 5 | 6;
-  gap?: 'sm' | 'md' | 'lg' | 'xl';
-  // Allow any additional props for custom static content
   [key: string]: any;
 }
 
 const {
   collection,
   variant = 'GridVariant',
+  ...restProps
 } = Astro.props;
 
-// Only fetch entries if collection is provided
-const entries = collection ? await getCollection(collection) : [];
+let data: any;
 
-// Get variant component
-const VariantComponent = variantComponents[variant];
-if (!VariantComponent) {
-  throw new Error(
-    `Variant "${variant}" not found. Available variants: ${availableVariants.join(', ')}. 
-    Make sure you have a file named "${variant}.astro" in the variants folder.`
-  );
+if (collection) {
+  const entries = await getCollection(collection);
+  const items = await prepareCollectionData(entries, collection);
+  data = { items, ...restProps };
+} else {
+  data = prepareStaticData(Astro.props);
 }
 
-// Pass ALL props to variant (including entries, which might be empty)
-const variantProps = {
-  entries,
-  ...Astro.props,
-};
+const VariantComponent = variantComponents[variant];
 ---
-<VariantComponent {...variantProps} />
+
+<VariantComponent {...data} />

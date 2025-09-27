@@ -1,20 +1,19 @@
 ---
-// src/components/variants/MasonryVariant.astro
-export interface Props {
-  entries: any[];
-  collection: string;
-  title?: string;
-  description?: string;
-  className?: string;
-}
+// src/components/section/variants/MasonryVariant.astro
+import type { BaseVariantProps } from './utils/VariantTypes';
+
+// MasonryVariant has no variant-specific props
+type Props = BaseVariantProps;
 
 const { 
-  entries, 
-  collection,
+  items = [],
   title,
   description,
   className = ''
-} = Astro.props;
+} = Astro.props as Props;
+
+// Ensure items is always an array
+const safeItems = Array.isArray(items) ? items : [];
 ---
 
 <section class={`py-16 ${className}`}>
@@ -25,27 +24,44 @@ const {
     </div>
   )}
   
-  <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
-    {entries.map((entry) => (
-      <article class="break-inside-avoid mb-6 bg-white rounded-lg overflow-hidden shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
-        {entry.data.image && (
-          <img 
-            src={entry.data.image.src} 
-            alt={entry.data.image.alt}
-            class="w-full h-auto block"
-          />
-        )}
-        <div class="p-5">
-          <h3 class="text-lg font-semibold mb-2">
-            <a href={`/${collection}/${entry.slug}`} class="text-gray-900 hover:text-blue-600 transition-colors">
-              {entry.data.title}
-            </a>
-          </h3>
-          {entry.data.description && (
-            <p class="text-gray-600 text-sm leading-relaxed">{entry.data.description}</p>
+  {safeItems.length > 0 ? (
+    <div class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
+      {safeItems.map((item) => item && (
+        <article class="break-inside-avoid mb-6 bg-white rounded-lg overflow-hidden shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
+          {item.image && (
+            <img 
+              src={item.image.src} 
+              alt={item.image.alt}
+              class="w-full h-auto block"
+            />
           )}
-        </div>
-      </article>
-    ))}
-  </div>
+          <div class="p-5">
+            <h3 class="text-lg font-semibold mb-2">
+              {item.url ? (
+                <a href={item.url} class="text-gray-900 hover:text-blue-600 transition-colors">
+                  {item.title}
+                </a>
+              ) : (
+                <span>{item.title}</span>
+              )}
+            </h3>
+            {item.description && (
+              <p class="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+            )}
+            {item.tags && Array.isArray(item.tags) && item.tags.length > 0 && (
+              <div class="mt-3 flex flex-wrap gap-1">
+                {item.tags.map((tag: string) => (
+                  <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
+      ))}
+    </div>
+  ) : (
+    <slot />
+  )}
 </section>

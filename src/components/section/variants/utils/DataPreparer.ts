@@ -1,116 +1,59 @@
-// src/components/section/variants/utils/DataPreparer.ts
-
 import { getEntry } from 'astro:content';
+import type { CollectionKey, CollectionEntry } from 'astro:content';
+import type { PreparedItem, PreparedFields } from './VariantTypes';
+import { getItemKey } from '@/utils/getItemKey';
 
-export interface PreparedItem {
-  title: string;
-  description?: string;
-  slug?: string;
-  url?: string;
-  image?: {
-    src: string;
-    alt: string;
-  };
-  date?: Date | string;
-  tags?: string[];
-  author?: {
-    name: string;
-    role?: string;
-    initials?: string;
-  };
-  // Add any other common fields
-  meta?: Record<string, any>; // For variant-specific data
-}
-
-export interface PreparedData {
-  items: PreparedItem[];
-  title?: string;
-  description?: string;
-  className?: string;
-  columns?: number;
-  gap?: string;
-  // Any other section-level props
-  [key: string]: any;
-}
-
-/**
- * Prepare collection entries for UI consumption
- */
-export async function prepareCollectionData(
-  entries: any[],
-  collection?: string
+export async function prepareCollectionData<T extends CollectionKey>(
+  entries: CollectionEntry<T>[],
+  collection: T
 ): Promise<PreparedItem[]> {
-  if (!entries || entries.length === 0) return [];
-  
   return Promise.all(
     entries.map(async (entry) => {
-      const item: PreparedItem = {
-        title: entry.data.title,
-        description: entry.data.description,
-        slug: entry.slug,
-        url: collection ? `/${collection}/${entry.slug}` : undefined,
+      const identifier = getItemKey(entry);
+      
+      const prepared: PreparedFields = {
+        slug: identifier,
+        url: `/${collection}/${identifier}`,
       };
 
-      // Handle image
-      if (entry.data.image) {
-        item.image = {
-          src: entry.data.image.src,
-          alt: entry.data.image.alt || entry.data.title
-        };
+      // Normalize common fields for variants
+      if ('publishDate' in entry.data && entry.data.publishDate) {
+        prepared.date = entry.data.publishDate;
       }
 
-      // Handle dates
-      if (entry.data.publishDate) {
-        item.date = entry.data.publishDate;
+      if ('featuredImage' in entry.data && entry.data.featuredImage) {
+        prepared.image = entry.data.featuredImage;
       }
 
-      // Handle tags
-      if (entry.data.tags) {
-        item.tags = entry.data.tags;
-      }
-
-      // Handle author reference
-      if (entry.data.author) {
+      // Resolve author reference if it exists
+      if ('author' in entry.data && entry.data.author) {
         try {
-          const author = await getEntry(entry.data.author);
-          if (author) {
-            const names = author.data.title.split(' ');
-            item.author = {
-              name: author.data.title,
-              role: author.data.role,
+          const authorRef = entry.data.author as { collection: string; id: string };
+          const authorEntry = await getEntry(authorRef.collection as CollectionKey, authorRef.id);
+          
+          if (authorEntry && 'title' in authorEntry.data) {
+            const title = authorEntry.data.title as string;
+            const names = title.split(' ');
+            prepared.author = {
+              name: title,
+              role: 'role' in authorEntry.data ? String(authorEntry.data.role) : '',
               initials: names.map((n: string) => n[0]).join('')
             };
           }
         } catch (e) {
-          // Author resolution failed, skip it
+          console.error('Error resolving author:', e);
         }
       }
 
-      // Add any other fields as meta
-      const knownFields = ['title', 'description', 'image', 'publishDate', 'tags', 'author'];
-      const metaFields = Object.keys(entry.data).filter(key => !knownFields.includes(key));
-      
-      if (metaFields.length > 0) {
-        item.meta = {};
-        metaFields.forEach(key => {
-          item.meta![key] = entry.data[key];
-        });
-      }
-
-      return item;
+      // Merge original data with prepared fields
+      return {
+        ...entry.data,
+        ...prepared
+      } as PreparedItem;
     })
   );
 }
 
-/**
- * Prepare static data (for non-collection usage)
- */
-export function prepareStaticData(props: any): PreparedData {
-  const { variant, entries, ...rest } = props;
-  
-  // For static content, just pass through the props
-  return {
-    items: [], // No items for static content
-    ...rest
-  };
+export function prepareStaticData(props: Record<string, any>): Record<string, any> {
+  return props.items ? props : { items: [], ...props };
 }

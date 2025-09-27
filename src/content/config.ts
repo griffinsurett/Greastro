@@ -1,50 +1,67 @@
 // src/content/config.ts
-import { z, defineCollection } from 'astro:content';
+import { file } from "astro/loaders";
+import { z, defineCollection, reference } from "astro:content";
 
 // Base schema that all collections will extend
-const baseSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  publishDate: z.date().optional(),
-  featured: z.boolean().default(false),
-  order: z.number().default(0),
-  featuredImage: z.object({
-    src: z.string(),
-    alt: z.string(),
-  }).optional(),
-  meta: z.record(z.any()).optional(), // For custom fields
-});
+const baseSchema = ({ image }: { image: Function }) =>
+  z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    publishDate: z.union([z.date(), z.string()]).optional(),
+    order: z.number().default(0),
+    featuredImage: image().optional(),
+    meta: z.record(z.any()).optional(),
+  });
 
 // Define your collections with the base schema - all support MDX
 export const collections = {
-  'blog': defineCollection({
-    schema: baseSchema.extend({
-      author: z.string(),
-      tags: z.array(z.string()).default([]),
-      readingTime: z.number().optional(),
-    }),
+  "blog": defineCollection({
+    schema: ({ image }) =>
+      baseSchema({ image }).extend({
+        author: reference("authors"), // Creates a relation to authors collection
+        tags: z.array(z.string()).default([]),
+        readingTime: z.number().optional(),
+      }),
   }),
-  'services': defineCollection({
-    schema: baseSchema.extend({
-      icon: z.string().optional(),
-      price: z.string().optional(),
-      features: z.array(z.string()).default([]),
-    }),
+  "authors": defineCollection({
+    loader: file("src/content/authors/authors.json"),
+    schema: ({ image }) =>
+      baseSchema({ image }).extend({
+        email: z.string().email().optional(),
+        social: z
+          .object({
+            twitter: z.string().url().optional(),
+            github: z.string().url().optional(),
+            linkedin: z.string().url().optional(),
+            website: z.string().url().optional(),
+          })
+          .optional(),
+        role: z.string().optional(),
+      }),
   }),
-  'testimonials': defineCollection({
-    schema: baseSchema.extend({
-      author: z.string(),
-      role: z.string(),
-      company: z.string().optional(),
-      rating: z.number().min(1).max(5).default(5),
-    }),
+  "services": defineCollection({
+    schema: ({ image }) =>
+      baseSchema({ image }).extend({
+        icon: z.string().optional(),
+        price: z.string().optional(),
+        features: z.array(z.string()).default([]),
+      }),
   }),
-  'portfolio': defineCollection({
-    schema: baseSchema.extend({
-      client: z.string(),
-      projectUrl: z.string().url().optional(),
-      technologies: z.array(z.string()).default([]),
-      category: z.string(),
-    }),
+  "testimonials": defineCollection({
+    schema: ({ image }) =>
+      baseSchema({ image }).extend({
+        role: z.string(),
+        company: z.string().optional(),
+        rating: z.number().min(1).max(5).default(5),
+      }),
+  }),
+  "portfolio": defineCollection({
+    schema: ({ image }) =>
+      baseSchema({ image }).extend({
+        client: z.string(),
+        projectUrl: z.string().url().optional(),
+        technologies: z.array(z.string()).default([]),
+        category: z.string(),
+      }),
   }),
 };

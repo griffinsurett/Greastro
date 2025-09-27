@@ -1,51 +1,67 @@
 ---
-// src/components/variants/HeroVariant.astro
+// src/components/section/variants/HeroVariant.astro
 export interface Props {
-  entries: any[];
-  collection: string;
+  entries?: any[];  // Optional now
+  collection?: string;  // Optional now
   title?: string;
   description?: string;
   className?: string;
+  // Hero-specific props for static content
+  image?: {
+    src: string;
+    alt: string;
+  };
+  ctaText?: string;
+  ctaLink?: string;
 }
 
 const { 
-  entries, 
+  entries = [], 
   collection,
   title,
   description,
-  className = ''
+  className = '',
+  image,
+  ctaText = 'Learn More',
+  ctaLink
 } = Astro.props;
 
+// Use first entry from collection OR static content
 const hero = entries[0];
+const hasCollectionContent = hero && collection;
 ---
 
 <section class={`relative ${className}`}>
-  {hero && (
-    <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
-      {hero.data.image && (
-        <div class="absolute inset-0 -z-10">
-          <img 
-            src={hero.data.image.src} 
-            alt={hero.data.image.alt}
-            class="w-full h-full object-cover"
-          />
-          <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60"></div>
-        </div>
-      )}
-      <div class="relative text-center text-black px-8 max-w-3xl">
-        <h1 class="text-5xl md:text-6xl font-bold mb-4">
-          {title || hero.data.title}
-        </h1>
-        <p class="text-xl mb-8 opacity-95">
-          {description || hero.data.description}
-        </p>
+  <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+    {/* Use provided image or hero entry image */}
+    {(image || hero?.data?.image) && (
+      <div class="absolute inset-0 -z-10">
+        <img 
+          src={image?.src || hero.data.image.src} 
+          alt={image?.alt || hero.data.image.alt}
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60"></div>
+      </div>
+    )}
+    
+    <div class="relative text-center text-black px-8 max-w-3xl">
+      <h1 class="text-5xl md:text-6xl font-bold mb-4">
+        {title || hero?.data?.title || 'Welcome'}
+      </h1>
+      <p class="text-xl mb-8 opacity-95">
+        {description || hero?.data?.description || ''}
+      </p>
+      
+      {/* Show CTA if we have a link */}
+      {(ctaLink || (hasCollectionContent && hero.slug)) && (
         <a 
-          href={`/${collection}/${hero.slug}`} 
+          href={ctaLink || `/${collection}/${hero.slug}`} 
           class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
         >
-          Learn More
+          {ctaText}
         </a>
-      </div>
+      )}
     </div>
-  )}
+  </div>
 </section>

@@ -1,4 +1,4 @@
-// src/utils/VariantUtils.ts
+// src/components/section/variants/utils/VariantUtils.ts
 
 /**
  * Dynamically discover all variant components
@@ -7,14 +7,11 @@ export async function getVariantComponents() {
   const variants = import.meta.glob('../*.astro', { eager: true });
   
   return Object.entries(variants).reduce((acc, [path, module]) => {
-    const variantName = path
-      .split('/')
-      .pop()
-      ?.replace('Variant.astro', '')
-      .toLowerCase();
+    // Just get the filename without extension
+    const fileName = path.split('/').pop()?.replace('.astro', '');
     
-    if (variantName && module && typeof module === 'object' && 'default' in module) {
-      acc[variantName] = module.default;
+    if (fileName && module && typeof module === 'object' && 'default' in module) {
+      acc[fileName] = module.default;
     }
     
     return acc;
@@ -26,5 +23,5 @@ export async function getVariantComponents() {
  */
 export async function isValidVariant(name: string): Promise<boolean> {
   const components = await getVariantComponents();
-  return name.toLowerCase() in components;
+  return name in components;
 }

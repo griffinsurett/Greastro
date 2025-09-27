@@ -1,5 +1,5 @@
 ---
-// src/components/Section.astro
+// src/components/section/Section.astro
 import { getCollection } from 'astro:content';
 import type { CollectionKey } from 'astro:content';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
@@ -9,33 +9,35 @@ const variantComponents = await getVariantComponents();
 const availableVariants = Object.keys(variantComponents);
 
 export interface Props {
-  collection: CollectionKey;
+  collection?: CollectionKey;  // Now optional
   variant?: string;
   title?: string;
   description?: string;
   className?: string;
   columns?: 1 | 2 | 3 | 4 | 5 | 6;
   gap?: 'sm' | 'md' | 'lg' | 'xl';
+  // Allow any additional props for custom static content
+  [key: string]: any;
 }
 
 const {
   collection,
-  variant = 'grid',
+  variant = 'GridVariant',
 } = Astro.props;
 
-// Fetch entries
-const entries = await getCollection(collection);
+// Only fetch entries if collection is provided
+const entries = collection ? await getCollection(collection) : [];
 
 // Get variant component
-const VariantComponent = variantComponents[variant.toLowerCase()];
+const VariantComponent = variantComponents[variant];
 if (!VariantComponent) {
   throw new Error(
     `Variant "${variant}" not found. Available variants: ${availableVariants.join(', ')}. 
-    Make sure you have a file named "${variant.charAt(0).toUpperCase() + variant.slice(1)}Variant.astro" in the variants folder.`
+    Make sure you have a file named "${variant}.astro" in the variants folder.`
   );
 }
 
-// Pass ALL props to variant (including title, description, className)
+// Pass ALL props to variant (including entries, which might be empty)
 const variantProps = {
   entries,
   ...Astro.props,

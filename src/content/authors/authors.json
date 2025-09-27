@@ -1,0 +1,16 @@
+[
+  {
+    "id": "jane-doe",
+    "title": "Jane Doe",
+    "description": "Senior developer and technical writer with 10 years of experience",
+    "order": 1,
+    "publishDate": "2023-01-15",
+    "email": "jane@example.com",
+    "role": "Senior Developer",
+    "social": {
+      "twitter": "https://twitter.com/janedoe",
+      "github": "https://github.com/janedoe",
+      "linkedin": "https://linkedin.com/in/janedoe"
+    }
+  }
+]

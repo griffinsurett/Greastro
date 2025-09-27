@@ -5,27 +5,42 @@ import Section from "@/components/section/Section.astro";
 ---
 
 <Layout title="Home">
-  <!-- Any collection can use any variant -->
-
+  <!-- Use the full variant filename (without .astro) -->
+  
   <!-- Blog posts in hero format -->
-  <Section collection="blog" variant="hero" />
+  <Section variant="HeroVariant" />
+
+  <Section 
+    collection="blog" 
+    variant="BlogVariant" 
+    title="Latest Articles"
+    columns={2}
+  />
 
   <!-- Services in grid layout -->
   <Section
     collection="services"
-    variant="grid"
+    variant="GridVariant"
     title="Our Services"
     columns={3}
     gap="lg"
   />
 
+  <Section
+    collection="authors"
+    variant="GridVariant"
+    title="Our Authors"
+    columns={3}
+    gap="lg"
+  />
+
   <!-- Portfolio in list format -->
-  <Section collection="portfolio" variant="list" title="Recent Projects" />
+  <Section collection="portfolio" variant="ListVariant" title="Recent Projects" />
 
   <!-- Testimonials in masonry -->
   <Section
     collection="testimonials"
-    variant="masonry"
+    variant="MasonryVariant"
     title="What People Say"
   />
 </Layout>

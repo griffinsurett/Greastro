@@ -1,17 +1,7 @@
 // src/content/config.ts
 import { file } from "astro/loaders";
-import { z, defineCollection, reference } from "astro:content";
-
-// Base schema that all collections will extend
-const baseSchema = ({ image }: { image: Function }) =>
-  z.object({
-    title: z.string(),
-    description: z.string().optional(),
-    publishDate: z.union([z.date(), z.string()]).optional(),
-    order: z.number().default(0),
-    featuredImage: image().optional(),
-    meta: z.record(z.any()).optional(),
-  });
+import { defineCollection, reference, z } from "astro:content";
+import { baseSchema } from "./schema";
 
 // Define your collections with the base schema - all support MDX
 export const collections = {

@@ -1,0 +1,55 @@
+---
+// src/pages/[collection]/[slug].astro
+import { getCollection } from "astro:content";
+import type { CollectionKey } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import { collections } from "@/content/config";
+import { getCollectionMeta } from "@/utils/fetchMeta";
+import { getItemKey } from "@/utils/getItemKey";
+
+export async function getStaticPaths() {
+  const names = Object.keys(collections) as CollectionKey[];
+  const paths: Array<{ params: { collection: string; slug: string }; props: any }> = [];
+
+  for (const coll of names) {
+    const meta = getCollectionMeta(coll);
+    
+    if (!meta.itemsHasPage) continue;
+
+    const entries = await getCollection(coll);
+    entries
+      .filter((entry) => {
+        if ('hasPage' in entry.data && entry.data.hasPage === false) {
+          return false;
+        }
+        return true;
+      })
+      .forEach((entry) => {
+        paths.push({
+          params: { 
+            collection: coll, 
+            slug: getItemKey(entry) 
+          },
+          props: { entry },
+        });
+      });
+  }
+
+  return paths;
+}
+
+const { entry } = Astro.props;
+let Content = null;
+if (typeof entry.render === "function") {
+  const rendered = await entry.render();
+  Content = rendered.Content;
+}
+---
+
+<Layout title={entry.data.title}>
+  {Content ? (
+    <Content />
+  ) : (
+    <p>No content available</p>
+  )}
+</Layout>

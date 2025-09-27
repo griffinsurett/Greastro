@@ -14,4 +14,7 @@ features:
 #   src: "/images/services/web-dev.jpg"
 #   alt: "Web development illustration"
 ---
-This is the blog post content. Even just this line should fix it.
+import Section from '@/components/section/Section.astro';
+
+<h1>{frontmatter.title}</h1>
+<p>{frontmatter.description}</p>

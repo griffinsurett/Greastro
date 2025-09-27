@@ -1,0 +1,14 @@
+---
+title: "Services"
+description: "Our professional services"
+hasPage: true
+itemsHasPage: true
+defaultSection:
+  variant: "CardVariant"
+  columns: 3
+  sortBy: "order"
+  sortOrder: "asc"
+---
+import Section from '@/components/section/Section.astro';
+
+<Section title={frontmatter.title} collection="services" />

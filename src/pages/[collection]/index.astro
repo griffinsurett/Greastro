@@ -1,0 +1,38 @@
+---
+// src/pages/[collection]/index.astro
+import type { CollectionKey } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import { collections } from "@/content/config";
+import { getCollectionMeta } from "@/utils/fetchMeta";
+
+export async function getStaticPaths() {
+  const names = Object.keys(collections) as CollectionKey[];
+  const paths = [];
+
+  for (const coll of names) {
+    const meta = getCollectionMeta(coll);
+    if (meta.hasPage) {
+      paths.push({ params: { collection: coll } });
+    }
+  }
+
+  return paths;
+}
+
+const { collection } = Astro.params;
+
+let Content = null;
+try {
+  const mod = await import(`../../content/${collection}/_meta.mdx`);
+  Content = mod.default;
+} catch {
+  // No MDX content
+}
+---
+<Layout title={collection}>
+  {Content ? (
+    <Content />
+  ) : (
+    <p>No content for {collection} index</p>
+  )}
+</Layout>

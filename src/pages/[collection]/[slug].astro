@@ -39,17 +39,27 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
+const { data } = entry;
+
+// Check if this entry can be rendered (MDX/MD files have render, JSON files don't)
 let Content = null;
+let hasContent = false;
+
 if (typeof entry.render === "function") {
   const rendered = await entry.render();
   Content = rendered.Content;
+  // Check if there's actual content in the body (for MDX/MD files)
+  hasContent = entry.body && entry.body.trim().length > 0;
 }
 ---
 
-<Layout title={entry.data.title}>
-  {Content ? (
+<Layout title={data.title}>
+  {hasContent && Content ? (
     <Content />
   ) : (
-    <p>No content available</p>
+    <div>
+      <h1>{data.title}</h1>
+      {data.description && <p>{data.description}</p>}
+    </div>
   )}
 </Layout>

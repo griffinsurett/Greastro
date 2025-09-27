@@ -7,8 +7,3 @@ order: 1
 author: "jane-doe"
 tags: ["astro", "mdx", "web development"]
 ---
-import Section from '@/components/section/Section.astro';
-
-<h1>{frontmatter.title}</h1>
-<p>by {frontmatter.author} on {new Date(frontmatter.publishDate).toLocaleDateString()}</p>
-<p>{frontmatter.description}</p>

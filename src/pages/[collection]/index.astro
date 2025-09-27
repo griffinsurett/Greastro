@@ -2,6 +2,7 @@
 // src/pages/[collection]/index.astro
 import type { CollectionKey } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
+import Section from "@/components/section/Section.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
 
@@ -20,19 +21,34 @@ export async function getStaticPaths() {
 }
 
 const { collection } = Astro.params;
+const meta = getCollectionMeta(collection);
 
 let Content = null;
+let hasRealContent = false;
+
 try {
   const mod = await import(`../../content/${collection}/_meta.mdx`);
   Content = mod.default;
+  
+  // MDX files with actual content will have more exports than just default and frontmatter
+  // Empty MDX files typically only have these two
+  const exportKeys = Object.keys(mod);
+  hasRealContent = exportKeys.length > 2 || 
+                   (exportKeys.length === 2 && !exportKeys.includes('frontmatter'));
 } catch {
-  // No MDX content
+  // No MDX file exists
 }
 ---
-<Layout title={collection}>
-  {Content ? (
+
+<Layout title={meta.title || collection}>
+  {Content && hasRealContent ? (
     <Content />
   ) : (
-    <p>No content for {collection} index</p>
+    <Section 
+      collection={collection} 
+      variant="GridVariant"
+      title={meta.title || collection}
+      description={meta.description}
+    />
   )}
 </Layout>

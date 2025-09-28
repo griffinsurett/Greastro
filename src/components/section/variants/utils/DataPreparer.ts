@@ -2,19 +2,29 @@ import { getEntry } from 'astro:content';
 import type { CollectionKey, CollectionEntry } from 'astro:content';
 import type { PreparedItem, PreparedFields } from './VariantTypes';
 import { getItemKey } from '@/utils/getItemKey';
+import { getCollectionMeta } from '@/utils/fetchMeta';
+import { shouldItemHavePage } from '@/utils/hasPageUtils';
 
 export async function prepareCollectionData<T extends CollectionKey>(
   entries: CollectionEntry<T>[],
   collection: T
 ): Promise<PreparedItem[]> {
+  // Get collection-level meta settings
+  const collectionMeta = getCollectionMeta(collection);
+  
   return Promise.all(
     entries.map(async (entry) => {
+      // Use getItemKey to get the correct identifier (slug for MDX, id for JSON)
       const identifier = getItemKey(entry);
       
       const prepared: PreparedFields = {
         slug: identifier,
-        url: `/${collection}/${identifier}`,
       };
+
+      // Use utility to determine if URL should be created
+      if (shouldItemHavePage(entry, collectionMeta)) {
+        prepared.url = `/${collection}/${identifier}`;
+      }
 
       // Normalize common fields for variants
       if ('publishDate' in entry.data && entry.data.publishDate) {

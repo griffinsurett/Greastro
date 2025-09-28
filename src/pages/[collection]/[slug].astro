@@ -6,24 +6,22 @@ import Layout from "@/layouts/Layout.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
 import { getItemKey } from "@/utils/getItemKey";
+import { shouldItemHavePage, shouldProcessCollectionItems } from "@/utils/hasPageUtils";
 
 export async function getStaticPaths() {
   const names = Object.keys(collections) as CollectionKey[];
   const paths: Array<{ params: { collection: string; slug: string }; props: any }> = [];
 
   for (const coll of names) {
-    const meta = getCollectionMeta(coll);
-    
-    if (!meta.itemsHasPage) continue;
+    // Check if this collection needs processing
+    const shouldProcess = await shouldProcessCollectionItems(coll);
+    if (!shouldProcess) continue;
 
+    const meta = getCollectionMeta(coll);
     const entries = await getCollection(coll);
+    
     entries
-      .filter((entry) => {
-        if ('hasPage' in entry.data && entry.data.hasPage === false) {
-          return false;
-        }
-        return true;
-      })
+      .filter((entry) => shouldItemHavePage(entry, meta))
       .forEach((entry) => {
         paths.push({
           params: { 
@@ -52,7 +50,6 @@ if (typeof entry.render === "function") {
   hasContent = entry.body && entry.body.trim().length > 0;
 }
 ---
-
 <Layout title={data.title}>
   {hasContent && Content ? (
     <Content />

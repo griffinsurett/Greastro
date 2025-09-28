@@ -4,17 +4,17 @@ import type { CollectionEntry, CollectionKey } from 'astro:content';
 // Only define what we ADD during preparation, not what's already in collections
 export interface PreparedFields {
   slug: string;
-  url: string;
+  url?: string;  // Now optional - only present if item has a page
   author?: {
     name: string;
     role?: string;
     initials: string;
   };
-  date?: Date | string;  // Normalized from publishDate
+  date?: Date | string;
   image?: {
     src: string;
     alt: string;
-  };  // Normalized from featuredImage
+  };
   tags?: Array<string>;
 }
 
@@ -24,7 +24,7 @@ export type PreparedItem = CollectionEntry<CollectionKey>['data'] & PreparedFiel
 // Base props that ALL variants receive from Section component
 export interface BaseVariantProps {
   items?: PreparedItem[];
-  title?: string;  // Section-level title (e.g., "Latest Articles")
-  description?: string;  // Section-level description
+  title?: string;
+  description?: string;
   className?: string;
 }

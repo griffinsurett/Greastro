@@ -45,14 +45,14 @@ if (import.meta.env.DEV) {
     image,
     keywords,
     siteName,
-    ogType,
     finalOgType,
     finalCanonicalUrl,
     effectiveRobots,
-    siteUrl
+    siteUrl,
   });
 }
 ---
+
 <!-- Primary Meta Tags -->
 <title>{finalTitle}</title>
 <meta name="title" content={finalTitle} />
@@ -61,9 +61,11 @@ if (import.meta.env.DEV) {
 {finalCanonicalUrl && <link rel="canonical" href={finalCanonicalUrl} />}
 <meta name="robots" content={effectiveRobots} />
 
-{keywords && Array.isArray(keywords) && keywords.length > 0 && (
-  <meta name="keywords" content={keywords.join(", ")} />
-)}
+{
+  keywords && Array.isArray(keywords) && keywords.length > 0 && (
+    <meta name="keywords" content={keywords.join(", ")} />
+  )
+}
 
 <!-- Open Graph / Facebook -->
 <meta property="og:title" content={finalTitle} />

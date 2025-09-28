@@ -1,0 +1,129 @@
+---
+// src/pages/cookie-policy.astro
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteData } from "@/content/siteData";
+import { formatPhoneNumber } from "@/utils/formatPhoneNumber";
+import Section from "@/components/section/Section.astro";
+import { getCollection } from "astro:content";
+
+// const contacts = await getCollection("contact");
+
+const effectiveDate = "May 14, 2025";
+---
+<BaseLayout
+  title="Cookie Policy"
+  description={`How ${siteData.title} uses cookies.`}
+>
+  <h1>Cookie Policy for {siteData.title}</h1>
+
+  <section
+    class="prose mx-auto py-[var(--spacing-lg)] px-[var(--spacing-lg)] w-9/10 lg:w-8/10"
+  >
+    <p>
+      For details on how we collect and use all personal data, see our
+      <a href="/privacy-policy" class="underline">Privacy Policy</a>.
+    </p>
+
+    <h1>Cookie Policy</h1>
+    <p><em>Effective date:</em> {effectiveDate}</p>
+
+    <h2>What Are Cookies?</h2>
+    <p>
+      Cookies are small text files placed by your browser when you visit a
+      website. They store data such as session identifiers, preferences, and
+      analytics.
+    </p>
+
+    <h2>How We Use Cookies</h2>
+    <ul>
+      <li>Ensure core site functionality (e.g., form submissions).</li>
+      <li>Remember your preferences (language, theme).</li>
+      <li>Measure and analyze site traffic.</li>
+      <li>Deliver personalized advertising (with consent).</li>
+    </ul>
+
+    <h2>Types of Cookies</h2>
+    <ul>
+      <li><strong>Necessary:</strong> Essential for site operation.</li>
+      <li><strong>Preferences:</strong> Store your choices.</li>
+      <li><strong>Statistics:</strong> Collect anonymous usage data.</li>
+      <li><strong>Marketing:</strong> Track for relevant ads.</li>
+    </ul>
+
+    <h2>Managing Cookies</h2>
+    <p>
+      You can disable cookies via your browser settings. Please note that some
+      features may not work correctly if cookies are disabled.
+    </p>
+
+    <h2>Detected Cookies</h2>
+    <p>
+      This table lists every cookie set by your browser for {siteData.title}.
+      It’s generated dynamically—any new cookies will appear automatically.
+    </p>
+    <div id="cookie-table-container">
+      <p>Loading cookies…</p>
+    </div>
+
+    <h2>Your Rights & Consent</h2>
+    <p>
+      Under GDPR, you must consent before non‑essential cookies are set. Under
+      CCPA, you can opt out of the sale of your personal data.
+    </p>
+
+    <h2>Contact Us</h2>
+    <p>If you have questions, reach us at:</p>
+    <!-- <ul>
+      <li>
+        Email:
+        <a href={`${emailEntry.data.linkPrefix}${emailEntry.data.title}`}>
+          {emailEntry.data.title}
+        </a>
+      </li>
+      <li>
+        Phone:
+        <a href={`${phoneEntry.data.linkPrefix}${phoneEntry.data.title}`}>
+          {formatPhoneNumber(phoneEntry.data.title)}
+        </a>
+      </li>
+      <li>Address: {siteData.address}</li>
+    </ul> -->
+  </section>
+
+  <script type="module">
+    document.addEventListener("DOMContentLoaded", () => {
+      document.cookie = "sampleCookie=sample; SameSite=None; Secure";
+      const raw = document.cookie || "";
+      const pairs = raw
+        .split(";")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const container = document.getElementById("cookie-table-container");
+      const table = document.createElement("table");
+      table.className = "min-w-full border-collapse";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th class="border px-4 py-2 text-left">Cookie Name</th>
+            <th class="border px-4 py-2 text-left">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pairs
+            .map((pair) => {
+              const [name, ...valParts] = pair.split("=");
+              const value = valParts.join("=");
+              return `
+              <tr>
+                <td class="border px-4 py-2">${name}</td>
+                <td class="border px-4 py-2">${decodeURIComponent(value)}</td>
+              </tr>`;
+            })
+            .join("")}
+        </tbody>
+      `;
+      container.innerHTML = "";
+      container.appendChild(table);
+    });
+  </script>
+</BaseLayout>

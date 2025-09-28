@@ -1,0 +1,135 @@
+---
+// src/pages/privacy-policy.astro
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteData } from "@/content/siteData";
+import { getCollection } from "astro:content";
+import { formatPhoneNumber } from "@/utils/formatPhoneNumber";
+import IntegrationsSnippet from "@/components/PrivacyPolicy/IntegrationsSnippet.astro";
+
+const contacts = await getCollection("contact");
+const emailEntry = contacts.find((c) => c.id === "email");
+const phoneEntry = contacts.find((c) => c.id === "phone");
+
+const effectiveDate = "May 14, 2025";
+
+// A simple counter for section numbers
+let sectionNumber = 0;
+---
+
+<BaseLayout
+  title={`Privacy Policy — ${siteData.title}`}
+  description={`How ${siteData.title} collects and uses your information.`}
+>
+  <h1>Cookie Policy for {siteData.title}</h1>
+
+  <section
+    class="prose mx-auto py-[var(--spacing-lg)] px-[var(--spacing-lg)] w-9/10 lg:w-8/10"
+  >
+    <h1>Privacy Policy</h1>
+    <p><em>Effective date:</em> {effectiveDate}</p>
+
+    <h2>{`${++sectionNumber}. Information We Collect`}</h2>
+    <p>
+      When you interact with <strong>{siteData.title}</strong>, we may collect:
+    </p>
+    <ul>
+      <li>
+        <strong>Contact Details:</strong> Your name, email address, and phone number
+        when you submit any form on our site.
+      </li>
+      <li>
+        <strong>Technical Data:</strong> IP address, browser type, device model,
+        and diagnostics via cookies and similar technologies. (See our{" "}
+        <a href="/cookie-policy" class="underline">Cookie Policy</a>.)
+      </li>
+      <li>
+        <strong>Usage Data:</strong> Pages you visit, time spent, clicks, and other
+        interactions to help us improve.
+      </li>
+    </ul>
+
+    <h2>{`${++sectionNumber}. How We Use Your Information`}</h2>
+    <ul>
+      <li>To respond to inquiries and provide quotes or support.</li>
+      <li>To monitor, maintain, and enhance site performance and security.</li>
+      <li>To send service updates or marketing messages if you opt in.</li>
+    </ul>
+
+    <h2>{`${++sectionNumber}. Data Retention`}</h2>
+    <!-- <p>
+      We retain your personal information (e.g., contact details and form
+      submissions) indefinitely to support your ongoing relationship with us. If
+      you’d like your data removed at any time, please
+      <a href={`${emailEntry.data.linkPrefix}${emailEntry.data.title}`}>
+        {emailEntry.data.title}
+      </a>
+      and we will delete it.
+    </p> -->
+
+    {/* Pass the next auto‑incremented number to your snippet */}
+    <IntegrationsSnippet
+      number={`${++sectionNumber}.`}
+      title="Third‑Party Integrations"
+    />
+
+    <h2>{`${++sectionNumber}. Cookies &amp; Tracking`}</h2>
+    <p>
+      We use cookies and similar tools to recognize you, remember preferences,
+      and analyze usage. For full details, see our{" "}
+      <a href="/cookie-policy" class="underline">Cookie Policy</a>.
+    </p>
+
+    <h2>{`${++sectionNumber}. Data Security`}</h2>
+    <p>
+      We implement reasonable technical and organizational measures to protect
+      your data against unauthorized access, disclosure, alteration, or
+      destruction.
+    </p>
+
+    <h2>{`${++sectionNumber}. Children’s Privacy`}</h2>
+    <p>
+      {siteData.title} does not knowingly collect personal information from anyone
+      under 16. If you believe we have inadvertently done so, please contact us to
+      have it removed.
+    </p>
+
+    <h2>{`${++sectionNumber}. Your Rights`}</h2>
+    <!-- <p>
+      Depending on your jurisdiction, you may have rights to access, correct, or
+      delete your personal data. To exercise these rights, email us at{" "}
+      <a href={`${emailEntry.data.linkPrefix}${emailEntry.data.title}`}>
+        {emailEntry.data.title}
+      </a>
+      .
+    </p> -->
+
+    <h2>{`${++sectionNumber}. Changes to This Policy`}</h2>
+    <p>
+      We may update this policy at any time; changes will be posted here with a
+      revised “Effective date.”
+    </p>
+
+    <h2>{`${++sectionNumber}. Contact Us`}</h2>
+    <p>If you have any questions, reach us at:</p>
+    <!-- <ul>
+      <li>
+        <strong>Email:</strong>{" "}
+        <a href={`${emailEntry.data.linkPrefix}${emailEntry.data.title}`}>
+          {emailEntry.data.title}
+        </a>
+      </li>
+      <li>
+        <strong>Phone:</strong>
+        <ul>
+          <a href={`${phoneEntry.data.linkPrefix}${phoneEntry.data.title}`}>
+            {formatPhoneNumber(phoneEntry.data.title)}
+          </a>
+        </ul>
+      </li>
+      <li>
+        <strong>Address:</strong>
+        {siteData.address || "Not provided"}
+      </li>
+    </ul> -->
+  </section>
+</BaseLayout>

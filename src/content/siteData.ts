@@ -1,4 +1,4 @@
-// src/siteData.js - Compatible with both Astro and React
+// src/siteData.ts - Compatible with both Astro and React
 const siteDomain = import.meta.env.PUBLIC_SITE_DOMAIN;
 
 export const siteData = {

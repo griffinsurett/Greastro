@@ -1,0 +1,38 @@
+---
+// src/components/PrivacyPolicy/IntegrationsSnippet.astro
+const {
+  number = "",
+  title  = "",
+} = Astro.props;
+
+// only PUBLIC_* keys make it into import.meta.env on build
+const bases = Object.entries(import.meta.env)
+  .filter(([k]) => k.startsWith("PUBLIC_INTEGRATION_"))
+  .map(([, url]) => {
+    try {
+      return new URL(url).host.split(".")[0];
+    } catch {
+      return null;
+    }
+  })
+  .filter(Boolean);
+
+const providers = Array.from(new Set(bases));
+---
+{providers.length ? (
+  <div>
+    <h2 class="flex items-baseline">
+      <span class="mr-2">{number}</span><span>{title}</span>
+    </h2>
+    <p>We integrate with the following companies for forms, CRM, analytics, etc.:</p>
+    <ul class="list-disc ml-6">
+      {providers.map((name) => (
+        <li key={name}>{name.charAt(0).toUpperCase() + name.slice(1)}</li>
+      ))}
+    </ul>
+    <p class="mt-2">
+      None of these providers store data on our servers; they forward
+      submissions/events directly to us.
+    </p>
+  </div>
+) : null}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "phone",
+    "title": "7329391309",
+    "tags": ["phone"],
+    "linkPrefix": "tel:"
+  },
+  {
+    "id": "email",
+    "title": "griffinswebservices@gmail.com",
+    "tags": ["email"],
+    "linkPrefix": "mailto:"
+  }
+]

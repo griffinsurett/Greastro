@@ -1,0 +1,75 @@
+---
+// src/components/Icon/IconWrapper.astro
+import { Icon as AstroIcon } from 'astro-icon/components';
+import Icon from '@/components/Icon/Icon';
+import { getIconName } from '@/utils/iconLoader';
+
+export interface Props {
+  icon: any;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  class?: string;
+  color?: string;
+  'aria-label'?: string;
+  client?: 'load' | 'idle' | 'visible' | 'media' | 'only';
+}
+
+const { 
+  icon, 
+  size = 'md', 
+  class: className = '', 
+  color, 
+  'aria-label': ariaLabel,
+  client
+} = Astro.props;
+
+if (!icon) return null;
+
+// Check if it's an emoji
+const isEmoji = typeof icon === 'string' && 
+  (/[\u{1F300}-\u{1FAD6}]/u.test(icon) || (icon.length <= 2 && !/^[a-zA-Z0-9]+$/.test(icon)));
+
+// Process icon name if it's a string and not an emoji
+const processedIcon = typeof icon === 'string' && !isEmoji 
+  ? getIconName(icon) 
+  : icon;
+
+// Check if it's a library icon (string with ":")
+const isLibraryIcon = typeof processedIcon === 'string' && processedIcon.includes(':');
+
+// Size mapping for actual icon dimensions
+const sizeClasses = {
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6',
+  xl: 'w-8 h-8',
+};
+---
+
+{isLibraryIcon ? (
+  <AstroIcon 
+    name={processedIcon} 
+    class={`${sizeClasses[size]} ${className}`}
+    aria-label={ariaLabel}
+  />
+) : client ? (
+  <Icon 
+    icon={processedIcon} 
+    size={size} 
+    className={className}
+    color={color}
+    aria-label={ariaLabel}
+    client:load={client === 'load'}
+    client:idle={client === 'idle'}
+    client:visible={client === 'visible'}
+    client:media={client === 'media'}
+    client:only={client === 'only'}
+  />
+) : (
+  <Icon 
+    icon={processedIcon} 
+    size={size} 
+    className={className}
+    color={color}
+    aria-label={ariaLabel}
+  />
+)}

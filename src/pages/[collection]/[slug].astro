@@ -2,15 +2,21 @@
 // src/pages/[collection]/[slug].astro
 import { getCollection } from "astro:content";
 import type { CollectionKey } from "astro:content";
-import Layout from "@/layouts/Layout.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
 import { getItemKey } from "@/utils/getItemKey";
-import { shouldItemHavePage, shouldProcessCollectionItems } from "@/utils/hasPageUtils";
+import {
+  shouldItemHavePage,
+  shouldProcessCollectionItems,
+} from "@/utils/hasPageUtils";
 
 export async function getStaticPaths() {
   const names = Object.keys(collections) as CollectionKey[];
-  const paths: Array<{ params: { collection: string; slug: string }; props: any }> = [];
+  const paths: Array<{
+    params: { collection: string; slug: string };
+    props: any;
+  }> = [];
 
   for (const coll of names) {
     // Check if this collection needs processing
@@ -19,14 +25,14 @@ export async function getStaticPaths() {
 
     const meta = getCollectionMeta(coll);
     const entries = await getCollection(coll);
-    
+
     entries
       .filter((entry) => shouldItemHavePage(entry, meta))
       .forEach((entry) => {
         paths.push({
-          params: { 
-            collection: coll, 
-            slug: getItemKey(entry) 
+          params: {
+            collection: coll,
+            slug: getItemKey(entry),
           },
           props: { entry },
         });
@@ -50,13 +56,15 @@ if (typeof entry.render === "function") {
   hasContent = entry.body && entry.body.trim().length > 0;
 }
 ---
-<Layout title={data.title}>
-  {hasContent && Content ? (
-    <Content />
-  ) : (
-    <div>
-      <h1>{data.title}</h1>
-      {data.description && <p>{data.description}</p>}
-    </div>
-  )}
-</Layout>
+<BaseLayout title={data.title} description={data.description}>
+  {
+    hasContent && Content ? (
+      <Content />
+    ) : (
+      <div>
+        <h1>{data.title}</h1>
+        {data.description && <p>{data.description}</p>}
+      </div>
+    )
+  }
+</BaseLayout>

@@ -1,7 +1,7 @@
 ---
 // src/pages/[collection]/index.astro
 import type { CollectionKey } from "astro:content";
-import Layout from "@/layouts/Layout.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/section/Section.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
@@ -29,19 +29,28 @@ const meta = getCollectionMeta(collection);
 // Check for MDX content using our utility
 const mdxResult = await getCollectionMetaMDX(collection);
 const MDXContent = mdxResult?.hasContent ? mdxResult.Component : null;
+
+// Simple capitalization inline
+const pageTitle = meta.title || collection.charAt(0).toUpperCase() + collection.slice(1);
+const pageDescription = meta.description || `Browse our ${collection} collection`;
 ---
 
-<Layout title={meta.title || collection}>
-  <div class="container mx-auto px-4">
-    {MDXContent ? (
-      <MDXContent />
-    ) : (
-      <Section 
-        collection={collection} 
-        variant="GridVariant"
-        title={meta.title || collection}
-        description={meta.description}
-      />
-    )}
-  </div>
-</Layout>
+<BaseLayout 
+  title={pageTitle}
+  description={pageDescription}
+>
+  <main class="flex-1">
+    <div class="container mx-auto px-4">
+      {MDXContent ? (
+        <MDXContent />
+      ) : (
+        <Section 
+          collection={collection} 
+          variant="GridVariant"
+          title={pageTitle}
+          description={meta.description}
+        />
+      )}
+    </div>
+  </main>
+</BaseLayout>

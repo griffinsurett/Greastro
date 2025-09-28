@@ -1,0 +1,43 @@
+---
+import "../styles/global.css";
+// import "../styles/animation.css";
+
+import HeadTags from "./HeadTags.astro";
+import SEO from "./SEO.astro";
+import Theme from "./Theme.astro";
+import BodyTags from "./BodyTags.astro";
+export interface Props {
+  [key: string]: any; // Allow all props
+}
+
+const { ...seoProps } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <!-- Theme, favicons, and pre-paint scripts -->
+    <Theme />
+
+    <!-- SEO / OG / Twitter -->
+    <SEO title={seoProps.title} {...seoProps} />
+
+    <!-- Additional head tags (if needed in future) -->
+    <HeadTags />
+
+    {seoProps.noindex && <meta name="robots" content="noindex,nofollow" />}
+  </head>
+
+  <body class="antialiased">
+    <!-- Body tags placeholder -->
+    <BodyTags />
+    
+    <div id="app" class="min-h-screen flex flex-col">
+      <slot />
+    </div>
+  </body>
+</html>

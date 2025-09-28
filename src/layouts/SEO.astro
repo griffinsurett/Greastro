@@ -1,0 +1,83 @@
+---
+import defaultOGImage from "@/assets/astro.svg";
+import { siteData } from "@/content/siteData";
+
+export interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  keywords?: string[];
+  canonicalUrl?: string;
+  robots?: string;
+  siteName?: string;
+  ogType?: string;
+}
+
+const {
+  title,
+  description,
+  image = defaultOGImage.src,
+  keywords,
+  canonicalUrl,
+  robots,
+  siteName = siteData.title,
+  ogType,
+} = Astro.props;
+
+// Use a fallback value if ogType is falsy
+const finalOgType = ogType || "website";
+
+// Determine your site’s base URL from env or fallback
+const siteUrl = siteData.url;
+
+// Build canonical URL if none provided
+const finalCanonicalUrl = canonicalUrl || `${siteUrl}${Astro.url.pathname}`;
+
+// Default to indexing if no robots directive is passed
+const effectiveRobots = robots ?? "index, follow";
+
+const finalTitle = `${siteData.title}: ${title}`;
+
+if (import.meta.env.DEV) {
+  console.log("SEO Data:", {
+    finalTitle,
+    description,
+    image,
+    keywords,
+    siteName,
+    ogType,
+    finalOgType,
+    finalCanonicalUrl,
+    effectiveRobots,
+    siteUrl
+  });
+}
+---
+<!-- Primary Meta Tags -->
+<title>{finalTitle}</title>
+<meta name="title" content={finalTitle} />
+<meta name="description" content={description} />
+
+{finalCanonicalUrl && <link rel="canonical" href={finalCanonicalUrl} />}
+<meta name="robots" content={effectiveRobots} />
+
+{keywords && Array.isArray(keywords) && keywords.length > 0 && (
+  <meta name="keywords" content={keywords.join(", ")} />
+)}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:title" content={finalTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={image} />
+<meta property="og:type" content={finalOgType} />
+<meta property="og:url" content={finalCanonicalUrl} />
+<meta property="og:site_name" content={siteName} />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={finalTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+<meta property="twitter:url" content={finalCanonicalUrl} />
+
+<slot name="structuredData" />

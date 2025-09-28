@@ -1,10 +1,9 @@
 // src/pages/robots.txt.ts
+import { siteData } from '@/content/siteData';
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = () => {
   // Get domain from environment variable with fallback
-  const siteDomain = import.meta.env.PUBLIC_SITE_DOMAIN;
-  const siteUrl = `https://${siteDomain}`;
   
   // Build your robots directives
   const lines = [
@@ -12,7 +11,7 @@ export const GET: APIRoute = () => {
     'Allow: /',
     // Uncomment when you have a sitemap
     // `Sitemap: ${siteUrl}/sitemap-0.xml`,
-    `Host: ${siteUrl}`,
+    `Host: ${siteData.url}`,
   ];
 
   return new Response(lines.join('\n'), {

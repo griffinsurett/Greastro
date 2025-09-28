@@ -4,10 +4,11 @@ import { getCollection } from 'astro:content';
 import type { CollectionKey } from 'astro:content';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
 import { prepareCollectionData, prepareStaticData } from '@/components/section/variants/utils/DataPreparer';
+import { getCollectionMeta } from '@/utils/fetchMeta';
+import { shouldCollectionHavePage } from '@/utils/hasPageUtils';
 
 const variantComponents = await getVariantComponents();
 
-// Astro needs Props defined IN the component for type checking
 interface Props {
   collection?: CollectionKey;
   variant?: string;
@@ -22,10 +23,30 @@ const {
 
 let data: any;
 
+// Get current page path
+const currentPath = Astro.url.pathname;
+
 if (collection) {
   const entries = await getCollection(collection);
   const items = await prepareCollectionData(entries, collection);
-  data = { items, ...restProps };
+  const collectionMeta = getCollectionMeta(collection);
+  
+  // Only add collectionUrl if the collection has a page AND we're not already on it
+  const collectionIndexPath = `/${collection}`;
+  const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
+  
+  const collectionUrl = shouldCollectionHavePage(collectionMeta) && !isOnCollectionPage 
+    ? collectionIndexPath 
+    : undefined;
+    
+  const collectionTitle = collectionMeta.title || collection.charAt(0).toUpperCase() + collection.slice(1);
+  
+  data = { 
+    items, 
+    collectionUrl,
+    collectionTitle,
+    ...restProps 
+  };
 } else {
   data = prepareStaticData(Astro.props);
 }
@@ -35,5 +56,4 @@ if (!VariantComponent) {
   throw new Error(`Variant "${variant}" not found. Available: ${Object.keys(variantComponents).join(', ')}`);
 }
 ---
-
 <VariantComponent {...data} />

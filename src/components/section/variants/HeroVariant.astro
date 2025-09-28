@@ -16,6 +16,8 @@ const {
   title,
   description,
   className = '',
+  collectionUrl,
+  collectionTitle,
   // Hero-specific static props
   image,
   ctaText = 'Learn More',
@@ -33,6 +35,9 @@ const imageAlt = heroImage?.alt || '';
 
 // Safely extract link
 const heroLink = ctaLink || hero?.url;
+
+// Hero variant uses special CTA for collection
+const viewAllText = `Explore ${collectionTitle || ''}`.trim();
 ---
 
 <section class={`relative ${className}`}>
@@ -58,15 +63,27 @@ const heroLink = ctaLink || hero?.url;
           {description || hero?.description || ''}
         </p>
         
-        {/* Show CTA if we have a link */}
-        {heroLink && (
-          <a 
-            href={heroLink} 
-            class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
-          >
-            {ctaText}
-          </a>
-        )}
+        <div class="flex gap-4 justify-center flex-wrap">
+          {/* Primary CTA if we have a link */}
+          {heroLink && (
+            <a 
+              href={heroLink} 
+              class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
+            >
+              {ctaText}
+            </a>
+          )}
+          
+          {/* Secondary CTA for collection */}
+          {collectionUrl && (
+            <a 
+              href={collectionUrl} 
+              class="inline-block px-8 py-4 bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-200"
+            >
+              {viewAllText}
+            </a>
+          )}
+        </div>
       </div>
     </div>
   )}

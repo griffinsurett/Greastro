@@ -1,6 +1,7 @@
 ---
 // src/components/section/variants/CardVariant.astro
 import type { BaseVariantProps } from './utils/VariantTypes';
+import FeatureCard from '@/components/LoopComponents/FeatureCard.astro';
 
 interface Props extends BaseVariantProps {
   columns?: 1 | 2 | 3 | 4;
@@ -11,8 +12,12 @@ const {
   title,
   description,
   className = '',
-  columns = 3 
+  columns = 3,
+  collectionUrl,
+  collectionTitle,
 } = Astro.props as Props;
+
+const viewAllText = `Explore All ${collectionTitle || ''}`.trim();
 
 const columnClasses = {
   1: 'grid-cols-1',
@@ -30,35 +35,28 @@ const columnClasses = {
     </div>
   )}
   
-  {items.length > 0 ? (
-    <div class={`grid ${columnClasses[columns]} gap-8`}>
+  {items.length > 0 && (
+    <ul class={`grid ${columnClasses[columns]} gap-8 list-none`}>
       {items.map((item) => (
-        <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:-translate-y-2 hover:shadow-xl transition-all duration-300 flex flex-col">
-          {item.image && (
-            <img 
-              src={item.image.src} 
-              alt={item.image.alt}
-              class="w-full h-48 object-cover"
-            />
-          )}
-          <div class="p-6 flex-1 flex flex-col">
-            <h3 class="text-2xl font-bold mb-4">{item.title}</h3>
-            {item.description && (
-              <p class="text-gray-600 mb-6 flex-1 leading-relaxed">{item.description}</p>
-            )}
-            {item.url && (
-              <a 
-                href={item.url} 
-                class="text-blue-600 font-semibold hover:underline self-start"
-              >
-                Learn More →
-              </a>
-            )}
-          </div>
-        </div>
+        <li>
+          <FeatureCard {...item} />
+        </li>
       ))}
+    </ul>
+  )}
+  
+  {/* View All button */}
+  {collectionUrl && items.length > 0 && (
+    <div class="mt-12 text-center">
+      <a 
+        href={collectionUrl} 
+        class="inline-flex items-center px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200"
+      >
+        {viewAllText}
+        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
     </div>
-  ) : (
-    <slot />
   )}
 </section>

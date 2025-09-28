@@ -1,16 +1,20 @@
 ---
 // src/components/section/variants/ListVariant.astro
 import type { BaseVariantProps } from './utils/VariantTypes';
+import ListCard from '@/components/LoopComponents/ListCard.astro';
 
-// ListVariant has no variant-specific props
 type Props = BaseVariantProps;
 
 const { 
   items = [],
   title,
   description,
-  className = ''
+  className = '',
+  collectionUrl,
+  collectionTitle,
 } = Astro.props as Props;
+
+const viewAllText = `See Complete ${collectionTitle || 'List'}`;
 ---
 
 <section class={`py-16 ${className}`}>
@@ -21,38 +25,28 @@ const {
     </div>
   )}
   
-  {items.length > 0 ? (
-    <div class="flex flex-col gap-8">
+  {items.length > 0 && (
+    <ul class="flex flex-col gap-8 list-none">
       {items.map((item) => (
-        <article class="flex gap-8 p-6 bg-white rounded-lg shadow-md">
-          {item.image && (
-            <div class="flex-shrink-0">
-              <img 
-                src={item.image.src} 
-                alt={item.image.alt}
-                class="w-48 h-36 object-cover rounded-md"
-              />
-            </div>
-          )}
-          <div class="flex-1">
-            <h3 class="text-2xl font-semibold mb-2">
-              <a href={item.url} class="text-gray-900 hover:text-blue-600 transition-colors">
-                {item.title}
-              </a>
-            </h3>
-            {item.description && (
-              <p class="text-gray-600 leading-relaxed mb-2">{item.description}</p>
-            )}
-            {item.date && (
-              <time class="text-sm text-gray-500">
-                {new Date(item.date).toLocaleDateString()}
-              </time>
-            )}
-          </div>
-        </article>
+        <li>
+          <ListCard {...item} />
+        </li>
       ))}
+    </ul>
+  )}
+  
+  {/* View All button */}
+  {collectionUrl && items.length > 0 && (
+    <div class="mt-12">
+      <a 
+        href={collectionUrl} 
+        class="inline-flex items-center px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors"
+      >
+        {viewAllText}
+        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+      </a>
     </div>
-  ) : (
-    <slot />
   )}
 </section>

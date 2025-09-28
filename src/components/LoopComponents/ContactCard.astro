@@ -1,0 +1,59 @@
+---
+// src/components/LoopComponents/ContactCard.astro
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  title: string;
+  linkPrefix?: string;
+  tags?: string[];
+  description?: string;
+}
+
+const { title, linkPrefix, tags, description } = Astro.props;
+
+// Determine icon based on tags
+const getIconName = (tags: string[] = []) => {
+  if (tags.includes('phone')) return 'lucide:phone';
+  if (tags.includes('email')) return 'lucide:mail';
+  if (tags.includes('address')) return 'lucide:map-pin';
+  if (tags.includes('linkedin')) return 'lucide:linkedin';
+  return 'lucide:contact';
+};
+
+const iconName = getIconName(tags);
+const href = linkPrefix ? `${linkPrefix}${title}` : undefined;
+---
+
+<div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+  <div class="flex items-start gap-4">
+    <div class="flex-shrink-0">
+      <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+        <Icon name={iconName} class="w-6 h-6 text-blue-600" />
+      </div>
+    </div>
+    <div class="flex-1">
+      {href ? (
+        <a 
+          href={href}
+          class="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors block"
+        >
+          {title}
+        </a>
+      ) : (
+        <p class="text-lg font-semibold text-gray-900">{title}</p>
+      )}
+      {description && (
+        <p class="text-gray-600 mt-1">{description}</p>
+      )}
+      {tags && tags.length > 0 && (
+        <div class="flex gap-2 mt-2">
+          {tags.map((tag: string) => (
+            <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</div>

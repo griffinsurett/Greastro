@@ -1,0 +1,74 @@
+---
+// src/components/LoopComponents/SocialIcon.astro
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  title: string;
+  slug?: string;
+  url?: string;
+  icon?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { title, slug, url, icon, size = 'md' } = Astro.props;
+
+// Use url or slug as the link
+const href = url || slug;
+
+// Determine icon name - check if custom icon provided, otherwise map from title
+const getIconName = (icon?: string, title?: string) => {
+  if (icon) {
+    // Check if it's already prefixed
+    if (icon.includes(':')) return icon;
+    // Otherwise assume it's a lucide icon
+    return `lucide:${icon}`;
+  }
+  
+  // Map common social media names to icons
+  const titleLower = title?.toLowerCase() || '';
+  if (titleLower.includes('twitter') || titleLower.includes('x')) return 'lucide:twitter';
+  if (titleLower.includes('facebook')) return 'simple-icons:facebook';
+  if (titleLower.includes('instagram')) return 'simple-icons:instagram';
+  if (titleLower.includes('linkedin')) return 'lucide:linkedin';
+  if (titleLower.includes('github')) return 'lucide:github';
+  if (titleLower.includes('youtube')) return 'simple-icons:youtube';
+  if (titleLower.includes('tiktok')) return 'simple-icons:tiktok';
+  if (titleLower.includes('discord')) return 'simple-icons:discord';
+  
+  return 'lucide:globe'; // Default icon
+};
+
+const iconName = getIconName(icon, title);
+
+const sizeClasses = {
+  sm: 'w-8 h-8',
+  md: 'w-10 h-10',
+  lg: 'w-12 h-12'
+};
+
+const iconSizeClasses = {
+  sm: 'w-4 h-4',
+  md: 'w-5 h-5',
+  lg: 'w-6 h-6'
+};
+---
+
+{href ? (
+  <a 
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    class={`${sizeClasses[size]} bg-gray-100 hover:bg-blue-100 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110`}
+    aria-label={`Visit our ${title} page`}
+    title={title}
+  >
+    <Icon name={iconName} class={`${iconSizeClasses[size]} text-gray-700 hover:text-blue-600`} />
+  </a>
+) : (
+  <div 
+    class={`${sizeClasses[size]} bg-gray-100 rounded-full flex items-center justify-center`}
+    title={title}
+  >
+    <Icon name={iconName} class={`${iconSizeClasses[size]} text-gray-700`} />
+  </div>
+)}

@@ -1,13 +1,13 @@
 [   {
         "id": "1",
         "title": "Twitter",
-        "slug": "https://twitter.com/griffin",
+        "link": "https://twitter.com/griffin",
         "icon": "twitter"
     },
     {
         "id": "2",
         "title": "LinkedIn",
-        "slug": "https://linkedin.com/griffin",
+        "link": "https://linkedin.com/griffin",
         "icon": "linkedin"
     }
 ]

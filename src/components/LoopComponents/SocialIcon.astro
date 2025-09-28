@@ -6,14 +6,15 @@ export interface Props {
   title: string;
   slug?: string;
   url?: string;
+  link?: string;  // Added link field
   icon?: string;
   size?: 'sm' | 'md' | 'lg';
 }
 
-const { title, slug, url, icon, size = 'md' } = Astro.props;
+const { title, slug, url, link, icon, size = 'md' } = Astro.props;
 
-// Use url or slug as the link
-const href = url || slug;
+// Use link, url, or slug as the href (prioritize link)
+const href = link || url || slug;
 
 // Determine icon name - check if custom icon provided, otherwise map from title
 const getIconName = (icon?: string, title?: string) => {

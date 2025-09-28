@@ -1,33 +1,64 @@
 ---
 // src/components/PrivacyPolicy/IntegrationsSnippet.astro
+
+export interface Props {
+  number?: string | number;
+  title?: string;
+}
+
+// Type for environment variables
+interface IntegrationEnv {
+  [key: string]: string | undefined;
+}
+
 const {
   number = "",
-  title  = "",
-} = Astro.props;
+  title = "",
+} = Astro.props as Props;
 
-// only PUBLIC_* keys make it into import.meta.env on build
-const bases = Object.entries(import.meta.env)
-  .filter(([k]) => k.startsWith("PUBLIC_INTEGRATION_"))
-  .map(([, url]) => {
-    try {
-      return new URL(url).host.split(".")[0];
-    } catch {
-      return null;
-    }
-  })
-  .filter(Boolean);
+// Helper function to extract provider name from URL
+const extractProviderName = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url);
+    // Get the first part of the hostname (e.g., "google" from "google.com")
+    const hostParts = urlObj.host.split(".");
+    return hostParts[0] || null;
+  } catch {
+    return null;
+  }
+};
 
-const providers = Array.from(new Set(bases));
+// Type-safe environment variable processing
+const env = import.meta.env as IntegrationEnv;
+
+const providers: string[] = Array.from(
+  new Set(
+    Object.entries(env)
+      .filter((entry): entry is [string, string] => {
+        const [key, value] = entry;
+        return key.startsWith("PUBLIC_INTEGRATION_") && typeof value === "string";
+      })
+      .map(([, url]) => extractProviderName(url))
+      .filter((name): name is string => name !== null)
+  )
+);
+
+// Helper function to capitalize provider name
+const capitalizeProvider = (name: string): string => {
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
 ---
-{providers.length ? (
+
+{providers.length > 0 ? (
   <div>
     <h2 class="flex items-baseline">
-      <span class="mr-2">{number}</span><span>{title}</span>
+      {number && <span class="mr-2">{number}</span>}
+      {title && <span>{title}</span>}
     </h2>
     <p>We integrate with the following companies for forms, CRM, analytics, etc.:</p>
     <ul class="list-disc ml-6">
       {providers.map((name) => (
-        <li key={name}>{name.charAt(0).toUpperCase() + name.slice(1)}</li>
+        <li>{capitalizeProvider(name)}</li>
       ))}
     </ul>
     <p class="mt-2">

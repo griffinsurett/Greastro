@@ -46,7 +46,6 @@ export const collections = {
   "services": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({
-        icon: z.string().optional(),
         price: z.string().optional(),
         features: z.array(z.string()).default([]),
       }),

@@ -1,13 +1,26 @@
-[   {
-        "id": "1",
-        "title": "Twitter",
-        "link": "https://twitter.com/griffin",
-        "icon": "twitter"
-    },
-    {
-        "id": "2",
-        "title": "LinkedIn",
-        "link": "https://linkedin.com/griffin",
-        "icon": "linkedin"
-    }
+[
+  {
+    "id": "1",
+    "title": "Twitter",
+    "link": "https://twitter.com/griffin",
+    "icon": "lucide:twitter"
+  },
+  {
+    "id": "2",
+    "title": "LinkedIn",
+    "link": "https://linkedin.com/griffin",
+    "icon": "lucide:linkedin"
+  },
+  {
+    "id": "3",
+    "title": "GitHub",
+    "link": "https://github.com/griffin",
+    "icon": "lucide:github"
+  },
+  {
+    "id": "4",
+    "title": "Facebook",
+    "link": "https://facebook.com/griffin",
+    "icon": "simple-icons:facebook"
+  }
 ]

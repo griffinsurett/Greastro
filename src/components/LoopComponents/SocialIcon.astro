@@ -1,45 +1,20 @@
 ---
 // src/components/LoopComponents/SocialIcon.astro
 import { Icon } from 'astro-icon/components';
+import { getIconName } from '@/utils/iconLoader';
 
 export interface Props {
   title: string;
-  slug?: string;
-  url?: string;
-  link?: string;  // Added link field
+  link?: string;
   icon?: string;
   size?: 'sm' | 'md' | 'lg';
 }
 
-const { title, slug, url, link, icon, size = 'md' } = Astro.props;
+const { title, link, icon, size = 'md' } = Astro.props;
 
-// Use link, url, or slug as the href (prioritize link)
-const href = link || url || slug;
-
-// Determine icon name - check if custom icon provided, otherwise map from title
-const getIconName = (icon?: string, title?: string) => {
-  if (icon) {
-    // Check if it's already prefixed
-    if (icon.includes(':')) return icon;
-    // Otherwise assume it's a lucide icon
-    return `lucide:${icon}`;
-  }
-  
-  // Map common social media names to icons
-  const titleLower = title?.toLowerCase() || '';
-  if (titleLower.includes('twitter') || titleLower.includes('x')) return 'lucide:twitter';
-  if (titleLower.includes('facebook')) return 'simple-icons:facebook';
-  if (titleLower.includes('instagram')) return 'simple-icons:instagram';
-  if (titleLower.includes('linkedin')) return 'lucide:linkedin';
-  if (titleLower.includes('github')) return 'lucide:github';
-  if (titleLower.includes('youtube')) return 'simple-icons:youtube';
-  if (titleLower.includes('tiktok')) return 'simple-icons:tiktok';
-  if (titleLower.includes('discord')) return 'simple-icons:discord';
-  
-  return 'lucide:globe'; // Default icon
-};
-
-const iconName = getIconName(icon, title);
+// Use getIconName to handle icons with or without prefixes
+// Default to lucide:globe if no icon provided
+const iconName = icon ? getIconName(icon) : 'lucide:globe';
 
 const sizeClasses = {
   sm: 'w-8 h-8',
@@ -54,16 +29,16 @@ const iconSizeClasses = {
 };
 ---
 
-{href ? (
+{link ? (
   <a 
-    href={href}
+    href={link}
     target="_blank"
     rel="noopener noreferrer"
     class={`${sizeClasses[size]} bg-gray-100 hover:bg-blue-100 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110`}
     aria-label={`Visit our ${title} page`}
     title={title}
   >
-    <Icon name={iconName} class={`${iconSizeClasses[size]} text-gray-700 hover:text-blue-600`} />
+    <Icon name={iconName} class={`${iconSizeClasses[size]} text-gray-700`} />
   </a>
 ) : (
   <div 

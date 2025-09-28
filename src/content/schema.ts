@@ -1,5 +1,6 @@
 // src/content/schema.ts
 import { z } from "astro:content";
+import { iconSchema } from "./iconSchema";
 
 // Base schema that all collections will extend
 export const baseSchema = ({ image }: { image: Function }) =>
@@ -10,6 +11,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
     order: z.number().default(0),
     featuredImage: image().optional(),
     hasPage: z.boolean().optional(), // Individual items can override
+    icon: iconSchema({ image }).optional(),
   });
 
 // Meta schema for _meta.mdx files - extends base schema

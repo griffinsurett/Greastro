@@ -19,7 +19,7 @@ export const iconConfig = {
     
     // Font Awesome brands (for missing tech brands)  
     'fa6-brands': [
-      'aws', 'figma', 'cloudflare', 'php', 'python', 'x-twitter'
+      'aws', 'figma', 'cloudflare', 'php', 'python', 'x-twitter', 'facebook'
     ],
     
     // Font Awesome solid (if needed for UI)

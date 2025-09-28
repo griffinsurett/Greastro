@@ -14,7 +14,7 @@ export const collections = {
   }),
    // socialMedia.json ────────────────────────────────
   "social-media": defineCollection({
-    loader: file("src/content/socialMedia/socialMedia.json"),
+    loader: file("src/content/social-media/socialmedia.json"),
     schema: ({ image }) => baseSchema({ image }).extend({
       link: z.string().optional(),
     }),

@@ -77,7 +77,7 @@ export default function GDPRConsentModal() {
       onClose={() => {}} // Prevent closing without consent
       closeButton={false}
       className="bg-white shadow-2xl p-0 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
-      overlayClass="bg-none items-end justify-start p-4 sm:p-6"
+      overlayClass="bg-none items-end justify-start pl-2 pr-2 sm:pl-2 sm:pr-2 pb-[50px] sm:pb-[70px]"
       ariaLabel="Cookie Consent"
     >
       <div className="p-6 sm:p-8">

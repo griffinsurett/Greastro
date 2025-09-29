@@ -3,9 +3,12 @@
 // Placeholder for future body-level scripts and elements
 // import SpeedInsights from "@vercel/speed-insights/astro";
 // import Analytics from '@vercel/analytics/astro';
+import GDPRManager from "@/components/consent/GDPRManager";
 ---
+<!-- GDPR Manager loads when browser is idle -->
+<GDPRManager client:idle />
+
 <!-- Analytics, tracking scripts, or other body elements can be added here -->
 <!-- Example: Google Analytics, chat widgets, etc. -->
 <!-- <SpeedInsights/>
 <Analytics/> -->
- 

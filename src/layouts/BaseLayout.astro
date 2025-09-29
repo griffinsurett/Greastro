@@ -4,7 +4,6 @@ import HeadTags from "./HeadTags.astro";
 import SEO from "./SEO.astro";
 import Theme from "./Theme.astro";
 import BodyTags from "./BodyTags.astro";
-import GDPRManager from "@/components/GDPRManager";
 
 export interface Props {
   [key: string]: any;
@@ -19,7 +18,7 @@ const { ...seoProps } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    
+
     <Theme />
     <SEO title={seoProps.title} {...seoProps} />
     <HeadTags />
@@ -29,12 +28,9 @@ const { ...seoProps } = Astro.props;
 
   <body class="antialiased">
     <BodyTags />
-    
+
     <div id="app" class="min-h-screen flex flex-col">
       <slot />
     </div>
-
-    <!-- GDPR Manager loads when browser is idle -->
-    <GDPRManager client:idle />
   </body>
 </html>

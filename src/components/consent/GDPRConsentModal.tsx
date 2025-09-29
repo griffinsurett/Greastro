@@ -1,11 +1,11 @@
 // src/components/GDPRConsentModal.tsx
-import { useState } from 'react';
-import Modal from './Modal';
-import { useCookieConsent } from '@/contexts/CookieConsentContext';
-import type { ConsentPreferences } from '@/contexts/CookieConsentContext';
+import { useState } from "react";
+import Modal from "../Modal";
+import { useCookieConsent } from "@/contexts/CookieConsentContext";
+import type { ConsentPreferences } from "@/contexts/CookieConsentContext";
 
 interface ConsentCategory {
-  key: keyof Omit<ConsentPreferences, 'timestamp' | 'version'>;
+  key: keyof Omit<ConsentPreferences, "timestamp" | "version">;
   title: string;
   description: string;
   required?: boolean;
@@ -13,25 +13,29 @@ interface ConsentCategory {
 
 const consentCategories: ConsentCategory[] = [
   {
-    key: 'necessary',
-    title: 'Necessary Cookies',
-    description: 'Essential for the website to function properly. These cannot be disabled.',
+    key: "necessary",
+    title: "Necessary Cookies",
+    description:
+      "Essential for the website to function properly. These cannot be disabled.",
     required: true,
   },
   {
-    key: 'analytics',
-    title: 'Analytics Cookies',
-    description: 'Help us understand how visitors interact with our website by collecting anonymous data.',
+    key: "analytics",
+    title: "Analytics Cookies",
+    description:
+      "Help us understand how visitors interact with our website by collecting anonymous data.",
   },
   {
-    key: 'marketing',
-    title: 'Marketing Cookies',
-    description: 'Used to track visitors across websites to display relevant advertisements.',
+    key: "marketing",
+    title: "Marketing Cookies",
+    description:
+      "Used to track visitors across websites to display relevant advertisements.",
   },
   {
-    key: 'functional',
-    title: 'Functional Cookies',
-    description: 'Enable enhanced functionality and personalization, such as remembering preferences.',
+    key: "functional",
+    title: "Functional Cookies",
+    description:
+      "Enable enhanced functionality and personalization, such as remembering preferences.",
   },
 ];
 
@@ -45,7 +49,9 @@ export default function GDPRConsentModal() {
   } = useCookieConsent();
 
   const [showDetails, setShowDetails] = useState(false);
-  const [tempPreferences, setTempPreferences] = useState<Partial<ConsentPreferences>>({
+  const [tempPreferences, setTempPreferences] = useState<
+    Partial<ConsentPreferences>
+  >({
     necessary: true,
     analytics: preferences?.analytics || false,
     marketing: preferences?.marketing || false,
@@ -53,9 +59,9 @@ export default function GDPRConsentModal() {
   });
 
   const handleToggle = (key: keyof ConsentPreferences) => {
-    if (key === 'necessary') return;
-    
-    setTempPreferences(prev => ({
+    if (key === "necessary") return;
+
+    setTempPreferences((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
@@ -80,8 +86,8 @@ export default function GDPRConsentModal() {
             🍪 Your Privacy Matters
           </h2>
           <p className="text-gray-600">
-            We use cookies and similar technologies to enhance your experience on our website.
-            Please choose your preferences below.
+            We use cookies and similar technologies to enhance your experience
+            on our website. Please choose your preferences below.
           </p>
         </div>
 
@@ -89,10 +95,11 @@ export default function GDPRConsentModal() {
           <div className="space-y-4 mb-6">
             <div className="p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                We respect your privacy. You can customize your cookie preferences or accept our recommended settings.
+                We respect your privacy. You can customize your cookie
+                preferences or accept our recommended settings.
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={acceptAll}
@@ -122,7 +129,9 @@ export default function GDPRConsentModal() {
               <div
                 key={category.key}
                 className={`p-4 rounded-lg border ${
-                  category.required ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-300'
+                  category.required
+                    ? "bg-gray-50 border-gray-200"
+                    : "bg-white border-gray-300"
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -130,12 +139,16 @@ export default function GDPRConsentModal() {
                     <h3 className="font-semibold text-gray-900 mb-1">
                       {category.title}
                       {category.required && (
-                        <span className="ml-2 text-xs text-gray-500">(Required)</span>
+                        <span className="ml-2 text-xs text-gray-500">
+                          (Required)
+                        </span>
                       )}
                     </h3>
-                    <p className="text-sm text-gray-600">{category.description}</p>
+                    <p className="text-sm text-gray-600">
+                      {category.description}
+                    </p>
                   </div>
-                  
+
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -144,23 +157,26 @@ export default function GDPRConsentModal() {
                       onChange={() => handleToggle(category.key)}
                       disabled={category.required}
                     />
-                    <div className={`
+                    <div
+                      className={`
                       w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 
                       peer-focus:ring-blue-300 rounded-full peer 
                       peer-checked:after:translate-x-full peer-checked:after:border-white 
                       after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
                       after:bg-white after:border-gray-300 after:border after:rounded-full 
                       after:h-5 after:w-5 after:transition-all
-                      ${category.required 
-                        ? 'peer-checked:bg-gray-400 cursor-not-allowed' 
-                        : 'peer-checked:bg-blue-600'
+                      ${
+                        category.required
+                          ? "peer-checked:bg-gray-400 cursor-not-allowed"
+                          : "peer-checked:bg-blue-600"
                       }
-                    `} />
+                    `}
+                    />
                   </label>
                 </div>
               </div>
             ))}
-            
+
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={handleSavePreferences}
@@ -180,10 +196,16 @@ export default function GDPRConsentModal() {
 
         <div className="pt-4 border-t border-gray-200">
           <div className="flex flex-wrap gap-4 text-sm">
-            <a href="/privacy-policy" className="text-blue-600 hover:text-blue-800 underline">
+            <a
+              href="/privacy-policy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
               Privacy Policy
             </a>
-            <a href="/cookie-policy" className="text-blue-600 hover:text-blue-800 underline">
+            <a
+              href="/cookie-policy"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
               Cookie Policy
             </a>
           </div>

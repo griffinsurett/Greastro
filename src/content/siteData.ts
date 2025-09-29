@@ -8,3 +8,8 @@ export const siteData = {
   domain: siteDomain,
   url: `https://${siteDomain}`,
 };
+
+export const ctaData = {
+  text: "Get Started with Greastro",
+  link: "/contact-us",
+}

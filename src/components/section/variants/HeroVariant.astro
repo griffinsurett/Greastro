@@ -1,6 +1,7 @@
 ---
 import type { BaseVariantProps } from "./utils/VariantTypes";
 import Button from "@/components/Button/Button";
+import { ctaData } from "@/content/siteData";
 
 interface Props extends BaseVariantProps {
   image?: {
@@ -19,8 +20,8 @@ const {
   collectionUrl,
   collectionTitle,
   image,
-  ctaText = "Learn More",
-  ctaLink,
+  ctaText = ctaData.text,
+  ctaLink = ctaData.link,
 } = Astro.props as Props;
 
 const hero = items[0];

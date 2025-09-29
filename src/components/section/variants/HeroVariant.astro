@@ -1,6 +1,6 @@
 ---
-// src/components/section/variants/HeroVariant.astro
-import type { BaseVariantProps } from './utils/VariantTypes';
+import type { BaseVariantProps } from "./utils/VariantTypes";
+import Button from "@/components/Button/Button";
 
 interface Props extends BaseVariantProps {
   image?: {
@@ -11,83 +11,72 @@ interface Props extends BaseVariantProps {
   ctaLink?: string;
 }
 
-const { 
+const {
   items = [],
   title,
   description,
-  className = '',
+  className = "",
   collectionUrl,
   collectionTitle,
-  // Hero-specific static props
   image,
-  ctaText = 'Learn More',
-  ctaLink
+  ctaText = "Learn More",
+  ctaLink,
 } = Astro.props as Props;
 
-// Use first item from collection OR static content
 const hero = items[0];
-const hasHeroContent = hero || (title || description || image);
-
-// Safely extract image data
+const hasHeroContent = hero || title || description || image;
 const heroImage = image || hero?.image;
 const imageSrc = heroImage?.src;
-const imageAlt = heroImage?.alt || '';
-
-// Safely extract link
+const imageAlt = heroImage?.alt || "";
 const heroLink = ctaLink || hero?.url;
-
-// Hero variant uses special CTA for collection
-const viewAllText = `Explore ${collectionTitle || ''}`.trim();
+const viewAllText = `Explore ${collectionTitle || ""}`.trim();
 ---
 
 <section class={`relative ${className}`}>
-  {hasHeroContent && (
-    <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
-      {/* Use provided image or hero item image */}
-      {imageSrc && (
-        <div class="absolute inset-0 -z-10">
-          <img 
-            src={imageSrc} 
-            alt={imageAlt}
-            class="w-full h-full object-cover"
-          />
-          <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60"></div>
-        </div>
-      )}
-      
-      <div class="relative text-center text-black px-8 max-w-3xl">
-        <h1 class="text-5xl md:text-6xl font-bold mb-4">
-          {title || hero?.title || 'Welcome'}
-        </h1>
-        <p class="text-xl mb-8 opacity-95">
-          {description || hero?.description || ''}
-        </p>
-        
-        <div class="flex gap-4 justify-center flex-wrap">
-          {/* Primary CTA if we have a link */}
-          {heroLink && (
-            <a 
-              href={heroLink} 
-              class="inline-block px-8 py-4 bg-blue-600 text-white font-semibold rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-200"
-            >
-              {ctaText}
-            </a>
-          )}
-          
-          {/* Secondary CTA for collection */}
-          {collectionUrl && (
-            <a 
-              href={collectionUrl} 
-              class="inline-block px-8 py-4 bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 font-semibold rounded-lg hover:bg-white/20 transition-all duration-200"
-            >
-              {viewAllText}
-            </a>
-          )}
+  {
+    hasHeroContent && (
+      <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+        {imageSrc && (
+          <div class="absolute inset-0 -z-10">
+            <img
+              src={imageSrc}
+              alt={imageAlt}
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
+          </div>
+        )}
+
+        <div class="relative text-center text-black px-8 max-w-3xl">
+          <h1 class="text-5xl md:text-6xl font-bold mb-4">
+            {title || hero?.title || "Welcome"}
+          </h1>
+          <p class="text-xl mb-8 opacity-95">
+            {description || hero?.description || ""}
+          </p>
+
+          <div class="flex gap-4 justify-center flex-wrap">
+            {heroLink && (
+              <Button href={heroLink} variant="primary" size="lg">
+                {ctaText}
+              </Button>
+            )}
+
+            {collectionUrl && (
+              <Button
+                href={collectionUrl}
+                variant="ghost"
+                size="lg"
+                className="bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/20"
+              >
+                {viewAllText}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )}
-  
-  {/* Allow custom content via slot */}
+    )
+  }
+
   <slot />
 </section>

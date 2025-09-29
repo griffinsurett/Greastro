@@ -12,19 +12,16 @@
     "@astrojs/mdx": "^4.3.6",
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/react": "^4.4.0",
-    "@iconify-json/fa6-brands": "^1.2.6",
     "@iconify-json/fa6-solid": "^1.2.4",
-    "@iconify-json/lucide": "^1.2.68",
-    "@iconify-json/simple-icons": "^1.2.53",
     "@tailwindcss/vite": "^4.1.12",
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "astro": "^5.14.0",
-    "astro-icon": "^1.1.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-icons": "^5.5.0",
     "tailwindcss": "^4.1.12"
   }
 }

@@ -1,6 +1,6 @@
 ---
 // src/components/LoopComponents/ContactCard.astro
-import IconWrapper from '@/components/Icon/IconWrapper.astro';
+import Icon from '@/components/Icon';
 
 export interface Props {
   title: string;
@@ -14,10 +14,10 @@ const { title, linkPrefix, tags, description, icon } = Astro.props;
 
 // Fallback icon if none provided
 const defaultIcon = tags?.includes('phone') 
-  ? 'lucide:phone' 
+  ? 'lu:phone' 
   : tags?.includes('email')
-  ? 'lucide:mail'
-  : 'lucide:contact';
+  ? 'lu:mail'
+  : 'lu:contact';
 
 const displayIcon = icon || defaultIcon;
 const href = linkPrefix ? `${linkPrefix}${title}` : undefined;
@@ -27,7 +27,7 @@ const href = linkPrefix ? `${linkPrefix}${title}` : undefined;
   <div class="flex items-start gap-4">
     <div class="flex-shrink-0">
       <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-        <IconWrapper icon={displayIcon} size="md" class="text-blue-600" />
+        <Icon icon={displayIcon} size="md" className="text-blue-600" />
       </div>
     </div>
     <div class="flex-1">

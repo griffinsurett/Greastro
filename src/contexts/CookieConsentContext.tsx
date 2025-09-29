@@ -1,5 +1,5 @@
 // src/contexts/CookieConsentContext.tsx
-import React from 'react';
+import { createContext, useContext, useState, useEffect, type FC, type ReactNode } from 'react';
 
 export interface ConsentPreferences {
   necessary: boolean;
@@ -32,10 +32,10 @@ const defaultPreferences: ConsentPreferences = {
   version: CONSENT_VERSION,
 };
 
-const CookieConsentContext = React.createContext<CookieConsentContextType | undefined>(undefined);
+const CookieConsentContext = createContext<CookieConsentContextType | undefined>(undefined);
 
 export const useCookieConsent = () => {
-  const context = React.useContext(CookieConsentContext);
+  const context = useContext(CookieConsentContext);
   if (!context) {
     throw new Error('useCookieConsent must be used within a CookieConsentProvider');
   }
@@ -43,15 +43,15 @@ export const useCookieConsent = () => {
 };
 
 interface CookieConsentProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const CookieConsentProvider: React.FC<CookieConsentProviderProps> = ({ children }) => {
-  const [preferences, setPreferences] = React.useState<ConsentPreferences | null>(null);
-  const [isConsentModalOpen, setIsConsentModalOpen] = React.useState(false);
-  const [hasConsented, setHasConsented] = React.useState(false);
+export const CookieConsentProvider: FC<CookieConsentProviderProps> = ({ children }) => {
+  const [preferences, setPreferences] = useState<ConsentPreferences | null>(null);
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
+  const [hasConsented, setHasConsented] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadPreferences = () => {
       try {
         const cookies = document.cookie.split(';');

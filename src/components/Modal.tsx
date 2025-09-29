@@ -1,11 +1,11 @@
 // src/components/Modal.tsx
-import React from 'react';
+import { useState, useEffect, useRef, type ReactNode, type ReactPortal, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   closeButton?: boolean;
   closeButtonClass?: string;
   overlayClass?: string;
@@ -26,15 +26,15 @@ export default function Modal({
   allowScroll = false,
   ariaLabel,
   ariaDescribedBy,
-}: ModalProps): React.ReactPortal | null {
-  const [mounted, setMounted] = React.useState<boolean>(isOpen);
-  const modalRef = React.useRef<HTMLDivElement>(null);
+}: ModalProps): ReactPortal | null {
+  const [mounted, setMounted] = useState<boolean>(isOpen);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) setMounted(true);
   }, [isOpen]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (mounted && !allowScroll) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
@@ -44,7 +44,7 @@ export default function Modal({
     }
   }, [mounted, allowScroll]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         onClose();
@@ -60,7 +60,7 @@ export default function Modal({
     };
   }, [mounted, onClose]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen && modalRef.current) {
       const previouslyFocused = document.activeElement as HTMLElement;
       modalRef.current.focus();
@@ -76,13 +76,13 @@ export default function Modal({
     }
   };
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>): void => {
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>): void => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  const handleModalClick = (e: React.MouseEvent<HTMLDivElement>): void => {
+  const handleModalClick = (e: MouseEvent<HTMLDivElement>): void => {
     e.stopPropagation();
   };
 

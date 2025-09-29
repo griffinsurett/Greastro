@@ -1,5 +1,5 @@
 // src/components/Button/GhostButton.tsx
-import React from 'react';
+import { isValidElement } from 'react';
 import { ButtonBase, type ButtonProps } from '../Button';
 import Icon from '@/components/Icon';
 
@@ -17,7 +17,7 @@ export default function GhostButton({
 
   const renderIcon = (icon: any) => {
     if (!icon) return null;
-    if (React.isValidElement(icon)) return icon;
+    if (isValidElement(icon)) return icon;
     if (typeof icon === 'string') return <Icon icon={icon} size={props.size} />;
     return null;
   };

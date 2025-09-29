@@ -1,5 +1,5 @@
 // src/components/Button/Button.tsx
-import React from 'react';
+import { createElement } from 'react';
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from 'react';
 import PrimaryButton from './variants/PrimaryButton';
 import SecondaryButton from './variants/SecondaryButton';
@@ -46,7 +46,7 @@ export const ButtonBase = ({
     ${sizeClasses[size]}
   `.trim();
 
-  return React.createElement(
+  return createElement(
     Tag,
     {
       className: `${baseClasses} ${className}`.trim(),

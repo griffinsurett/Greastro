@@ -1,5 +1,5 @@
 // src/components/Icon.tsx
-import React from 'react';
+import { isValidElement } from 'react';
 import * as LuIcons from 'react-icons/lu'; // Lucide
 import * as FiIcons from 'react-icons/fi'; // Feather  
 import * as FaIcons from 'react-icons/fa'; // Font Awesome
@@ -33,7 +33,7 @@ export default function Icon({
   if (!icon) return null;
 
   // Handle React elements
-  if (React.isValidElement(icon)) {
+  if (isValidElement(icon)) {
     return <>{icon}</>;
   }
 

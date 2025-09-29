@@ -1,5 +1,5 @@
 // src/components/GDPRConsentModal.tsx
-import React from 'react';
+import { useState } from 'react';
 import Modal from './Modal';
 import { useCookieConsent } from '@/contexts/CookieConsentContext';
 import type { ConsentPreferences } from '@/contexts/CookieConsentContext';
@@ -44,8 +44,8 @@ export default function GDPRConsentModal() {
     rejectAll,
   } = useCookieConsent();
 
-  const [showDetails, setShowDetails] = React.useState(false);
-  const [tempPreferences, setTempPreferences] = React.useState<Partial<ConsentPreferences>>({
+  const [showDetails, setShowDetails] = useState(false);
+  const [tempPreferences, setTempPreferences] = useState<Partial<ConsentPreferences>>({
     necessary: true,
     analytics: preferences?.analytics || false,
     marketing: preferences?.marketing || false,

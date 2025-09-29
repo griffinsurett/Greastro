@@ -6,7 +6,7 @@ import { baseSchema } from "./schema";
 // Define your collections with the base schema - all support MDX
 export const collections = {
    "contact-us": defineCollection({
-    loader: file("src/content/contact-us/contact.json"),
+    loader: file("src/content/contact-us/contact-us.json"),
     schema: ({ image }) =>
       baseSchema({ image }).extend({
         linkPrefix: z.string().optional(),

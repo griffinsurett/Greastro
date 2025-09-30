@@ -1,8 +1,9 @@
-// src/config/consentConfig.ts
+// src/utils/consentConfig.ts
 export interface ConsentConfig {
   cookieName: string;
   version: string;
   expiryDays: number;
+  testMode: boolean;
   categories: {
     necessary: boolean;
     analytics: boolean;
@@ -15,6 +16,7 @@ export const defaultConsentConfig: ConsentConfig = {
   cookieName: 'gdpr-consent',
   version: '1.0.0',
   expiryDays: 365,
+  testMode: false, // Set to true to always show modal for testing
   categories: {
     necessary: true,
     analytics: false,

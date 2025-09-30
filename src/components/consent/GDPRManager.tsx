@@ -13,9 +13,13 @@ function GDPRContent() {
   );
 }
 
-export default function GDPRManager() {
+interface GDPRManagerProps {
+  testMode?: boolean;
+}
+
+export default function GDPRManager({ testMode = false }: GDPRManagerProps) {
   return (
-    <CookieConsentProvider>
+    <CookieConsentProvider config={{ testMode }}>
       <GDPRContent />
     </CookieConsentProvider>
   );

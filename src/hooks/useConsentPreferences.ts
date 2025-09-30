@@ -15,6 +15,15 @@ export function useConsentPreferences(config: ConsentConfig) {
   // Load preferences on mount
   useEffect(() => {
     const loadPreferences = () => {
+      // If test mode is enabled, always show the modal
+      if (config.testMode) {
+        console.log('🧪 Cookie Consent Test Mode: Modal will show on every load');
+        setIsConsentModalOpen(true);
+        setHasConsented(false);
+        setPreferences(null);
+        return;
+      }
+
       try {
         const cookieValue = getCookie(config.cookieName);
 
@@ -39,7 +48,7 @@ export function useConsentPreferences(config: ConsentConfig) {
     };
 
     loadPreferences();
-  }, [getCookie, config.cookieName, config.version]);
+  }, [getCookie, config.cookieName, config.version, config.testMode]);
 
   // Save preferences to cookie
   const savePreferences = useCallback(
@@ -50,6 +59,23 @@ export function useConsentPreferences(config: ConsentConfig) {
           timestamp: new Date().toISOString(),
           version: config.version,
         };
+
+        // In test mode, log the preferences but don't actually save
+        if (config.testMode) {
+          console.log('🧪 Test Mode: Preferences would be saved:', prefsToSave);
+          setPreferences(prefsToSave);
+          setHasConsented(true);
+          
+          // Dispatch event even in test mode
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("consentUpdate", {
+                detail: prefsToSave,
+              })
+            );
+          }
+          return;
+        }
 
         setCookie(config.cookieName, JSON.stringify(prefsToSave), {
           expires: config.expiryDays,

@@ -22,12 +22,14 @@ interface CookieConsentContextType {
   acceptAll: () => void;
   rejectAll: () => void;
   showConsentModal: () => void;
+  closeConsentModal: () => void;
   isConsentModalOpen: boolean;
+  isConsentBannerOpen: boolean;
 }
 
-const CookieConsentContext = createContext<
-  CookieConsentContextType | undefined
->(undefined);
+const CookieConsentContext = createContext<CookieConsentContextType | undefined>(
+  undefined
+);
 
 export const useCookieConsent = () => {
   const context = useContext(CookieConsentContext);

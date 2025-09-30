@@ -15,6 +15,7 @@ export interface PreparedFields {
     alt: string;
   };
   tags?: Array<string>;
+  content?: any; // For rendered content or custom content
 }
 
 export type PreparedItem = CollectionEntry<CollectionKey>['data'] & PreparedFields;

@@ -11,14 +11,15 @@ export function useConsentPreferences(config: ConsentConfig) {
   );
   const [hasConsented, setHasConsented] = useState(false);
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
+  const [isConsentBannerOpen, setIsConsentBannerOpen] = useState(false);
 
   // Load preferences on mount
   useEffect(() => {
     const loadPreferences = () => {
-      // If test mode is enabled, always show the modal
+      // If test mode is enabled, always show the banner
       if (config.testMode) {
-        console.log('🧪 Cookie Consent Test Mode: Modal will show on every load');
-        setIsConsentModalOpen(true);
+        console.log('🧪 Cookie Consent Test Mode: Banner will show on every load');
+        setIsConsentBannerOpen(true);
         setHasConsented(false);
         setPreferences(null);
         return;
@@ -28,7 +29,7 @@ export function useConsentPreferences(config: ConsentConfig) {
         const cookieValue = getCookie(config.cookieName);
 
         if (!cookieValue) {
-          setIsConsentModalOpen(true);
+          setIsConsentBannerOpen(true);
           return;
         }
 
@@ -39,11 +40,11 @@ export function useConsentPreferences(config: ConsentConfig) {
           setHasConsented(true);
         } else {
           // Version mismatch, need new consent
-          setIsConsentModalOpen(true);
+          setIsConsentBannerOpen(true);
         }
       } catch (error) {
         console.error("Error loading consent preferences:", error);
-        setIsConsentModalOpen(true);
+        setIsConsentBannerOpen(true);
       }
     };
 
@@ -109,6 +110,7 @@ export function useConsentPreferences(config: ConsentConfig) {
       };
 
       savePreferences(newPrefs);
+      setIsConsentBannerOpen(false);
       setIsConsentModalOpen(false);
     },
     [preferences, config.categories, savePreferences]
@@ -123,6 +125,7 @@ export function useConsentPreferences(config: ConsentConfig) {
     };
 
     savePreferences(allAccepted);
+    setIsConsentBannerOpen(false);
     setIsConsentModalOpen(false);
   }, [savePreferences]);
 
@@ -135,20 +138,32 @@ export function useConsentPreferences(config: ConsentConfig) {
     };
 
     savePreferences(allRejected);
+    setIsConsentBannerOpen(false);
     setIsConsentModalOpen(false);
   }, [savePreferences]);
 
   const showConsentModal = useCallback(() => {
+    setIsConsentBannerOpen(false);
     setIsConsentModalOpen(true);
   }, []);
+
+  const closeConsentModal = useCallback(() => {
+    setIsConsentModalOpen(false);
+    // Don't reopen banner if user has already consented
+    if (!hasConsented) {
+      setIsConsentBannerOpen(true);
+    }
+  }, [hasConsented]);
 
   return {
     preferences,
     hasConsented,
     isConsentModalOpen,
+    isConsentBannerOpen,
     updatePreferences,
     acceptAll,
     rejectAll,
     showConsentModal,
+    closeConsentModal,
   };
 }

@@ -1,5 +1,6 @@
 // src/components/consent/GDPRManager.tsx
 import React from 'react';
+import GDPRConsentBanner from './GDPRConsentBanner';
 import GDPRConsentModal from './GDPRConsentModal';
 import PrivacyChoicesButton from './PrivacyChoicesButton';
 import { CookieConsentProvider } from '@/contexts/CookieConsentContext';
@@ -7,6 +8,7 @@ import { CookieConsentProvider } from '@/contexts/CookieConsentContext';
 function GDPRContent() {
   return (
     <>
+      <GDPRConsentBanner />
       <GDPRConsentModal />
       <PrivacyChoicesButton />
     </>

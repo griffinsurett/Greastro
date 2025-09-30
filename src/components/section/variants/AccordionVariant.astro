@@ -1,0 +1,52 @@
+---
+// src/components/section/variants/AccordionVariant.astro
+import type { BaseVariantProps } from './utils/VariantTypes';
+import Accordion from '@/components/Accordion';
+import Button from '@/components/Button/Button';
+
+interface Props extends BaseVariantProps {
+  allowMultiple?: boolean;
+}
+
+const { 
+  items = [],
+  title,
+  description,
+  className = '',
+  allowMultiple = false,
+  collectionUrl,
+  collectionTitle,
+} = Astro.props as Props;
+
+const viewAllText = `View All ${collectionTitle || ''}`.trim();
+---
+
+<section class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && <p class="text-lg text-gray-600 max-w-3xl">{description}</p>}
+    </div>
+  )}
+  
+  {items.length > 0 && (
+    <Accordion 
+      items={items}
+      allowMultiple={allowMultiple}
+      client:visible
+    />
+  )}
+
+  {collectionUrl && items.length > 0 && (
+    <div class="mt-12 text-center">
+      <Button
+        href={collectionUrl}
+        rightIcon="lu:arrow-right"
+        variant="primary"
+        size="lg"
+      >
+        {viewAllText}
+      </Button>
+    </div>
+  )}
+</section>

@@ -67,4 +67,10 @@ export const collections = {
         category: z.string(),
       }),
   }),
+  "faq": defineCollection({
+    schema: ({ image }) =>
+      baseSchema({ image }).extend({
+        category: z.string().optional(),
+      }),
+  }),
 };

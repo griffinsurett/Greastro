@@ -16,14 +16,12 @@ import { siteData } from "@/content/siteData";
     <Section
       collection="blog"
       variant="BlogVariant"
-      title="Latest Articles"
       columns={2}
     />
 
     <Section
       collection="services"
       variant="GridVariant"
-      title="Our Services"
       columns={3}
       gap="lg"
     />
@@ -31,7 +29,6 @@ import { siteData } from "@/content/siteData";
     <Section
       collection="authors"
       variant="GridVariant"
-      title="Our Authors"
       columns={3}
       gap="lg"
     />
@@ -39,22 +36,25 @@ import { siteData } from "@/content/siteData";
     <Section
       collection="portfolio"
       variant="ListVariant"
-      title="Recent Projects"
     />
 
     <Section
       collection="testimonials"
       variant="MasonryVariant"
-      title="What People Say"
     />
 
-     <!-- Contact Section -->
-  <Section
-    collection="contact-us"
-    variant="ContactVariant"
-    title="Get In Touch"
-    description="We'd love to hear from you"
-    columns={2}
-  />
+    <!-- FAQ Section -->
+    <Section
+      collection="faq"
+      variant="AccordionVariant"
+      allowMultiple={false}
+    />
+
+    <!-- Contact Section -->
+    <Section
+      collection="contact-us"
+      variant="ContactVariant"
+      columns={2}
+    />
   </main>
 </BaseLayout>

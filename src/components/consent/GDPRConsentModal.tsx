@@ -1,5 +1,5 @@
-// src/components/GDPRConsentModal.tsx
-import { useState } from "react";
+// src/components/consent/GDPRConsentModal.tsx
+import { useState, useEffect } from "react";
 import Modal from "../Modal";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
 import type { ConsentPreferences } from "@/contexts/CookieConsentContext";
@@ -49,14 +49,32 @@ export default function GDPRConsentModal() {
   } = useCookieConsent();
 
   const [showDetails, setShowDetails] = useState(false);
-  const [tempPreferences, setTempPreferences] = useState<
-    Partial<ConsentPreferences>
-  >({
+  const [tempPreferences, setTempPreferences] = useState<ConsentPreferences>({
     necessary: true,
-    analytics: preferences?.analytics || false,
-    marketing: preferences?.marketing || false,
-    functional: preferences?.functional || false,
+    analytics: false,
+    marketing: false,
+    functional: false,
   });
+
+  // Sync tempPreferences when modal opens or preferences change
+  useEffect(() => {
+    if (isConsentModalOpen && preferences) {
+      setTempPreferences({
+        necessary: true,
+        analytics: preferences.analytics,
+        marketing: preferences.marketing,
+        functional: preferences.functional,
+      });
+    } else if (isConsentModalOpen && !preferences) {
+      // Reset to defaults if no preferences exist
+      setTempPreferences({
+        necessary: true,
+        analytics: false,
+        marketing: false,
+        functional: false,
+      });
+    }
+  }, [isConsentModalOpen, preferences]);
 
   const handleToggle = (key: keyof ConsentPreferences) => {
     if (key === "necessary") return;
@@ -69,15 +87,24 @@ export default function GDPRConsentModal() {
 
   const handleSavePreferences = () => {
     updatePreferences(tempPreferences);
+    setShowDetails(false);
+  };
+
+  // Dummy onClose for initial consent (can't close until consent given)
+  const handleClose = () => {
+    // Only allow closing if user has already consented
+    if (preferences) {
+      // Modal will handle the actual closing
+    }
   };
 
   return (
     <Modal
       isOpen={isConsentModalOpen}
-      onClose={() => {}} // Prevent closing without consent
+      onClose={handleClose}
       closeButton={false}
       className="bg-white shadow-2xl p-0 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden"
-      overlayClass="bg-none items-end justify-start pl-2 pr-2 sm:pl-2 sm:pr-2 pb-[50px] sm:pb-[70px]"
+      overlayClass="bg-none bg-opacity-50"
       ariaLabel="Cookie Consent"
     >
       <div className="p-6 sm:p-8">

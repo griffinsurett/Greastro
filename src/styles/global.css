@@ -30,7 +30,7 @@
   /* Link base styles */
   .link-base {
     @apply inline-flex items-center gap-1;
-    @apply text-blue-600 hover:text-blue-700 hover:underline;
+    @apply text-blue-600 hover:text-blue-700 underline;
     @apply bg-transparent font-normal;
     @apply transition-colors duration-200;
     @apply focus:outline-none focus:ring-0 focus:ring-offset-0;

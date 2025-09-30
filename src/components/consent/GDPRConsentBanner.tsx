@@ -62,7 +62,7 @@ export default function GDPRConsentBanner() {
             Accept All
           </Button>
         </div>
-        
+        <div className='banner-footer flex justify-center'>
         <Button
           onClick={showConsentModal}
           variant="link"
@@ -71,6 +71,7 @@ export default function GDPRConsentBanner() {
         >
           Cookies Settings
         </Button>
+        </div>
       </div>
     </Modal>
   );

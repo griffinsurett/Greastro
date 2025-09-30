@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Modal from "../Modal";
 import Button from "../Button/Button";
-import Accordion from "../Accordion";
+import Accordion from "../LoopTemplates/Accordion";
 import { useCookieConsent } from "@/contexts/CookieConsentContext";
 import type { ConsentPreferences } from "@/contexts/CookieConsentContext";
 
@@ -101,9 +101,7 @@ export default function GDPRConsentModal() {
     title: category.title,
     description: category.description,
     rightContent: category.required ? (
-      <span className="text-xs text-blue-600 font-medium">
-        Always Active
-      </span>
+      <span className="text-xs text-blue-600 font-medium">Always Active</span>
     ) : (
       <label className="relative inline-flex items-center cursor-pointer">
         <input
@@ -135,7 +133,8 @@ export default function GDPRConsentModal() {
               Manage Consent Preferences
             </h2>
             <p className="text-sm text-gray-600 mb-2">
-              We use cookies and similar technologies to help personalize content and offer a better experience. You can click{" "}
+              We use cookies and similar technologies to help personalize
+              content and offer a better experience. You can click{" "}
               <Button
                 href="/cookie-policy"
                 variant="link"
@@ -144,7 +143,9 @@ export default function GDPRConsentModal() {
               >
                 here
               </Button>{" "}
-              to find out more and change our default settings. However, blocking some types of cookies may impact your experience of the site and the services we are able to offer.
+              to find out more and change our default settings. However,
+              blocking some types of cookies may impact your experience of the
+              site and the services we are able to offer.
             </p>
             <Button
               href="/privacy-policy"

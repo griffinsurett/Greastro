@@ -1,6 +1,6 @@
 // src/components/Accordion.tsx
-import { useState } from 'react';
-import AccordionItem from './LoopComponents/AccordionItem';
+import { useState } from "react";
+import AccordionItem from "../LoopComponents/AccordionItem";
 
 interface AccordionProps {
   items: Array<{
@@ -15,11 +15,15 @@ interface AccordionProps {
   className?: string;
 }
 
-export default function Accordion({ items, allowMultiple = false, className = '' }: AccordionProps) {
+export default function Accordion({
+  items,
+  allowMultiple = false,
+  className = "",
+}: AccordionProps) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const toggleItem = (id: string) => {
-    setExpandedItems(prev => {
+    setExpandedItems((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -35,9 +39,9 @@ export default function Accordion({ items, allowMultiple = false, className = ''
 
   return (
     <div className={`space-y-2 ${className}`}>
-      {items.map(item => {
+      {items.map((item) => {
         const itemId = item.slug || item.title;
-        
+
         return (
           <AccordionItem
             key={itemId}

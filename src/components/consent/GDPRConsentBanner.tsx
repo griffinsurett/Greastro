@@ -61,12 +61,12 @@ export default function GDPRConsentBanner() {
           </Button>
         </div>
         
-        <button
-          onClick={showConsentModal}
+        <a
+          href="/cookie-policy"
           className="text-blue-600 hover:text-blue-700 underline text-sm text-center py-1"
         >
           Cookies Settings
-        </button>
+        </a>
       </div>
     </Modal>
   );

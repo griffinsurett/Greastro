@@ -13,6 +13,7 @@ export interface ModalProps {
   allowScroll?: boolean;
   ariaLabel?: string;
   ariaDescribedBy?: string;
+  position?: 'center' | 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 }
 
 export default function Modal({
@@ -26,6 +27,7 @@ export default function Modal({
   allowScroll = false,
   ariaLabel,
   ariaDescribedBy,
+  position = 'center',
 }: ModalProps): ReactPortal | null {
   const [mounted, setMounted] = useState<boolean>(isOpen);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -86,12 +88,20 @@ export default function Modal({
     e.stopPropagation();
   };
 
+  const positionClasses = {
+    'center': 'flex items-center justify-center',
+    'bottom-left': 'flex items-end justify-start p-4',
+    'bottom-right': 'flex items-end justify-end p-4',
+    'top-left': 'flex items-start justify-start p-4',
+    'top-right': 'flex items-start justify-end p-4',
+  };
+
   if (!mounted) return null;
 
   return createPortal(
     <div
       className={`
-        fixed inset-0 z-[9999] flex items-center justify-center
+        fixed inset-0 z-[9999] ${positionClasses[position]}
         ${overlayClass}
         transform transition-opacity duration-300 ease-in-out
         ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}

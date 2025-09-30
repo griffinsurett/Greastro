@@ -1,4 +1,4 @@
-// src/components/Button/PrimaryButton.tsx
+// src/components/Button/variants/PrimaryButton.tsx
 import { isValidElement } from 'react';
 import { ButtonBase, type ButtonProps } from '../Button';
 import Icon from '@/components/Icon';
@@ -9,11 +9,7 @@ export default function PrimaryButton({
   className = '',
   ...props
 }: ButtonProps) {
-  const variantClasses = `
-    bg-blue-600 text-white 
-    hover:bg-blue-700 
-    focus:ring-blue-500
-  `.trim();
+  const variantClasses = 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500';
 
   const renderIcon = (icon: any) => {
     if (!icon) return null;

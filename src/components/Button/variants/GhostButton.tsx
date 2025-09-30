@@ -1,4 +1,4 @@
-// src/components/Button/GhostButton.tsx
+// src/components/Button/variants/GhostButton.tsx
 import { isValidElement } from 'react';
 import { ButtonBase, type ButtonProps } from '../Button';
 import Icon from '@/components/Icon';
@@ -9,11 +9,7 @@ export default function GhostButton({
   className = '',
   ...props
 }: ButtonProps) {
-  const variantClasses = `
-    bg-transparent text-gray-700 
-    hover:bg-gray-100 
-    focus:ring-gray-500
-  `.trim();
+  const variantClasses = 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500';
 
   const renderIcon = (icon: any) => {
     if (!icon) return null;

@@ -136,23 +136,25 @@ export default function GDPRConsentModal() {
             </h2>
             <p className="text-sm text-gray-600 mb-2">
               We use cookies and similar technologies to help personalize content and offer a better experience. You can click{" "}
-              <a
+              <Button
                 href="/cookie-policy"
-                className="text-blue-600 hover:text-blue-700 underline"
+                variant="link"
+                size="sm"
+                className="inline"
               >
                 here
-              </a>{" "}
+              </Button>{" "}
               to find out more and change our default settings. However, blocking some types of cookies may impact your experience of the site and the services we are able to offer.
             </p>
-            <a
+            <Button
               href="/privacy-policy"
-              className="text-blue-600 hover:text-blue-700 underline text-sm inline-flex items-center gap-1"
+              variant="link"
+              size="sm"
+              rightIcon="lu:chevron-right"
+              className="inline-flex items-center gap-1"
             >
               More information
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
+            </Button>
           </div>
 
           <div className="mb-6">

@@ -31,12 +31,14 @@ export default function GDPRConsentBanner() {
         <div>
           <p className="text-sm leading-relaxed text-gray-700">
             We use cookies to improve your browsing experience and for marketing purposes.{' '}
-            <a
+            <Button
               href="/privacy-policy"
-              className="text-blue-600 hover:text-blue-700 underline"
+              variant="link"
+              size="sm"
+              className="inline"
             >
               Read our Privacy Policy
-            </a>
+            </Button>
           </p>
         </div>
       </div>
@@ -61,12 +63,14 @@ export default function GDPRConsentBanner() {
           </Button>
         </div>
         
-        <a
-          href="/cookie-policy"
-          className="text-blue-600 hover:text-blue-700 underline text-sm text-center py-1"
+        <Button
+          onClick={showConsentModal}
+          variant="link"
+          size="sm"
+          className="text-center py-1"
         >
           Cookies Settings
-        </a>
+        </Button>
       </div>
     </Modal>
   );

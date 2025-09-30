@@ -1,4 +1,4 @@
-// src/components/Button/SecondaryButton.tsx
+// src/components/Button/variants/SecondaryButton.tsx
 import { isValidElement } from 'react';
 import { ButtonBase, type ButtonProps } from '../Button';
 import Icon from '@/components/Icon';
@@ -9,12 +9,7 @@ export default function SecondaryButton({
   className = '',
   ...props
 }: ButtonProps) {
-  const variantClasses = `
-    bg-white text-blue-600 
-    border-2 border-blue-600 
-    hover:bg-blue-50 
-    focus:ring-blue-500
-  `.trim();
+  const variantClasses = 'bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 focus:ring-blue-500';
 
   const renderIcon = (icon: any) => {
     if (!icon) return null;

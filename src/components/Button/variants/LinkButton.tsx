@@ -1,21 +1,21 @@
-// src/components/Button/LinkButton.tsx
-import { isValidElement } from 'react';
-import { ButtonBase, type ButtonProps } from '../Button';
+// src/components/Button/variants/LinkButton.tsx
+import { isValidElement, createElement } from 'react';
+import type { ButtonProps } from '../Button';
 import Icon from '@/components/Icon';
 
 export default function LinkButton({
   leftIcon,
   rightIcon,
   className = '',
-  size,
+  size = 'md',
+  href,
+  children,
   ...props
 }: ButtonProps) {
-  const variantClasses = `
-    bg-transparent text-blue-600 
-    hover:text-blue-700 hover:underline 
-    p-0
-    focus:ring-0 focus:ring-offset-0
-  `.trim();
+  const Tag = href ? 'a' : 'button';
+  const tagProps = href ? { href, ...props } : props;
+  
+  const sizeClass = size === 'sm' ? 'link-sm' : size === 'lg' ? 'link-lg' : 'link-md';
 
   const renderIcon = (icon: any) => {
     if (!icon) return null;
@@ -24,13 +24,16 @@ export default function LinkButton({
     return null;
   };
 
-  return (
-    <ButtonBase
-      {...props}
-      size={size}
-      className={`${variantClasses} ${className}`}
-      leftIcon={renderIcon(leftIcon)}
-      rightIcon={renderIcon(rightIcon)}
-    />
+  return createElement(
+    Tag,
+    {
+      className: `link-base ${sizeClass} ${className}`.trim(),
+      ...tagProps
+    } as any,
+    <>
+      {renderIcon(leftIcon)}
+      {children}
+      {renderIcon(rightIcon)}
+    </>
   );
 }

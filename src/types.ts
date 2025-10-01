@@ -1,5 +1,4 @@
 // src/types.ts
-// Only types that AREN'T directly from schemas
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import type { ImageMetadata } from 'astro';
 import type { BaseData, MetaData } from '@/content/schema';
@@ -9,34 +8,28 @@ import type { BaseData, MetaData } from '@/content/schema';
 // ============================================================================
 
 export type AnyCollectionEntry = CollectionEntry<CollectionKey>;
-
-// Helper to get data type for a specific collection
 export type CollectionData<T extends CollectionKey> = CollectionEntry<T>['data'];
 
 // ============================================================================
 // IMAGE TYPES (Unified)
 // ============================================================================
 
-// Standard image object shape
 export interface ImageObject {
   src: string;
   alt?: string;
 }
 
-// Image with Astro's optimized metadata
 export interface OptimizedImage {
   src: ImageMetadata;
   alt?: string;
 }
 
-// All possible image inputs (unified across the app)
 export type ImageInput = 
-  | string                    // Direct URL string
-  | ImageMetadata             // Astro optimized image
-  | ImageObject               // Standard object with src/alt
-  | OptimizedImage;           // Astro image with metadata
+  | string
+  | ImageMetadata
+  | ImageObject
+  | OptimizedImage;
 
-// Helper to check if value is an image
 export function isImageObject(value: any): value is ImageObject | OptimizedImage {
   return value && typeof value === 'object' && 'src' in value;
 }
@@ -45,15 +38,13 @@ export function isImageObject(value: any): value is ImageObject | OptimizedImage
 // PREPARED ITEM TYPES (Added during data preparation)
 // ============================================================================
 
-// Fields we add during preparation that aren't in the schema
 export interface PreparedFields {
   slug: string;
   url?: string;
 }
 
-// Complete prepared item = schema data + prepared fields + any collection-specific fields
 export type PreparedItem = BaseData & PreparedFields & {
-  [key: string]: any; // Allow additional fields from specific collections
+  [key: string]: any;
 };
 
 // ============================================================================
@@ -69,22 +60,26 @@ export interface BaseVariantProps {
   collectionTitle?: string;
 }
 
+// Section component props extend variant props + add collection/variant selection
+export interface SectionProps extends Partial<BaseVariantProps> {
+  collection?: CollectionKey;
+  variant?: string;
+  [key: string]: any; // Allow any additional props to pass through
+}
+
 // ============================================================================
-// PAGE GENERATION TYPES (Extract inline types)
+// PAGE GENERATION TYPES
 // ============================================================================
 
-// Item-level page configuration
 export interface ItemPageConfig {
   hasPage?: boolean;
 }
 
-// Collection-level meta configuration
 export interface CollectionPageMeta {
   hasPage?: boolean;
   itemsHasPage?: boolean;
 }
 
-// Complete page generation configuration
 export interface PageGenerationConfig {
   itemData?: ItemPageConfig;
   meta: MetaData;

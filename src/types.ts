@@ -1,41 +1,19 @@
 // src/types.ts
 import type { CollectionEntry, CollectionKey } from 'astro:content';
-import type { ImageMetadata } from 'astro';
-import type { BaseData, MetaData } from '@/content/schema';
+import type { BaseData, ImageInput, SEOData } from '@/content/schema';
 
 // ============================================================================
-// COLLECTION TYPES
+// ASTRO TYPE HELPERS (these are conveniences, not duplications)
 // ============================================================================
 
+/** Any entry from any collection - still type-safe */
 export type AnyCollectionEntry = CollectionEntry<CollectionKey>;
+
+/** Extract data type from specific collection */
 export type CollectionData<T extends CollectionKey> = CollectionEntry<T>['data'];
 
 // ============================================================================
-// IMAGE TYPES (Unified)
-// ============================================================================
-
-export interface ImageObject {
-  src: string;
-  alt?: string;
-}
-
-export interface OptimizedImage {
-  src: ImageMetadata;
-  alt?: string;
-}
-
-export type ImageInput = 
-  | string
-  | ImageMetadata
-  | ImageObject
-  | OptimizedImage;
-
-export function isImageObject(value: any): value is ImageObject | OptimizedImage {
-  return value && typeof value === 'object' && 'src' in value;
-}
-
-// ============================================================================
-// PREPARED ITEM TYPES (Added during data preparation)
+// RUNTIME-ADDED FIELDS
 // ============================================================================
 
 export interface PreparedFields {
@@ -43,12 +21,10 @@ export interface PreparedFields {
   url?: string;
 }
 
-export type PreparedItem = BaseData & PreparedFields & {
-  [key: string]: any;
-};
+export type PreparedItem = BaseData & PreparedFields & Record<string, any>;
 
 // ============================================================================
-// VARIANT PROPS (Component-specific, not schema)
+// COMPONENT PROPS
 // ============================================================================
 
 export interface BaseVariantProps {
@@ -60,28 +36,22 @@ export interface BaseVariantProps {
   collectionTitle?: string;
 }
 
-// Section component props extend variant props + add collection/variant selection
 export interface SectionProps extends Partial<BaseVariantProps> {
   collection?: CollectionKey;
   variant?: string;
-  [key: string]: any; // Allow any additional props to pass through
+  [key: string]: any;
 }
 
 // ============================================================================
-// PAGE GENERATION TYPES
+// TYPE GUARDS
 // ============================================================================
 
-export interface ItemPageConfig {
-  hasPage?: boolean;
+export function isImageObject(value: any): value is { src: string; alt?: string } {
+  return value && typeof value === 'object' && 'src' in value;
 }
 
-export interface CollectionPageMeta {
-  hasPage?: boolean;
-  itemsHasPage?: boolean;
-}
+// ============================================================================
+// RE-EXPORTS (for convenience - single import location)
+// ============================================================================
 
-export interface PageGenerationConfig {
-  itemData?: ItemPageConfig;
-  meta: MetaData;
-  type: 'item' | 'collection';
-}
+export type { ImageInput, SEOData, BaseData, MetaData } from '@/content/schema';

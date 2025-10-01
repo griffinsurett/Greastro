@@ -1,49 +1,41 @@
-// src/utils/pageUtils.ts
+// src/utils/pages.ts
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getCollection } from 'astro:content';
 import { getCollectionMeta } from '@/utils/collections';
-import type { MetaData } from '@/content/schema';
-import type { PageGenerationConfig } from '@/types';
+import type { MetaData } from '@/content/schema';  // ✅ Import from schema
 
-/**
- * SINGLE FUNCTION to determine page generation
- * Replaces: shouldItemHavePage, shouldCollectionHavePage, shouldProcessCollectionItems
- */
+export interface PageGenerationConfig {
+  itemData?: { hasPage?: boolean };
+  meta: MetaData;  // ✅ Use schema type
+  type: 'item' | 'collection';
+}
+
 export function shouldGeneratePage(config: PageGenerationConfig): boolean {
   const { itemData, meta, type } = config;
   
   if (type === 'item') {
-    // Item's explicit hasPage overrides collection default
     if (itemData?.hasPage !== undefined) {
       return itemData.hasPage;
     }
-    // Fall back to collection's itemsHasPage setting
     return meta.itemsHasPage !== false;
   }
   
   if (type === 'collection') {
-    // Collection index page setting
     return meta.hasPage !== false;
   }
   
-  return true; // Default to generating pages
+  return true;
 }
 
-/**
- * Check if we should process items for a collection
- * (i.e., if ANY items might need pages)
- */
 export async function shouldProcessCollection(
   collectionName: CollectionKey
 ): Promise<boolean> {
   const meta = getCollectionMeta(collectionName);
   
-  // If collection-wide itemsHasPage is true, we need to process
   if (meta.itemsHasPage !== false) {
     return true;
   }
   
-  // If false, check if any individual items override with hasPage: true
   const entries = await getCollection(collectionName);
   return entries.some(entry => {
     const itemData = { hasPage: entry.data.hasPage };
@@ -51,11 +43,8 @@ export async function shouldProcessCollection(
   });
 }
 
-/**
- * Convenience wrappers for better readability
- */
 export function shouldItemHavePage(
-  item: CollectionEntry<CollectionKey>,
+  item: CollectionEntry<CollectionKey>,  // ✅ Use Astro's type
   meta: MetaData
 ): boolean {
   return shouldGeneratePage({

@@ -1,6 +1,6 @@
 ---
 // src/components/section/variants/ListVariant.astro
-import type { BaseVariantProps } from "@/types";
+import type { BaseVariantProps } from "../Section.types";
 import ListCard from '@/components/LoopComponents/ListCard.astro';
 
 type Props = BaseVariantProps;
@@ -35,7 +35,6 @@ const viewAllText = `See Complete ${collectionTitle || 'List'}`;
     </ul>
   )}
   
-  {/* View All button */}
   {collectionUrl && items.length > 0 && (
     <div class="mt-12">
       <a 

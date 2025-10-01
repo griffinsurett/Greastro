@@ -1,10 +1,20 @@
 // src/utils/collections.ts
 import { getCollection, getEntry } from 'astro:content';
 import type { CollectionKey, CollectionEntry } from 'astro:content';
-import { metaSchema, type MetaData } from "@/content/schema";
+import { metaSchema, type MetaData, type BaseData } from "@/content/schema";
 import { shouldItemHavePage } from '@/utils/pages';
-import type { PreparedItem } from '@/types';
 import { z } from "astro:content";
+
+// ============================================================================
+// TYPES (co-located with collections logic)
+// ============================================================================
+
+export interface PreparedFields {
+  slug: string;
+  url?: string;
+}
+
+export type PreparedItem = BaseData & PreparedFields & Record<string, any>;
 
 // ============================================================================
 // ITEM KEY EXTRACTION
@@ -66,9 +76,6 @@ function isCollectionReference(value: any): value is { collection: string; id: s
   );
 }
 
-/**
- * Resolve a single reference and return all its data
- */
 async function resolveReference(ref: { collection: string; id: string }): Promise<any> {
   try {
     const entry = await getEntry(ref.collection as CollectionKey, ref.id);
@@ -102,9 +109,6 @@ async function resolveReference(ref: { collection: string; id: string }): Promis
   }
 }
 
-/**
- * Recursively process data to resolve all collection references
- */
 async function processDataForReferences(
   data: any, 
   depth: number = 0, 
@@ -154,9 +158,6 @@ export async function getCollectionWithMeta(collectionName: CollectionKey) {
   return { entries, meta, collectionName };
 }
 
-/**
- * Prepare a single entry - resolves all references and adds computed fields
- */
 export async function prepareEntry<T extends CollectionKey>(
   entry: CollectionEntry<T>,
   collection: T,
@@ -175,9 +176,6 @@ export async function prepareEntry<T extends CollectionKey>(
   } as PreparedItem;
 }
 
-/**
- * Prepare all entries in a collection
- */
 export async function prepareCollectionEntries<T extends CollectionKey>(
   entries: CollectionEntry<T>[],
   collection: T,

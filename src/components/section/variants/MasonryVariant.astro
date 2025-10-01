@@ -1,6 +1,6 @@
 ---
 // src/components/section/variants/MasonryVariant.astro
-import type { BaseVariantProps } from "@/types";
+import type { BaseVariantProps } from "../Section.types";
 import MasonryCard from '@/components/LoopComponents/MasonryCard.astro';
 
 type Props = BaseVariantProps;
@@ -41,7 +41,6 @@ const safeItems = Array.isArray(items) ? items : [];
     </ul>
   )}
   
-  {/* View All button */}
   {collectionUrl && safeItems.length > 0 && (
     <div class="mt-12 text-center">
       <a 

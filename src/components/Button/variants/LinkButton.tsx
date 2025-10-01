@@ -1,5 +1,4 @@
 // src/components/Button/variants/LinkButton.tsx
-import { createElement } from 'react';
 import type { ButtonProps } from '../Button';
 import { renderButtonIcon } from '../utils';
 
@@ -12,21 +11,31 @@ export default function LinkButton({
   children,
   ...props
 }: ButtonProps) {
-  const Tag = href ? 'a' : 'button';
-  const tagProps = href ? { href, ...props } : props;
-  
   const sizeClass = size === 'sm' ? 'link-sm' : size === 'lg' ? 'link-lg' : 'link-md';
+  const baseClasses = `link-base ${sizeClass} ${className}`.trim();
 
-  return createElement(
-    Tag,
-    {
-      className: `link-base ${sizeClass} ${className}`.trim(),
-      ...tagProps
-    } as any,
-    <>
+  if (href) {
+    return (
+      <a 
+        href={href} 
+        className={baseClasses} 
+        {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+      >
+        {renderButtonIcon(leftIcon, size)}
+        {children}
+        {renderButtonIcon(rightIcon, size)}
+      </a>
+    );
+  }
+
+  return (
+    <button 
+      className={baseClasses} 
+      {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+    >
       {renderButtonIcon(leftIcon, size)}
       {children}
       {renderButtonIcon(rightIcon, size)}
-    </>
+    </button>
   );
 }

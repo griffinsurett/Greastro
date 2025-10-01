@@ -2,6 +2,7 @@
 // src/layouts/SEO.astro
 import defaultOGImage from "@/assets/astro.svg";
 import { siteData } from "@/content/siteData";
+import { getImageUrl } from "@/utils/images";
 import type { ImageInput, SEOData } from "@/content/schema";
 
 export interface Props {
@@ -24,39 +25,21 @@ const {
   siteName = siteData.title,
 } = Astro.props;
 
-// Helper function to extract image URL
-const getImageUrl = (img: ImageInput | undefined): string => {
-  if (!img) return defaultOGImage.src;
-  if (typeof img === 'string') return img;
-  if (typeof img === 'object') {
-    if ('src' in img && typeof img.src === 'string' && 'format' in img) {
-      return img.src;
-    }
-    if ('src' in img) {
-      if (typeof img.src === 'string') return img.src;
-      if (typeof img.src === 'object' && 'src' in img.src) {
-        return img.src.src;
-      }
-    }
-  }
-  return defaultOGImage.src;
-};
-
 const baseTitle = title || "Page";
 const baseDescription = description || siteData.description;
-const baseImageUrl = getImageUrl(image);
+const baseImageUrl = getImageUrl(image, defaultOGImage.src);
 
 const finalMetaTitle = seo?.metaTitle || `${baseTitle} | ${siteData.title}`;
 const finalMetaDescription = seo?.metaDescription || baseDescription;
 
 const finalOgTitle = seo?.ogTitle || seo?.metaTitle || baseTitle;
 const finalOgDescription = seo?.ogDescription || seo?.metaDescription || baseDescription;
-const finalOgImageUrl = getImageUrl(seo?.ogImage) || baseImageUrl;
+const finalOgImageUrl = getImageUrl(seo?.ogImage, baseImageUrl);
 const finalOgType = seo?.ogType || "website";
 
 const finalTwitterTitle = seo?.twitterTitle || seo?.ogTitle || finalOgTitle;
 const finalTwitterDescription = seo?.twitterDescription || seo?.ogDescription || finalOgDescription;
-const finalTwitterImageUrl = getImageUrl(seo?.twitterImage || seo?.ogImage) || finalOgImageUrl;
+const finalTwitterImageUrl = getImageUrl(seo?.twitterImage || seo?.ogImage, finalOgImageUrl);
 const finalTwitterCard = seo?.twitterCard || "summary_large_image";
 
 const finalKeywords = seo?.keywords || ["astro", "static site generator", "web development"];

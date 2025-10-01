@@ -5,6 +5,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/section/Section.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
+import { buildCollectionSEOProps } from "@/utils/seoUtils";
 import { shouldCollectionHavePage } from "@/utils/hasPageUtils";
 import { getCollectionMetaMDX } from "@/utils/indexMdxUtils";
 
@@ -29,51 +30,15 @@ export async function getStaticPaths() {
 const { collection } = Astro.params;
 const { meta } = Astro.props;
 
-// Check for MDX content using our utility
+// Check for MDX content
 const mdxResult = await getCollectionMetaMDX(collection);
 const MDXContent = mdxResult?.hasContent ? mdxResult.Component : null;
 
-// Simple capitalization inline
-const pageTitle = meta.title || collection.charAt(0).toUpperCase() + collection.slice(1);
-const pageDescription = meta.description || `Browse our ${collection} collection`;
-
-// Build SEO object from flat fields
-const seoData = {
-  metaTitle: meta.metaTitle,
-  metaDescription: meta.metaDescription,
-  ogTitle: meta.ogTitle,
-  ogDescription: meta.ogDescription,
-  ogImage: meta.ogImage,
-  ogType: meta.ogType,
-  twitterTitle: meta.twitterTitle,
-  twitterDescription: meta.twitterDescription,
-  twitterImage: meta.twitterImage,
-  twitterCard: meta.twitterCard,
-  robots: meta.robots,
-  canonicalUrl: meta.canonicalUrl,
-  keywords: meta.keywords,
-};
-
-// Prepare SEO props for collection page
-const seoProps = {
-  title: pageTitle,
-  description: pageDescription,
-  featuredImage: meta.featuredImage,
-  
-  // SEO data from flat fields
-  seo: seoData,
-  
-  // Direct fields for backwards compatibility
-  robots: meta.robots,
-  keywords: meta.keywords,
-  canonicalUrl: meta.canonicalUrl,
-  
-  // Collection defaults
-  collectionTitle: pageTitle,
-  collectionDescription: pageDescription,
-  collectionImage: meta.featuredImage,
-};
+// Build SEO props using utility
+const seoProps = buildCollectionSEOProps(meta, collection);
+const { title: pageTitle, description: pageDescription } = seoProps;
 ---
+
 <BaseLayout {...seoProps}>
   <main class="flex-1">
     <div class="container mx-auto px-4">
@@ -81,17 +46,15 @@ const seoProps = {
         <MDXContent />
       ) : (
         <>
-          {/* Collection header */}
           <header class="text-center py-12">
             <h1 class="text-4xl font-bold mb-4">{pageTitle}</h1>
-            {meta.description && (
+            {pageDescription && (
               <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                {meta.description}
+                {pageDescription}
               </p>
             )}
           </header>
           
-          {/* Collection items */}
           <Section 
             collection={collection} 
             variant="GridVariant"

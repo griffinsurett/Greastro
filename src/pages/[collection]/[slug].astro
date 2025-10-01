@@ -6,6 +6,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
 import { getItemKey } from "@/utils/getItemKey";
+import { buildItemSEOProps } from "@/utils/seoUtils";
 import {
   shouldItemHavePage,
   shouldProcessCollectionItems,
@@ -19,7 +20,6 @@ export async function getStaticPaths() {
   }> = [];
 
   for (const coll of names) {
-    // Check if this collection needs processing
     const shouldProcess = await shouldProcessCollectionItems(coll);
     if (!shouldProcess) continue;
 
@@ -49,57 +49,20 @@ export async function getStaticPaths() {
 const { entry, collectionMeta, collectionName } = Astro.props;
 const { data } = entry;
 
-// Check if this entry can be rendered (MDX/MD files have render, JSON files don't)
+// Check if this entry can be rendered
 let Content = null;
 let hasContent = false;
 
 if (typeof entry.render === "function") {
   const rendered = await entry.render();
   Content = rendered.Content;
-  // Check if there's actual content in the body (for MDX/MD files)
   hasContent = entry.body && entry.body.trim().length > 0;
 }
 
-// Build SEO object from flat fields
-const seoData = {
-  metaTitle: data.metaTitle,
-  metaDescription: data.metaDescription,
-  ogTitle: data.ogTitle,
-  ogDescription: data.ogDescription,
-  ogImage: data.ogImage,
-  ogType: data.ogType,
-  twitterTitle: data.twitterTitle,
-  twitterDescription: data.twitterDescription,
-  twitterImage: data.twitterImage,
-  twitterCard: data.twitterCard,
-  robots: data.robots,
-  canonicalUrl: data.canonicalUrl,
-  keywords: data.keywords,
-};
-
-// Prepare SEO props with hierarchical data
-const seoProps = {
-  // Item-level data
-  title: data.title,
-  description: data.description,
-  featuredImage: data.featuredImage,
-  author: data.author,
-  publishDate: data.publishDate,
-  
-  // Collection-level defaults
-  collectionTitle: collectionMeta.title,
-  collectionDescription: collectionMeta.description,
-  collectionImage: collectionMeta.featuredImage,
-  
-  // SEO data from flat fields
-  seo: seoData,
-  
-  // Direct fields for backwards compatibility
-  robots: data.robots,
-  keywords: data.keywords,
-  canonicalUrl: data.canonicalUrl,
-};
+// Build SEO props using utility
+const seoProps = await buildItemSEOProps(entry, collectionMeta);
 ---
+
 <BaseLayout {...seoProps}>
   <main class="container mx-auto px-4 py-8">
     {
@@ -108,10 +71,10 @@ const seoProps = {
           <Content />
         </article>
       ) : (
-          <div>
-        <h1>{data.title}</h1>
-        {data.description && <p>{data.description}</p>}
-      </div>
+        <div>
+          <h1>{data.title}</h1>
+          {data.description && <p>{data.description}</p>}
+        </div>
       )
     }
   </main>

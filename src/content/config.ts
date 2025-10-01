@@ -1,4 +1,21 @@
 // src/content/config.ts
+/**
+ * Collection structure:
+ * 
+ * src/content/[collection]/
+ *   _meta.mdx         ← Collection config (frontmatter) + index page content (body)
+ *                        The _ prefix excludes it from collection entries
+ *   item-one.mdx      ← Collection item
+ *   item-two.mdx      ← Collection item
+ * 
+ * _meta.mdx frontmatter controls:
+ * - title: Display name for the collection
+ * - description: Collection description
+ * - hasPage: Whether to generate /[collection] index page
+ * - itemsHasPage: Whether items get individual pages
+ * - featuredImage: Hero image for index page
+ * - seo: SEO overrides
+ */
 import { file } from "astro/loaders";
 import { defineCollection, reference, z } from "astro:content";
 import { baseSchema } from "./schema";

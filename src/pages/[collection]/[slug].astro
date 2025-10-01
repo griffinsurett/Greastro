@@ -60,26 +60,42 @@ if (typeof entry.render === "function") {
   hasContent = entry.body && entry.body.trim().length > 0;
 }
 
+// Build SEO object from flat fields
+const seoData = {
+  metaTitle: data.metaTitle,
+  metaDescription: data.metaDescription,
+  ogTitle: data.ogTitle,
+  ogDescription: data.ogDescription,
+  ogImage: data.ogImage,
+  ogType: data.ogType,
+  twitterTitle: data.twitterTitle,
+  twitterDescription: data.twitterDescription,
+  twitterImage: data.twitterImage,
+  twitterCard: data.twitterCard,
+  robots: data.robots,
+  canonicalUrl: data.canonicalUrl,
+  keywords: data.keywords,
+};
+
 // Prepare SEO props with hierarchical data
 const seoProps = {
   // Item-level data
   title: data.title,
   description: data.description,
   featuredImage: data.featuredImage,
-  author: data.author,  // Added
-  publishDate: data.publishDate,  // Added
+  author: data.author,
+  publishDate: data.publishDate,
   
   // Collection-level defaults
   collectionTitle: collectionMeta.title,
   collectionDescription: collectionMeta.description,
   collectionImage: collectionMeta.featuredImage,
   
-  // SEO overrides from item
-  seo: data.seo,
+  // SEO data from flat fields
+  seo: seoData,
   
-  // Direct overrides for backwards compatibility
-  noindex: data.noindex,
-  nofollow: data.nofollow,
+  // Direct fields for backwards compatibility
+  robots: data.robots,
   keywords: data.keywords,
   canonicalUrl: data.canonicalUrl,
 };

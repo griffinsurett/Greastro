@@ -4,7 +4,6 @@ import defaultOGImage from "@/assets/astro.svg";
 import { siteData } from "@/content/siteData";
 import type { ImageMetadata } from 'astro';
 import { getEntry } from 'astro:content';
-import type { CollectionEntry } from 'astro:content';
 
 // Type definition for author data
 type AuthorData = {
@@ -56,8 +55,7 @@ export interface Props {
     twitterImage?: ImageData;
     twitterCard?: string;
     canonicalUrl?: string;
-    noindex?: boolean;
-    nofollow?: boolean;
+    robots?: string;
     keywords?: string[];
   };
   
@@ -67,8 +65,6 @@ export interface Props {
   robots?: string;
   siteName?: string;
   ogType?: string;
-  noindex?: boolean;
-  nofollow?: boolean;
 }
 
 const {
@@ -93,8 +89,6 @@ const {
   robots,
   siteName = siteData.title,
   ogType,
-  noindex,
-  nofollow,
 } = Astro.props;
 
 // Helper function to extract image URL from various formats
@@ -204,13 +198,8 @@ const finalCanonicalUrl = seo.canonicalUrl || canonicalUrl || `${siteData.url}${
 // Publisher info - always use site data
 const publisherName = siteData.legalName || siteData.title;
 
-// Robots directives
-const shouldNoindex = seo.noindex || noindex || false;
-const shouldNofollow = seo.nofollow || nofollow || false;
-const effectiveRobots = robots || 
-  (shouldNoindex && shouldNofollow ? "noindex, nofollow" :
-   shouldNoindex ? "noindex, follow" :
-   shouldNofollow ? "index, nofollow" : "index, follow");
+// Robots directives - simplified with direct robots string
+const effectiveRobots = seo?.robots || robots || "index, follow";
 
 // Ensure image URLs are absolute
 const makeAbsolute = (imageSrc: string): string => {
@@ -267,9 +256,11 @@ const allKeywords = finalKeywords && finalKeywords.length > 0 ? finalKeywords : 
 
 if (import.meta.env.DEV) {
   console.log("SEO Data:", {
+    seoRobots: seo?.robots,
     authorName,
     publisherName,
     schemaType,
+    robots: effectiveRobots,
     structuredData,
   });
 }

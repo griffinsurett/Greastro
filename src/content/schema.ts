@@ -2,31 +2,26 @@
 import { z } from "astro:content";
 import { iconSchema } from "./iconSchema";
 
-// SEO override schema - all fields optional to allow granular control
-// Now accepts image function as parameter
-export const seoSchema = ({ image }: { image: Function }) => z.object({
-  // Page meta overrides
+// Define flat SEO fields as a function that returns the schema fields
+export const seoFields = ({ image }: { image: Function }) => ({
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
-  
-  // Open Graph overrides
   ogTitle: z.string().optional(),
   ogDescription: z.string().optional(),
   ogImage: image().optional(),
   ogType: z.string().optional(),
-  
-  // Twitter Card overrides
   twitterTitle: z.string().optional(),
   twitterDescription: z.string().optional(),
   twitterImage: image().optional(),
   twitterCard: z.enum(['summary', 'summary_large_image', 'app', 'player']).optional(),
-  
-  // Additional SEO fields
+  robots: z.string().optional(),
   canonicalUrl: z.string().url().optional(),
-  noindex: z.boolean().optional(),
-  nofollow: z.boolean().optional(),
   keywords: z.array(z.string()).optional(),
-}).optional();
+});
+
+// Optional: Keep seoSchema for type reference if needed elsewhere
+export const seoSchema = ({ image }: { image: Function }) => 
+  z.object(seoFields({ image })).optional();
 
 // Base schema that all collections will extend
 export const baseSchema = ({ image }: { image: Function }) =>
@@ -38,18 +33,15 @@ export const baseSchema = ({ image }: { image: Function }) =>
     featuredImage: image().optional(),
     hasPage: z.boolean().optional(),
     icon: iconSchema({ image }).optional(),
-    // Add SEO overrides to base schema - pass image function
-    seo: seoSchema({ image }),
+    ...seoFields({ image }),    
   });
 
-// Meta schema for _meta.mdx files - now properly handles images
+// Meta schema for _meta.mdx files
 export const metaSchema = ({ image }: { image: Function }) => z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   hasPage: z.boolean().default(true),
   itemsHasPage: z.boolean().default(true),
-  // Collection-level featured image using image function
   featuredImage: image().optional(),
-  // Collection-level SEO overrides - pass image function
-  seo: seoSchema({ image }),
+  ...seoFields({ image }),
 });

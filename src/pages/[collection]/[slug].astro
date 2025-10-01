@@ -34,7 +34,11 @@ export async function getStaticPaths() {
             collection: coll,
             slug: getItemKey(entry),
           },
-          props: { entry },
+          props: { 
+            entry,
+            collectionMeta: meta,
+            collectionName: coll
+          },
         });
       });
   }
@@ -42,7 +46,7 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry } = Astro.props;
+const { entry, collectionMeta, collectionName } = Astro.props;
 const { data } = entry;
 
 // Check if this entry can be rendered (MDX/MD files have render, JSON files don't)
@@ -55,16 +59,42 @@ if (typeof entry.render === "function") {
   // Check if there's actual content in the body (for MDX/MD files)
   hasContent = entry.body && entry.body.trim().length > 0;
 }
+
+// Prepare SEO props with hierarchical data
+const seoProps = {
+  // Item-level data
+  title: data.title,
+  description: data.description,
+  featuredImage: data.featuredImage,
+  
+  // Collection-level defaults
+  collectionTitle: collectionMeta.title,
+  collectionDescription: collectionMeta.description,
+  collectionImage: collectionMeta.featuredImage,
+  
+  // SEO overrides from item
+  seo: data.seo,
+  
+  // Direct overrides for backwards compatibility
+  noindex: data.noindex,
+  nofollow: data.nofollow,
+  keywords: data.keywords,
+  canonicalUrl: data.canonicalUrl,
+};
 ---
-<BaseLayout title={data.title} description={data.description}>
-  {
-    hasContent && Content ? (
-      <Content />
-    ) : (
-      <div>
+<BaseLayout {...seoProps}>
+  <main class="container mx-auto px-4 py-8">
+    {
+      hasContent && Content ? (
+        <article class="prose lg:prose-xl mx-auto">
+          <Content />
+        </article>
+      ) : (
+          <div>
         <h1>{data.title}</h1>
         {data.description && <p>{data.description}</p>}
       </div>
-    )
-  }
+      )
+    }
+  </main>
 </BaseLayout>

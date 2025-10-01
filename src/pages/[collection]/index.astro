@@ -16,7 +16,10 @@ export async function getStaticPaths() {
     const meta = getCollectionMeta(coll);
     
     if (shouldCollectionHavePage(meta)) {
-      paths.push({ params: { collection: coll } });
+      paths.push({ 
+        params: { collection: coll },
+        props: { meta }
+      });
     }
   }
 
@@ -24,7 +27,7 @@ export async function getStaticPaths() {
 }
 
 const { collection } = Astro.params;
-const meta = getCollectionMeta(collection);
+const { meta } = Astro.props;
 
 // Check for MDX content using our utility
 const mdxResult = await getCollectionMetaMDX(collection);
@@ -33,23 +36,46 @@ const MDXContent = mdxResult?.hasContent ? mdxResult.Component : null;
 // Simple capitalization inline
 const pageTitle = meta.title || collection.charAt(0).toUpperCase() + collection.slice(1);
 const pageDescription = meta.description || `Browse our ${collection} collection`;
----
 
-<BaseLayout 
-  title={pageTitle}
-  description={pageDescription}
->
+// Prepare SEO props for collection page
+const seoProps = {
+  // Collection-level data as primary
+  title: pageTitle,
+  description: pageDescription,
+  featuredImage: meta.featuredImage,
+  
+  // Collection SEO overrides
+  seo: meta.seo,
+  
+  // Set collection defaults (these won't be used since we have primary data)
+  collectionTitle: pageTitle,
+  collectionDescription: pageDescription,
+  collectionImage: meta.featuredImage,
+};
+---
+<BaseLayout {...seoProps}>
   <main class="flex-1">
     <div class="container mx-auto px-4">
       {MDXContent ? (
         <MDXContent />
       ) : (
-        <Section 
-          collection={collection} 
-          variant="GridVariant"
-          title={pageTitle}
-          description={meta.description}
-        />
+        <>
+          {/* Collection header */}
+          <header class="text-center py-12">
+            <h1 class="text-4xl font-bold mb-4">{pageTitle}</h1>
+            {meta.description && (
+              <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                {meta.description}
+              </p>
+            )}
+          </header>
+          
+          {/* Collection items */}
+          <Section 
+            collection={collection} 
+            variant="GridVariant"
+          />
+        </>
       )}
     </div>
   </main>

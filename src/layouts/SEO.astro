@@ -1,85 +1,210 @@
 ---
+// src/layouts/SEO.astro
 import defaultOGImage from "@/assets/astro.svg";
 import { siteData } from "@/content/siteData";
+import type { ImageMetadata } from 'astro';
+
+// Helper type for image data that could come from various sources
+type ImageData = string | ImageMetadata | { 
+  src: string | ImageMetadata; 
+  alt?: string;
+  format?: string;
+  width?: number;
+  height?: number;
+};
 
 export interface Props {
-  title: string;
+  // Primary content fields (from collection items or pages)
+  title?: string;
   description?: string;
-  image?: string;
+  featuredImage?: ImageData;
+  
+  // Collection-level defaults
+  collectionTitle?: string;
+  collectionDescription?: string;
+  collectionImage?: ImageData;
+  
+  // SEO-specific overrides (from seo field)
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: ImageData;
+    ogType?: string;
+    twitterTitle?: string;
+    twitterDescription?: string;
+    twitterImage?: ImageData;
+    twitterCard?: string;
+    canonicalUrl?: string;
+    noindex?: boolean;
+    nofollow?: boolean;
+    keywords?: string[];
+  };
+  
+  // Direct props (for backwards compatibility)
   keywords?: string[];
   canonicalUrl?: string;
   robots?: string;
   siteName?: string;
   ogType?: string;
+  noindex?: boolean;
+  nofollow?: boolean;
 }
 
 const {
+  // Content fields
   title,
   description,
-  image = defaultOGImage.src,
+  featuredImage,
+  
+  // Collection defaults
+  collectionTitle,
+  collectionDescription,
+  collectionImage,
+  
+  // SEO overrides
+  seo = {},
+  
+  // Direct props
   keywords,
   canonicalUrl,
   robots,
   siteName = siteData.title,
   ogType,
+  noindex,
+  nofollow,
 } = Astro.props;
 
-// Use a fallback value if ogType is falsy
-const finalOgType = ogType || "website";
+// Helper function to extract image URL from various formats
+const getImageUrl = (img: ImageData | undefined): string => {
+  if (!img) return defaultOGImage.src;
+  
+  // If it's a string, return it
+  if (typeof img === 'string') return img;
+  
+  // If it's an Astro ImageMetadata object (imported image)
+  if ('src' in img && typeof img.src === 'string' && 'format' in img) {
+    return img.src;
+  }
+  
+  // If it's an object with src property
+  if ('src' in img) {
+    if (typeof img.src === 'string') return img.src;
+    // If src is itself an ImageMetadata object
+    if (typeof img.src === 'object' && 'src' in img.src) {
+      return img.src.src;
+    }
+  }
+  
+  return defaultOGImage.src;
+};
 
-// Determine your site’s base URL from env or fallback
-const siteUrl = siteData.url;
+// Helper function to get alt text
+const getImageAlt = (img: ImageData | undefined, fallback: string = ''): string => {
+  if (!img) return fallback;
+  if (typeof img === 'object' && 'alt' in img && typeof img.alt === 'string') {
+    return img.alt;
+  }
+  return fallback;
+};
 
-// Build canonical URL if none provided
-const finalCanonicalUrl = canonicalUrl || `${siteUrl}${Astro.url.pathname}`;
+// Build hierarchical defaults
+// Priority: SEO overrides > Direct props > Page data > Collection data > Site defaults
 
-// Default to indexing if no robots directive is passed
-const effectiveRobots = robots ?? "index, follow";
+// Determine base values with fallback hierarchy
+const baseTitle = title || collectionTitle || "Page";
+const baseDescription = description || collectionDescription || siteData.description;
+const baseImageUrl = getImageUrl(featuredImage || collectionImage);
+const baseImageAlt = getImageAlt(featuredImage || collectionImage, baseTitle);
 
-const finalTitle = `${siteData.title}: ${title}`;
+// Meta tags (HTML head)
+const finalMetaTitle = seo.metaTitle || `${baseTitle} | ${siteData.title}`;
+const finalMetaDescription = seo.metaDescription || baseDescription;
+
+// Open Graph
+const finalOgTitle = seo.ogTitle || seo.metaTitle || baseTitle;
+const finalOgDescription = seo.ogDescription || seo.metaDescription || baseDescription;
+const finalOgImageUrl = getImageUrl(seo.ogImage) || baseImageUrl;
+const finalOgImageAlt = getImageAlt(seo.ogImage, finalOgTitle);
+const finalOgType = seo.ogType || ogType || "website";
+
+// Twitter Card
+const finalTwitterTitle = seo.twitterTitle || seo.ogTitle || finalOgTitle;
+const finalTwitterDescription = seo.twitterDescription || seo.ogDescription || finalOgDescription;
+const finalTwitterImageUrl = getImageUrl(seo.twitterImage || seo.ogImage) || finalOgImageUrl;
+const finalTwitterImageAlt = getImageAlt(seo.twitterImage || seo.ogImage, finalTwitterTitle);
+const finalTwitterCard = seo.twitterCard || "summary_large_image";
+
+// Other SEO fields
+const finalKeywords = seo.keywords || keywords;
+const finalCanonicalUrl = seo.canonicalUrl || canonicalUrl || `${siteData.url}${Astro.url.pathname}`;
+
+// Robots directives
+const shouldNoindex = seo.noindex || noindex || false;
+const shouldNofollow = seo.nofollow || nofollow || false;
+const effectiveRobots = robots || 
+  (shouldNoindex && shouldNofollow ? "noindex, nofollow" :
+   shouldNoindex ? "noindex, follow" :
+   shouldNofollow ? "index, nofollow" : "index, follow");
+
+// Ensure image URLs are absolute
+const makeAbsolute = (imageSrc: string): string => {
+  if (imageSrc.startsWith('http')) return imageSrc;
+  if (imageSrc.startsWith('/')) return `${siteData.url}${imageSrc}`;
+  return `${siteData.url}/${imageSrc}`;
+};
+
+const absoluteOgImage = makeAbsolute(finalOgImageUrl);
+const absoluteTwitterImage = makeAbsolute(finalTwitterImageUrl);
 
 if (import.meta.env.DEV) {
-  console.log("SEO Data:", {
-    finalTitle,
-    description,
-    image,
-    keywords,
-    siteName,
-    finalOgType,
-    finalCanonicalUrl,
-    effectiveRobots,
-    siteUrl,
+  console.log("SEO Hierarchy:", {
+    input: { title, description, featuredImage, collectionTitle, collectionDescription, collectionImage, seo },
+    output: {
+      finalMetaTitle,
+      finalMetaDescription,
+      finalOgTitle,
+      finalOgDescription,
+      absoluteOgImage,
+      finalTwitterTitle,
+      finalTwitterDescription,
+      absoluteTwitterImage,
+    }
   });
 }
 ---
 
 <!-- Primary Meta Tags -->
-<title>{finalTitle}</title>
-<meta name="title" content={finalTitle} />
-<meta name="description" content={description} />
+<title>{finalMetaTitle}</title>
+<meta name="title" content={finalMetaTitle} />
+<meta name="description" content={finalMetaDescription} />
 
-{finalCanonicalUrl && <link rel="canonical" href={finalCanonicalUrl} />}
+<link rel="canonical" href={finalCanonicalUrl} />
 <meta name="robots" content={effectiveRobots} />
 
 {
-  keywords && Array.isArray(keywords) && keywords.length > 0 && (
-    <meta name="keywords" content={keywords.join(", ")} />
+  finalKeywords && Array.isArray(finalKeywords) && finalKeywords.length > 0 && (
+    <meta name="keywords" content={finalKeywords.join(", ")} />
   )
 }
 
 <!-- Open Graph / Facebook -->
-<meta property="og:title" content={finalTitle} />
-<meta property="og:description" content={description} />
-<meta property="og:image" content={image} />
+<meta property="og:title" content={finalOgTitle} />
+<meta property="og:description" content={finalOgDescription} />
+<meta property="og:image" content={absoluteOgImage} />
+{finalOgImageAlt && <meta property="og:image:alt" content={finalOgImageAlt} />}
 <meta property="og:type" content={finalOgType} />
 <meta property="og:url" content={finalCanonicalUrl} />
 <meta property="og:site_name" content={siteName} />
 
 <!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content={finalTitle} />
-<meta name="twitter:description" content={description} />
-<meta name="twitter:image" content={image} />
+<meta name="twitter:card" content={finalTwitterCard} />
+<meta name="twitter:title" content={finalTwitterTitle} />
+<meta name="twitter:description" content={finalTwitterDescription} />
+<meta name="twitter:image" content={absoluteTwitterImage} />
+{finalTwitterImageAlt && <meta name="twitter:image:alt" content={finalTwitterImageAlt} />}
 <meta property="twitter:url" content={finalCanonicalUrl} />
 
+<!-- Structured Data Slot -->
 <slot name="structuredData" />

@@ -1,30 +1,6 @@
 // src/components/section/variants/utils/VariantTypes.ts
-import type { CollectionEntry, CollectionKey } from 'astro:content';
+// This file now just re-exports from central types and schema
+export type { PreparedItem, PreparedFields, BaseVariantProps } from '@/types';
 
-export interface PreparedFields {
-  slug: string;
-  url?: string;
-  author?: {
-    name: string;
-    role?: string;
-    initials: string;
-  };
-  date?: Date | string;
-  image?: {
-    src: string;
-    alt: string;
-  };
-  tags?: Array<string>;
-  content?: any; // For rendered content or custom content
-}
-
-export type PreparedItem = CollectionEntry<CollectionKey>['data'] & PreparedFields;
-
-export interface BaseVariantProps {
-  items?: PreparedItem[];
-  title?: string;
-  description?: string;
-  className?: string;
-  collectionUrl?: string;   // Only present if collection has index page
-  collectionTitle?: string;  // Display title for the collection
-}
+// Re-export all schema types for convenience in variant components
+export type { BaseData, MetaData, SEOData, IconType } from '@/content/schema';

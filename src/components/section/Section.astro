@@ -5,7 +5,7 @@ import type { CollectionKey } from 'astro:content';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
 import { prepareCollectionData, prepareStaticData } from '@/components/section/variants/utils/DataPreparer';
 import { getCollectionMeta } from '@/utils/fetchMeta';
-import { shouldCollectionHavePage } from '@/utils/hasPageUtils';
+import { shouldCollectionHavePage } from '@/utils/pageUtils';
 
 const variantComponents = await getVariantComponents();
 
@@ -22,8 +22,6 @@ const {
 } = Astro.props;
 
 let data: any;
-
-// Get current page path
 const currentPath = Astro.url.pathname;
 
 if (collection) {
@@ -31,7 +29,6 @@ if (collection) {
   const items = await prepareCollectionData(entries, collection);
   const collectionMeta = getCollectionMeta(collection);
   
-  // Only add collectionUrl if the collection has a page AND we're not already on it
   const collectionIndexPath = `/${collection}`;
   const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
   

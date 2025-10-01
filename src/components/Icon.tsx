@@ -7,9 +7,10 @@ import * as SiIcons from 'react-icons/si'; // Simple Icons
 import * as BiIcons from 'react-icons/bi'; // Box Icons
 import * as AiIcons from 'react-icons/ai'; // Ant Design
 import * as MdIcons from 'react-icons/md'; // Material Design
+import type { IconType } from '@/content/schema'; // Import from schema!
 
 export interface IconProps {
-  icon: any;
+  icon: IconType;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   color?: string;
@@ -117,7 +118,7 @@ export default function Icon({
   }
 
   // Handle Zod image type
-  if (icon.src) {
+  if (icon && typeof icon === 'object' && 'src' in icon) {
     return (
       <img
         src={icon.src}
@@ -131,7 +132,7 @@ export default function Icon({
   }
 
   // Handle object icons with type
-  if (icon.type) {
+  if (icon && typeof icon === 'object' && 'type' in icon) {
     switch (icon.type) {
       case 'svg':
         return (

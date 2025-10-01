@@ -5,28 +5,30 @@ import { baseSchema } from "./schema";
 
 // Define your collections with the base schema - all support MDX
 export const collections = {
-   "contact-us": defineCollection({
+  "contact-us": defineCollection({
     loader: file("src/content/contact-us/contact-us.json"),
     schema: ({ image }) =>
       baseSchema({ image }).extend({
         linkPrefix: z.string().optional(),
       }),
   }),
-   // socialMedia.json ────────────────────────────────
+
   "social-media": defineCollection({
     loader: file("src/content/social-media/socialmedia.json"),
     schema: ({ image }) => baseSchema({ image }).extend({
       link: z.string().optional(),
     }),
   }),
+
   "blog": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({
-        author: reference("authors"), // Creates a relation to authors collection
+        author: reference("authors"),
         tags: z.array(z.string()).default([]),
         readingTime: z.number().optional(),
       }),
   }),
+
   "authors": defineCollection({
     loader: file("src/content/authors/authors.json"),
     schema: ({ image }) =>
@@ -43,6 +45,7 @@ export const collections = {
         role: z.string().optional(),
       }),
   }),
+
   "services": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({
@@ -50,6 +53,7 @@ export const collections = {
         features: z.array(z.string()).default([]),
       }),
   }),
+
   "testimonials": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({
@@ -58,6 +62,7 @@ export const collections = {
         rating: z.number().min(1).max(5).default(5),
       }),
   }),
+
   "portfolio": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({
@@ -67,6 +72,7 @@ export const collections = {
         category: z.string(),
       }),
   }),
+
   "faq": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({

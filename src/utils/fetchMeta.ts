@@ -1,5 +1,5 @@
 // src/utils/fetchMeta.ts
-import { metaSchema } from "@/content/schema";
+import { metaSchema, type MetaData } from "@/content/schema"; // Import type from schema!
 import { z } from "astro:content";
 
 const mdxModules = import.meta.glob<{ frontmatter?: Record<string, any> }>(
@@ -8,18 +8,16 @@ const mdxModules = import.meta.glob<{ frontmatter?: Record<string, any> }>(
 );
 
 // More permissive image schema for meta files
-// Since these aren't processed through content collections,
-// we can't use Astro's image() validation
 const metaImageSchema = () => z.union([
-  z.string(), // Allow string paths
+  z.string(),
   z.object({
     src: z.string(),
     alt: z.string().optional(),
   }),
-  z.any(), // Fallback for other formats
+  z.any(),
 ]);
 
-export function getCollectionMeta(collectionName: string) {
+export function getCollectionMeta(collectionName: string): MetaData {
   let data: Record<string, any> = {};
 
   const mdxKey = Object.keys(mdxModules).find((k) =>
@@ -30,6 +28,5 @@ export function getCollectionMeta(collectionName: string) {
     data = (mdxModules[mdxKey] as any).frontmatter ?? {};
   }
 
-  // Use the permissive image schema for meta files
   return metaSchema({ image: metaImageSchema }).parse(data);
 }

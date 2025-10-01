@@ -2,35 +2,16 @@
 // src/layouts/SEO.astro
 import defaultOGImage from "@/assets/astro.svg";
 import { siteData } from "@/content/siteData";
-import type { ImageMetadata } from 'astro';
-
-// Helper type for image data
-type ImageData = string | ImageMetadata | { 
-  src: string | ImageMetadata; 
-  alt?: string;
-};
+import type { ImageInput } from "@/types";
+import type { SEOData } from "@/content/schema";
 
 export interface Props {
   title?: string;
   description?: string;
-  image?: ImageData;
+  image?: ImageInput;
   author?: string;
   publishDate?: Date | string;
-  seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    ogTitle?: string;
-    ogDescription?: string;
-    ogImage?: ImageData;
-    ogType?: string;
-    twitterTitle?: string;
-    twitterDescription?: string;
-    twitterImage?: ImageData;
-    twitterCard?: string;
-    canonicalUrl?: string;
-    robots?: string;
-    keywords?: string[];
-  };
+  seo?: SEOData;
   siteName?: string;
 }
 
@@ -45,16 +26,20 @@ const {
 } = Astro.props;
 
 // Helper function to extract image URL
-const getImageUrl = (img: ImageData | undefined): string => {
+const getImageUrl = (img: ImageInput | undefined): string => {
   if (!img) return defaultOGImage.src;
   if (typeof img === 'string') return img;
-  if ('src' in img && typeof img.src === 'string' && 'format' in img) {
-    return img.src;
-  }
-  if ('src' in img) {
-    if (typeof img.src === 'string') return img.src;
-    if (typeof img.src === 'object' && 'src' in img.src) {
-      return img.src.src;
+  if (typeof img === 'object') {
+    // Handle ImageMetadata
+    if ('src' in img && typeof img.src === 'string' && 'format' in img) {
+      return img.src;
+    }
+    // Handle { src: string | ImageMetadata, alt?: string }
+    if ('src' in img) {
+      if (typeof img.src === 'string') return img.src;
+      if (typeof img.src === 'object' && 'src' in img.src) {
+        return img.src.src;
+      }
     }
   }
   return defaultOGImage.src;

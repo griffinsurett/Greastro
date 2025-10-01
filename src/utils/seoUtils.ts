@@ -1,35 +1,17 @@
 // src/utils/seoUtils.ts
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getEntry } from 'astro:content';
-
-// Helper type for image data
-type ImageData = string | { 
-  src: string; 
-  alt?: string;
-} | any;
+import type { SEOData, MetaData } from '@/content/schema';
+import type { ImageInput } from '@/types';
 
 // SEO props interface
 export interface SEOProps {
   title?: string;
   description?: string;
-  image?: ImageData;
+  image?: ImageInput;
   author?: string;
   publishDate?: Date | string;
-  seo?: {
-    metaTitle?: string;
-    metaDescription?: string;
-    ogTitle?: string;
-    ogDescription?: string;
-    ogImage?: ImageData;
-    ogType?: string;
-    twitterTitle?: string;
-    twitterDescription?: string;
-    twitterImage?: ImageData;
-    twitterCard?: string;
-    canonicalUrl?: string;
-    robots?: string;
-    keywords?: string[];
-  };
+  seo?: SEOData;
   siteName?: string;
 }
 
@@ -62,7 +44,7 @@ export async function resolveAuthor(
 // Build SEO props from collection item data
 export async function buildItemSEOProps(
   item: CollectionEntry<CollectionKey>,
-  collectionMeta?: any
+  collectionMeta?: MetaData
 ): Promise<SEOProps> {
   // Check if author exists on this item (only blog posts have it)
   const authorName = 'author' in item.data 
@@ -84,7 +66,7 @@ export async function buildItemSEOProps(
 
 // Build SEO props for collection index pages
 export function buildCollectionSEOProps(
-  collectionMeta: any,
+  collectionMeta: MetaData,
   collectionName: string
 ): SEOProps {
   const title = collectionMeta.title || 

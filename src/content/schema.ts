@@ -1,8 +1,46 @@
 // src/content/schema.ts
 import { z } from "astro:content";
-import { iconSchema } from "./iconSchema";
 
-// Define SEO fields as a nested object schema
+// ============================================================================
+// ICON SCHEMA + TYPE
+// ============================================================================
+
+export const iconSchema = ({ image }: { image: Function }) => z.union([
+  // String reference (for icon libraries like "lucide:phone" or emoji "📞")
+  z.string(),
+  
+  // Image using Zod's image handler
+  image(),
+  
+  // Object with explicit type for more complex cases
+  z.object({
+    type: z.literal('astro-icon'),
+    name: z.string(), // e.g., "lucide:phone"
+  }),
+  
+  z.object({
+    type: z.literal('svg'),
+    content: z.string(), // Raw SVG string
+  }),
+  
+  z.object({
+    type: z.literal('emoji'),
+    content: z.string(), // e.g., "📞"
+  }),
+  
+  z.object({
+    type: z.literal('text'),
+    content: z.string(), // Fallback text
+  }),
+]);
+
+// Export inferred type directly from schema
+export type IconType = z.infer<ReturnType<typeof iconSchema>>;
+
+// ============================================================================
+// SEO SCHEMA + TYPE
+// ============================================================================
+
 export const seoSchema = ({ image }: { image: Function }) => 
   z.object({
     metaTitle: z.string().optional(),
@@ -20,12 +58,23 @@ export const seoSchema = ({ image }: { image: Function }) =>
     keywords: z.array(z.string()).optional(),
   }).optional();
 
-// Base schema that all collections will extend
+// Infer type from schema
+export type SEOData = z.infer<ReturnType<typeof seoSchema>>;
+
+// ============================================================================
+// BASE SCHEMA + TYPE
+// ============================================================================
+
 export const baseSchema = ({ image }: { image: Function }) =>
   z.object({
     title: z.string(),
     description: z.string().optional(),
-    publishDate: z.union([z.date(), z.string()]).optional(),
+    // Smart date handling - accepts Date or string, auto-converts to Date
+    publishDate: z.union([z.date(), z.string()]).optional().transform(val => {
+      if (!val) return undefined;
+      if (val instanceof Date) return val;
+      return new Date(val);
+    }),
     order: z.number().default(0),
     featuredImage: image().optional(),
     hasPage: z.boolean().optional(),
@@ -33,7 +82,13 @@ export const baseSchema = ({ image }: { image: Function }) =>
     seo: seoSchema({ image }),
   });
 
-// Meta schema for _meta.mdx files
+// Infer type from schema
+export type BaseData = z.infer<ReturnType<typeof baseSchema>>;
+
+// ============================================================================
+// META SCHEMA + TYPE
+// ============================================================================
+
 export const metaSchema = ({ image }: { image: Function }) => z.object({
   title: z.string().optional(),
   description: z.string().optional(),
@@ -42,3 +97,6 @@ export const metaSchema = ({ image }: { image: Function }) => z.object({
   featuredImage: image().optional(),
   seo: seoSchema({ image }),
 });
+
+// Infer type from schema
+export type MetaData = z.infer<ReturnType<typeof metaSchema>>;

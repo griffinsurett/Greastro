@@ -6,7 +6,7 @@ import Section from "@/components/section/Section.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/fetchMeta";
 import { buildCollectionSEOProps } from "@/utils/seoUtils";
-import { shouldCollectionHavePage } from "@/utils/hasPageUtils";
+import { shouldCollectionHavePage } from "@/utils/pageUtils";
 import { getCollectionMetaMDX } from "@/utils/indexMdxUtils";
 
 export async function getStaticPaths() {
@@ -30,11 +30,9 @@ export async function getStaticPaths() {
 const { collection } = Astro.params;
 const { meta } = Astro.props;
 
-// Check for MDX content
 const mdxResult = await getCollectionMetaMDX(collection);
 const MDXContent = mdxResult?.hasContent ? mdxResult.Component : null;
 
-// Build SEO props using utility
 const seoProps = buildCollectionSEOProps(meta, collection);
 const { title: pageTitle, description: pageDescription } = seoProps;
 ---

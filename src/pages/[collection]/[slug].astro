@@ -9,8 +9,8 @@ import { getItemKey } from "@/utils/getItemKey";
 import { buildItemSEOProps } from "@/utils/seoUtils";
 import {
   shouldItemHavePage,
-  shouldProcessCollectionItems,
-} from "@/utils/hasPageUtils";
+  shouldProcessCollection,
+} from "@/utils/pageUtils";
 
 export async function getStaticPaths() {
   const names = Object.keys(collections) as CollectionKey[];
@@ -20,7 +20,7 @@ export async function getStaticPaths() {
   }> = [];
 
   for (const coll of names) {
-    const shouldProcess = await shouldProcessCollectionItems(coll);
+    const shouldProcess = await shouldProcessCollection(coll);
     if (!shouldProcess) continue;
 
     const meta = getCollectionMeta(coll);
@@ -49,7 +49,6 @@ export async function getStaticPaths() {
 const { entry, collectionMeta, collectionName } = Astro.props;
 const { data } = entry;
 
-// Check if this entry can be rendered
 let Content = null;
 let hasContent = false;
 
@@ -59,7 +58,6 @@ if (typeof entry.render === "function") {
   hasContent = entry.body && entry.body.trim().length > 0;
 }
 
-// Build SEO props using utility
 const seoProps = await buildItemSEOProps(entry, collectionMeta);
 ---
 

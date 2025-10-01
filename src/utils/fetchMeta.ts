@@ -7,9 +7,17 @@ const mdxModules = import.meta.glob<{ frontmatter?: Record<string, any> }>(
   { eager: true }
 );
 
-// Create a mock image function for meta parsing
-// This allows us to parse the schema without actual image processing
-const mockImage = () => z.any();
+// More permissive image schema for meta files
+// Since these aren't processed through content collections,
+// we can't use Astro's image() validation
+const metaImageSchema = () => z.union([
+  z.string(), // Allow string paths
+  z.object({
+    src: z.string(),
+    alt: z.string().optional(),
+  }),
+  z.any(), // Fallback for other formats
+]);
 
 export function getCollectionMeta(collectionName: string) {
   let data: Record<string, any> = {};
@@ -22,6 +30,6 @@ export function getCollectionMeta(collectionName: string) {
     data = (mdxModules[mdxKey] as any).frontmatter ?? {};
   }
 
-  // Pass the mock image function to metaSchema
-  return metaSchema({ image: mockImage }).parse(data);
+  // Use the permissive image schema for meta files
+  return metaSchema({ image: metaImageSchema }).parse(data);
 }

@@ -1,25 +1,23 @@
 // src/content/schema.ts
 import { z } from "astro:content";
-import type { ImageMetadata } from 'astro';
 
 // ============================================================================
-// IMAGE SCHEMA (Data Layer)
+// IMAGE SCHEMA
 // ============================================================================
 
 export const imageInputSchema = ({ image }: { image: Function }) => z.union([
-  z.string(),                    // URL string
-  image(),                       // Astro's image() helper
-  z.object({                     // Explicit object
-    src: z.union([z.string(), z.any()]),  // string or ImageMetadata
+  z.string(),
+  image(),
+  z.object({
+    src: z.union([z.string(), z.any()]),
     alt: z.string().optional(),
   }),
 ]);
 
-// Export the inferred type - this is your single source of truth
 export type ImageInput = z.infer<ReturnType<typeof imageInputSchema>>;
 
 // ============================================================================
-// ICON SCHEMA + TYPE
+// ICON SCHEMA
 // ============================================================================
 
 export const iconSchema = ({ image }: { image: Function }) => z.union([
@@ -46,7 +44,7 @@ export const iconSchema = ({ image }: { image: Function }) => z.union([
 export type IconType = z.infer<ReturnType<typeof iconSchema>>;
 
 // ============================================================================
-// SEO SCHEMA + TYPE
+// SEO SCHEMA
 // ============================================================================
 
 export const seoSchema = ({ image }: { image: Function }) => 
@@ -55,7 +53,7 @@ export const seoSchema = ({ image }: { image: Function }) =>
     metaDescription: z.string().optional(),
     ogTitle: z.string().optional(),
     ogDescription: z.string().optional(),
-    ogImage: imageInputSchema({ image }).optional(),  // ✅ Reuse image schema
+    ogImage: imageInputSchema({ image }).optional(),
     ogType: z.string().optional(),
     twitterTitle: z.string().optional(),
     twitterDescription: z.string().optional(),
@@ -69,7 +67,7 @@ export const seoSchema = ({ image }: { image: Function }) =>
 export type SEOData = z.infer<ReturnType<typeof seoSchema>>;
 
 // ============================================================================
-// BASE SCHEMA (Foundation for all collections)
+// BASE SCHEMA
 // ============================================================================
 
 export const baseSchema = ({ image }: { image: Function }) =>
@@ -82,7 +80,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
       return new Date(val);
     }),
     order: z.number().default(0),
-    featuredImage: imageInputSchema({ image }).optional(),  // ✅ Reuse
+    featuredImage: imageInputSchema({ image }).optional(),
     hasPage: z.boolean().optional(),
     icon: iconSchema({ image }).optional(),
     seo: seoSchema({ image }),
@@ -91,7 +89,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
 export type BaseData = z.infer<ReturnType<typeof baseSchema>>;
 
 // ============================================================================
-// META SCHEMA (for _meta.mdx files)
+// META SCHEMA
 // ============================================================================
 
 export const metaSchema = ({ image }: { image: Function }) => z.object({

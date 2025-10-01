@@ -1,13 +1,13 @@
 // src/components/Icon.tsx
 import { isValidElement } from 'react';
-import * as LuIcons from 'react-icons/lu'; // Lucide
-import * as FiIcons from 'react-icons/fi'; // Feather  
-import * as FaIcons from 'react-icons/fa'; // Font Awesome
-import * as SiIcons from 'react-icons/si'; // Simple Icons
-import * as BiIcons from 'react-icons/bi'; // Box Icons
-import * as AiIcons from 'react-icons/ai'; // Ant Design
-import * as MdIcons from 'react-icons/md'; // Material Design
-import type { IconType } from '@/content/schema'; // Import from schema!
+import * as LuIcons from 'react-icons/lu';
+import * as FiIcons from 'react-icons/fi';
+import * as FaIcons from 'react-icons/fa';
+import * as SiIcons from 'react-icons/si';
+import * as BiIcons from 'react-icons/bi';
+import * as AiIcons from 'react-icons/ai';
+import * as MdIcons from 'react-icons/md';
+import type { IconType } from '@/content/schema';
 
 export interface IconProps {
   icon: IconType;
@@ -33,14 +33,11 @@ export default function Icon({
 }: IconProps) {
   if (!icon) return null;
 
-  // Handle React elements
   if (isValidElement(icon)) {
     return <>{icon}</>;
   }
 
-  // Handle string icons with library prefix
   if (typeof icon === 'string') {
-    // Check if it's an emoji
     if (/[\u{1F300}-\u{1FAD6}]/u.test(icon) || (icon.length <= 2 && !/^[a-zA-Z0-9]+$/.test(icon))) {
       return (
         <span 
@@ -54,15 +51,13 @@ export default function Icon({
       );
     }
 
-    // Parse library:iconName format
-    let library = 'lu'; // Default to Lucide
+    let library = 'lu';
     let iconName = icon;
     
     if (icon.includes(':')) {
       [library, iconName] = icon.split(':');
     }
 
-    // Convert kebab-case to PascalCase
     const componentName = iconName
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -70,7 +65,6 @@ export default function Icon({
 
     let IconComponent: any;
 
-    // Map library prefixes to react-icons libraries
     switch (library) {
       case 'lucide':
       case 'lu':
@@ -117,7 +111,6 @@ export default function Icon({
     );
   }
 
-  // Handle Zod image type
   if (icon && typeof icon === 'object' && 'src' in icon) {
     return (
       <img
@@ -131,7 +124,6 @@ export default function Icon({
     );
   }
 
-  // Handle object icons with type
   if (icon && typeof icon === 'object' && 'type' in icon) {
     switch (icon.type) {
       case 'svg':

@@ -1,10 +1,7 @@
 // src/utils/seo.ts
-// Renamed from: seoUtils.ts
-
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getEntry } from 'astro:content';
-import type { SEOData, MetaData } from '@/content/schema';
-import type { ImageInput } from '@/types';
+import type { SEOData, MetaData, ImageInput } from '@/content/schema';
 
 // SEO props interface
 export interface SEOProps {
@@ -48,7 +45,6 @@ export async function buildItemSEOProps(
   item: CollectionEntry<CollectionKey>,
   collectionMeta?: MetaData
 ): Promise<SEOProps> {
-  // Check if author exists on this item (only blog posts have it)
   const authorName = 'author' in item.data 
     ? await resolveAuthor(item.data.author) 
     : undefined;
@@ -60,8 +56,8 @@ export async function buildItemSEOProps(
     author: authorName,
     publishDate: item.data.publishDate,
     seo: {
-      ...collectionMeta?.seo,  // Collection defaults
-      ...item.data.seo,         // Item overrides
+      ...collectionMeta?.seo,
+      ...item.data.seo,
     }
   };
 }

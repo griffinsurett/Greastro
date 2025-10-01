@@ -2,11 +2,11 @@
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getCollection } from 'astro:content';
 import { getCollectionMeta } from '@/utils/collections';
-import type { MetaData } from '@/content/schema';  // ✅ Import from schema
+import type { MetaData } from '@/content/schema';
 
 export interface PageGenerationConfig {
   itemData?: { hasPage?: boolean };
-  meta: MetaData;  // ✅ Use schema type
+  meta: MetaData;
   type: 'item' | 'collection';
 }
 
@@ -44,7 +44,7 @@ export async function shouldProcessCollection(
 }
 
 export function shouldItemHavePage(
-  item: CollectionEntry<CollectionKey>,  // ✅ Use Astro's type
+  item: CollectionEntry<CollectionKey>,
   meta: MetaData
 ): boolean {
   return shouldGeneratePage({

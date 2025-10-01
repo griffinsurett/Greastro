@@ -77,7 +77,6 @@ async function resolveReference(ref: { collection: string; id: string }): Promis
       return null;
     }
     
-    // Build resolved object with metadata + all entry data
     const resolved: any = {
       ...entry.data,
       _collection: ref.collection,
@@ -85,17 +84,13 @@ async function resolveReference(ref: { collection: string; id: string }): Promis
       slug: getItemKey(entry),
     };
     
-    // Add URL if the referenced item should have a page
     const refMeta = getCollectionMeta(ref.collection);
     if (shouldItemHavePage(entry, refMeta)) {
       resolved.url = `/${ref.collection}/${resolved.slug}`;
     }
     
-    // Auto-compute common derived fields if base data exists
     if (resolved.title) {
-      resolved.name = resolved.title; // Alias for convenience
-      
-      // Generate initials from title
+      resolved.name = resolved.title;
       const words = String(resolved.title).split(' ').filter(Boolean);
       resolved.initials = words.map(w => w[0]).join('').toUpperCase();
     }
@@ -109,37 +104,30 @@ async function resolveReference(ref: { collection: string; id: string }): Promis
 
 /**
  * Recursively process data to resolve all collection references
- * Works with nested objects, arrays, and references-within-references
  */
 async function processDataForReferences(
   data: any, 
   depth: number = 0, 
   maxDepth: number = 3
 ): Promise<any> {
-  // Prevent infinite recursion
   if (depth >= maxDepth) return data;
   if (data == null) return data;
   
-  // Single reference
   if (isCollectionReference(data)) {
     const resolved = await resolveReference(data);
-    // Recursively process the resolved data in case it has references too
     return resolved ? await processDataForReferences(resolved, depth + 1, maxDepth) : null;
   }
   
-  // Array of values (may contain references)
   if (Array.isArray(data)) {
     return await Promise.all(
       data.map(item => processDataForReferences(item, depth + 1, maxDepth))
     );
   }
   
-  // Plain objects - process each field
   if (typeof data === 'object' && data.constructor === Object) {
     const processed: any = {};
     
     for (const [key, value] of Object.entries(data)) {
-      // Skip private fields to avoid unnecessary processing
       if (key.startsWith('_')) {
         processed[key] = value;
       } else {
@@ -150,7 +138,6 @@ async function processDataForReferences(
     return processed;
   }
   
-  // Primitives (string, number, boolean, etc.)
   return data;
 }
 
@@ -177,7 +164,6 @@ export async function prepareEntry<T extends CollectionKey>(
 ): Promise<PreparedItem> {
   const identifier = getItemKey(entry);
   
-  // Resolve ALL references recursively
   const processedData = await processDataForReferences(entry.data);
   
   return {

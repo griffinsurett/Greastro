@@ -27,7 +27,6 @@ if (collection) {
   
   data = { 
     items,
-    // Suppress header on collection index pages (unless explicitly overridden)
     title: titleOverride ?? (isOnCollectionPage ? undefined : meta.title),
     description: descriptionOverride ?? (isOnCollectionPage ? undefined : meta.description),
     collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,

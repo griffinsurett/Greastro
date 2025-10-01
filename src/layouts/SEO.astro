@@ -2,8 +2,7 @@
 // src/layouts/SEO.astro
 import defaultOGImage from "@/assets/astro.svg";
 import { siteData } from "@/content/siteData";
-import type { ImageInput } from "@/types";
-import type { SEOData } from "@/content/schema";
+import type { ImageInput, SEOData } from "@/content/schema";
 
 export interface Props {
   title?: string;
@@ -30,11 +29,9 @@ const getImageUrl = (img: ImageInput | undefined): string => {
   if (!img) return defaultOGImage.src;
   if (typeof img === 'string') return img;
   if (typeof img === 'object') {
-    // Handle ImageMetadata
     if ('src' in img && typeof img.src === 'string' && 'format' in img) {
       return img.src;
     }
-    // Handle { src: string | ImageMetadata, alt?: string }
     if ('src' in img) {
       if (typeof img.src === 'string') return img.src;
       if (typeof img.src === 'object' && 'src' in img.src) {
@@ -45,37 +42,30 @@ const getImageUrl = (img: ImageInput | undefined): string => {
   return defaultOGImage.src;
 };
 
-// Build final values with hierarchy: seo overrides > content fields > site defaults
 const baseTitle = title || "Page";
 const baseDescription = description || siteData.description;
 const baseImageUrl = getImageUrl(image);
 
-// Meta tags
-const finalMetaTitle = seo.metaTitle || `${baseTitle} | ${siteData.title}`;
-const finalMetaDescription = seo.metaDescription || baseDescription;
+const finalMetaTitle = seo?.metaTitle || `${baseTitle} | ${siteData.title}`;
+const finalMetaDescription = seo?.metaDescription || baseDescription;
 
-// Open Graph
-const finalOgTitle = seo.ogTitle || seo.metaTitle || baseTitle;
-const finalOgDescription = seo.ogDescription || seo.metaDescription || baseDescription;
-const finalOgImageUrl = getImageUrl(seo.ogImage) || baseImageUrl;
-const finalOgType = seo.ogType || "website";
+const finalOgTitle = seo?.ogTitle || seo?.metaTitle || baseTitle;
+const finalOgDescription = seo?.ogDescription || seo?.metaDescription || baseDescription;
+const finalOgImageUrl = getImageUrl(seo?.ogImage) || baseImageUrl;
+const finalOgType = seo?.ogType || "website";
 
-// Twitter
-const finalTwitterTitle = seo.twitterTitle || seo.ogTitle || finalOgTitle;
-const finalTwitterDescription = seo.twitterDescription || seo.ogDescription || finalOgDescription;
-const finalTwitterImageUrl = getImageUrl(seo.twitterImage || seo.ogImage) || finalOgImageUrl;
-const finalTwitterCard = seo.twitterCard || "summary_large_image";
+const finalTwitterTitle = seo?.twitterTitle || seo?.ogTitle || finalOgTitle;
+const finalTwitterDescription = seo?.twitterDescription || seo?.ogDescription || finalOgDescription;
+const finalTwitterImageUrl = getImageUrl(seo?.twitterImage || seo?.ogImage) || finalOgImageUrl;
+const finalTwitterCard = seo?.twitterCard || "summary_large_image";
 
-// Other SEO
-const finalKeywords = seo.keywords || ["astro", "static site generator", "web development"];
-const finalCanonicalUrl = seo.canonicalUrl || `${siteData.url}${Astro.url.pathname}`;
-const effectiveRobots = seo.robots || "index, follow";
+const finalKeywords = seo?.keywords || ["astro", "static site generator", "web development"];
+const finalCanonicalUrl = seo?.canonicalUrl || `${siteData.url}${Astro.url.pathname}`;
+const effectiveRobots = seo?.robots || "index, follow";
 
-// Author and Publisher - always use site data for publisher
 const authorName = author || siteData.title;
 const publisherName = siteData.legalName || siteData.title;
 
-// Make URLs absolute
 const makeAbsolute = (url: string): string => {
   if (url.startsWith('http')) return url;
   if (url.startsWith('/')) return `${siteData.url}${url}`;
@@ -85,7 +75,6 @@ const makeAbsolute = (url: string): string => {
 const absoluteOgImage = makeAbsolute(finalOgImageUrl);
 const absoluteTwitterImage = makeAbsolute(finalTwitterImageUrl);
 
-// Structured data
 const schemaType = !publishDate ? "WebSite" : "Article";
 
 const structuredData = {

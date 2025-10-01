@@ -2,7 +2,7 @@
 // src/pages/cookie-policy.astro
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteData } from "@/content/siteData";
-import { formatPhoneNumber } from "@/utils/formatPhoneNumber";
+import { formatPhoneNumber } from "@/utils/formatting";
 import Section from "@/components/section/Section.astro";
 import { getCollection } from "astro:content";
 
@@ -10,6 +10,7 @@ import { getCollection } from "astro:content";
 
 const effectiveDate = "May 14, 2025";
 ---
+
 <BaseLayout
   title="Cookie Policy"
   description={`How ${siteData.title} uses cookies.`}

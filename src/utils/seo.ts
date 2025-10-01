@@ -1,4 +1,6 @@
-// src/utils/seoUtils.ts
+// src/utils/seo.ts
+// Renamed from: seoUtils.ts
+
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getEntry } from 'astro:content';
 import type { SEOData, MetaData } from '@/content/schema';

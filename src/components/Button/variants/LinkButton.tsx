@@ -1,7 +1,7 @@
 // src/components/Button/variants/LinkButton.tsx
-import { isValidElement, createElement } from 'react';
+import { createElement } from 'react';
 import type { ButtonProps } from '../Button';
-import Icon from '@/components/Icon';
+import { renderButtonIcon } from '../utils';
 
 export default function LinkButton({
   leftIcon,
@@ -17,13 +17,6 @@ export default function LinkButton({
   
   const sizeClass = size === 'sm' ? 'link-sm' : size === 'lg' ? 'link-lg' : 'link-md';
 
-  const renderIcon = (icon: any) => {
-    if (!icon) return null;
-    if (isValidElement(icon)) return icon;
-    if (typeof icon === 'string') return <Icon icon={icon} size={size} />;
-    return null;
-  };
-
   return createElement(
     Tag,
     {
@@ -31,9 +24,9 @@ export default function LinkButton({
       ...tagProps
     } as any,
     <>
-      {renderIcon(leftIcon)}
+      {renderButtonIcon(leftIcon, size)}
       {children}
-      {renderIcon(rightIcon)}
+      {renderButtonIcon(rightIcon, size)}
     </>
   );
 }

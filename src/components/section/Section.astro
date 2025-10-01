@@ -1,56 +1,54 @@
 ---
 // src/components/section/Section.astro
-import { getCollection } from 'astro:content';
 import type { CollectionKey } from 'astro:content';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
-import { prepareCollectionData, prepareStaticData } from '@/components/section/variants/utils/DataPreparer';
-import { getCollectionMeta } from '@/utils/fetchMeta';
-import { shouldCollectionHavePage } from '@/utils/pageUtils';
+import { getCollectionWithMeta, prepareCollectionEntries } from '@/utils/collections';
+import { shouldCollectionHavePage } from '@/utils/pages';
 
 const variantComponents = await getVariantComponents();
 
 interface Props {
   collection?: CollectionKey;
   variant?: string;
+  title?: string;
+  description?: string;
   [key: string]: any;
 }
 
-const {
-  collection,
+const { 
+  collection, 
   variant = 'GridVariant',
-  ...restProps
+  title: titleOverride,
+  description: descriptionOverride,
+  ...restProps 
 } = Astro.props;
 
 let data: any;
-const currentPath = Astro.url.pathname;
 
 if (collection) {
-  const entries = await getCollection(collection);
-  const items = await prepareCollectionData(entries, collection);
-  const collectionMeta = getCollectionMeta(collection);
+  const { entries, meta } = await getCollectionWithMeta(collection);
+  const items = await prepareCollectionEntries(entries, collection, meta);
   
+  const currentPath = Astro.url.pathname;
   const collectionIndexPath = `/${collection}`;
   const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
   
-  const collectionUrl = shouldCollectionHavePage(collectionMeta) && !isOnCollectionPage 
-    ? collectionIndexPath 
-    : undefined;
-    
-  const collectionTitle = collectionMeta.title || collection.charAt(0).toUpperCase() + collection.slice(1);
-  
   data = { 
-    items, 
-    collectionUrl,
-    collectionTitle,
+    items,
+    // Allow prop overrides, fallback to meta
+    title: titleOverride ?? meta.title,
+    description: descriptionOverride ?? meta.description,
+    collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,
+    collectionTitle: meta.title || collection.charAt(0).toUpperCase() + collection.slice(1),
     ...restProps 
   };
 } else {
-  data = prepareStaticData(Astro.props);
+  data = restProps.items ? restProps : { items: [], ...restProps };
 }
 
 const VariantComponent = variantComponents[variant];
 if (!VariantComponent) {
-  throw new Error(`Variant "${variant}" not found. Available: ${Object.keys(variantComponents).join(', ')}`);
+  throw new Error(`Variant "${variant}" not found`);
 }
 ---
 <VariantComponent {...data} />

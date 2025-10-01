@@ -1,7 +1,7 @@
 // src/utils/pageUtils.ts
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getCollection } from 'astro:content';
-import { getCollectionMeta } from '@/utils/fetchMeta';
+import { getCollectionMeta } from '@/utils/collections';
 import type { MetaData } from '@/content/schema';
 import type { PageGenerationConfig } from '@/types';
 

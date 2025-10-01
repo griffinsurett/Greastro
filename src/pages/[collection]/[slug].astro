@@ -4,13 +4,9 @@ import { getCollection } from "astro:content";
 import type { CollectionKey } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { collections } from "@/content/config";
-import { getCollectionMeta } from "@/utils/fetchMeta";
-import { getItemKey } from "@/utils/getItemKey";
-import { buildItemSEOProps } from "@/utils/seoUtils";
-import {
-  shouldItemHavePage,
-  shouldProcessCollection,
-} from "@/utils/pageUtils";
+import { getCollectionMeta, getItemKey } from "@/utils/collections";
+import { buildItemSEOProps } from "@/utils/seo";
+import { shouldItemHavePage, shouldProcessCollection } from "@/utils/pages";
 
 export async function getStaticPaths() {
   const names = Object.keys(collections) as CollectionKey[];

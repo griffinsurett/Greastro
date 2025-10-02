@@ -1,17 +1,7 @@
 // src/utils/loaders/MenuItemsLoader.ts
 import { file } from 'astro/loaders';
 import type { Loader, LoaderContext } from 'astro/loaders';
-import { getCollectionMeta } from '@/utils/collections';
-import type { CollectionKey } from 'astro:content';
-
-// Helper: Get collection names from your config
-async function getCollectionNames(): Promise<CollectionKey[]> {
-  // Import your collections config
-  const { collections } = await import('@/content/config');
-  return Object.keys(collections).filter(
-    c => c !== 'menus' && c !== 'menu-items'
-  ) as CollectionKey[];
-}
+import { getCollectionMeta, getCollectionNames } from '@/utils/collections';
 
 // Helper: Capitalize string
 function capitalize(str: string): string {
@@ -99,7 +89,9 @@ async function processCollectionMenus(
   store: any,
   logger: any
 ) {
-  const collections = await getCollectionNames();
+  const collections = getCollectionNames().filter(
+    c => c !== 'menus' && c !== 'menu-items'
+  );
 
   for (const collection of collections) {
     const meta = await getCollectionMeta(collection);
@@ -126,7 +118,6 @@ async function processCollectionMenus(
             menu: menus,
             parent: menuConfig.parent ?? null,
             openInNewTab: menuConfig.openInNewTab ?? false,
-            // order: menuConfig.order ?? 0,
           },
         });
       }
@@ -154,7 +145,7 @@ async function processCollectionItems(
   const configs = Array.isArray(menuConfigs) ? menuConfigs : [menuConfigs];
 
   for (const [path, mod] of Object.entries(modules)) {
-    if (!path.includes(`../content/${collection}/`)) continue;
+    if (!path.includes(`../../content/${collection}/`)) continue;
     if (/_meta\.(mdx|md|json)$/.test(path)) continue;
 
     const data = mod.frontmatter ?? {};
@@ -170,10 +161,7 @@ async function processCollectionItems(
       // Handle parent hierarchy
       let parent = null;
       if (menuConfig.respectHierarchy && data.parent) {
-        parent = {
-          id: `${collection}/${normalizeRef(data.parent)}`,
-          collection: 'menu-items'
-        };
+        parent = `${collection}/${normalizeRef(data.parent)}`;
       } else if (menuConfig.parent) {
         parent = menuConfig.parent;
       }

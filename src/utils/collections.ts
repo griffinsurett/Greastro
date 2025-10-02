@@ -3,7 +3,19 @@ import { getCollection, getEntry } from 'astro:content';
 import type { CollectionKey, CollectionEntry } from 'astro:content';
 import { metaSchema, type MetaData, type BaseData } from "@/content/schema";
 import { shouldItemHavePage } from '@/utils/pages';
+import { collections } from '@/content/config';
 import { z } from "astro:content";
+
+// ============================================================================
+// COLLECTION UTILITIES
+// ============================================================================
+
+/**
+ * Returns the list of all collection names defined in content/config.ts.
+ */
+export function getCollectionNames(): string[] {
+  return Object.keys(collections);
+}
 
 // ============================================================================
 // TYPES (co-located with collections logic)

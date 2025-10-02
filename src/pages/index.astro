@@ -6,6 +6,14 @@ import { siteData } from "@/content/siteData";
 ---
 <BaseLayout title="Home" description={siteData.description}>
   <main class="flex-1">
+
+    <Section
+      collection="menu-items"
+      variant="GridVariant"
+      columns={3}
+      gap="lg"
+    />
+
     <!-- Hero Section -->
     <Section
       variant="HeroVariant"

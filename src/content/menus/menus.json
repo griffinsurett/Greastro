@@ -1,0 +1,12 @@
+[
+  {
+    "id": "mainMenu",
+    "title": "Main Menu",
+    "description": "Primary site navigation"
+  },
+  {
+    "id": "footerMenu",
+    "title": "Footer Menu",
+    "description": "Secondary footer links"
+  }
+]

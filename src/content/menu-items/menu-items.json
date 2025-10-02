@@ -1,0 +1,34 @@
+[
+  {
+    "id": "home",
+    "title": "Home",
+    "link": "/",
+    "order": 0,
+    "openInNewTab": false,
+    "menu": "mainMenu"
+  },
+  {
+    "id": "about-us",
+    "title": "About Us",
+    "link": "/about-us",
+    "order": 3,
+    "openInNewTab": false,
+    "menu": "mainMenu"
+  },
+  {
+    "id": "privacy-policy",
+    "title": "Privacy Policy",
+    "link": "/privacy-policy",
+    "order": 0,
+    "openInNewTab": false,
+    "menu": "footerMenu"
+  },
+  {
+    "id": "cookie-policy",
+    "title": "Cookie Policy",
+    "link": "/cookie-policy",
+    "order": 1,
+    "openInNewTab": false,
+    "menu": "footerMenu"
+  }
+]

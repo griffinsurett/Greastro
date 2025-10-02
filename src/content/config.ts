@@ -18,10 +18,23 @@
  */
 import { file } from "astro/loaders";
 import { defineCollection, reference, z } from "astro:content";
-import { baseSchema } from "./schema";
+import { baseSchema, MenuSchema, MenuItemFields } from "./schema";
+import { MenuItemsLoader } from "@/utils/loaders/MenuItemsLoader";
 
 // Define your collections with the base schema - all support MDX
 export const collections = {
+    // ── menus.json ─────────────────────────────────────────
+  "menus": defineCollection({
+    loader: file("src/content/menus/menus.json"),
+    schema: MenuSchema,
+  }),
+
+  // ── menu-items.json ─────────────────────────────────────
+  "menu-items": defineCollection({
+    loader: MenuItemsLoader(),
+    schema: MenuItemFields,
+  }),
+  
   "contact-us": defineCollection({
     loader: file("src/content/contact-us/contact-us.json"),
     schema: ({ image }) =>

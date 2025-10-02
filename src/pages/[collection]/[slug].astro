@@ -16,6 +16,9 @@ export async function getStaticPaths() {
   }> = [];
 
   for (const coll of names) {
+    // Skip menu-items and menus - they're navigation data only
+    if (coll === 'menu-items' || coll === 'menus') continue;
+    
     const shouldProcess = await shouldProcessCollection(coll);
     if (!shouldProcess) continue;
 

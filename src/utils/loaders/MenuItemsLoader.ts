@@ -62,7 +62,8 @@ async function processItemMenus(
 
     for (const menuConfig of menuItems) {
       const itemId = menuConfig.id ?? `${collection}/${slug}`;
-      const link = menuConfig.link ?? `/${collection}/${slug}`;
+      // Auto-generate slug from file route, or use provided slug
+      const itemSlug = menuConfig.slug ?? `/${collection}/${slug}`;
       const menus = Array.isArray(menuConfig.menu) 
         ? menuConfig.menu 
         : [menuConfig.menu];
@@ -72,7 +73,7 @@ async function processItemMenus(
         data: {
           title: menuConfig.title ?? data.title ?? capitalize(slug),
           description: menuConfig.description ?? data.description,
-          url: link,
+          slug: itemSlug,
           menu: menus,
           parent: menuConfig.parent ?? null,
           openInNewTab: menuConfig.openInNewTab ?? false,
@@ -104,7 +105,8 @@ async function processCollectionMenus(
 
       for (const menuConfig of menuConfigs) {
         const itemId = menuConfig.id ?? collection;
-        const link = menuConfig.link ?? `/${collection}`;
+        // Auto-generate slug from collection route, or use provided slug
+        const itemSlug = menuConfig.slug ?? `/${collection}`;
         const menus = Array.isArray(menuConfig.menu) 
           ? menuConfig.menu 
           : [menuConfig.menu];
@@ -114,7 +116,7 @@ async function processCollectionMenus(
           data: {
             title: menuConfig.title ?? meta.title ?? capitalize(collection),
             description: menuConfig.description ?? meta.description,
-            url: link,
+            slug: itemSlug,
             menu: menus,
             parent: menuConfig.parent ?? null,
             openInNewTab: menuConfig.openInNewTab ?? false,
@@ -153,7 +155,8 @@ async function processCollectionItems(
 
     for (const menuConfig of configs) {
       const itemId = menuConfig.id ?? `${collection}/${slug}`;
-      const link = menuConfig.link ?? `/${collection}/${slug}`;
+      // Auto-generate slug from item route, or use provided slug
+      const itemSlug = menuConfig.slug ?? `/${collection}/${slug}`;
       const menus = Array.isArray(menuConfig.menu) 
         ? menuConfig.menu 
         : [menuConfig.menu];
@@ -171,7 +174,7 @@ async function processCollectionItems(
         data: {
           title: menuConfig.title ?? data.title ?? capitalize(slug),
           description: menuConfig.description ?? data.description,
-          url: link,
+          slug: itemSlug,
           menu: menus,
           parent,
           openInNewTab: menuConfig.openInNewTab ?? false,

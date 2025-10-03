@@ -2,33 +2,33 @@
   {
     "id": "home",
     "title": "Home",
-    "link": "/",
+    "slug": "/",
     "order": 0,
     "openInNewTab": false,
-    "menu": "mainMenu"
+    "menu": "main-menu"
   },
   {
     "id": "about-us",
     "title": "About Us",
-    "link": "/about-us",
+    "slug": "/about-us",
     "order": 3,
     "openInNewTab": false,
-    "menu": "mainMenu"
+    "menu": "main-menu"
   },
   {
     "id": "privacy-policy",
     "title": "Privacy Policy",
-    "link": "/privacy-policy",
+    "slug": "/privacy-policy",
     "order": 0,
     "openInNewTab": false,
-    "menu": "footerMenu"
+    "menu": "footer-menu"
   },
   {
     "id": "cookie-policy",
     "title": "Cookie Policy",
-    "link": "/cookie-policy",
+    "slug": "/cookie-policy",
     "order": 1,
     "openInNewTab": false,
-    "menu": "footerMenu"
+    "menu": "footer-menu"
   }
 ]

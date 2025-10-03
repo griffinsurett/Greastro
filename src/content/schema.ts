@@ -19,8 +19,9 @@ export const MenuReferenceField = {
 
 // Menu items loader schema
 export const MenuItemFields = z.object({
-  title: z.string(),
+  title: z.string().optional(),
   description: z.string().optional(),
+  slug: z.string().optional(), // Changed from link to slug
   ...BaseMenuFields,
   menu: z.union([reference("menus"), z.array(reference("menus"))]).optional(),
 });
@@ -39,7 +40,7 @@ export const AddToMenuFields = z.object({
   id: z.string().optional(),
   title: z.string(),
   description: z.string().optional(),
-  link: z.string().optional(),
+  slug: z.string().optional(), // Changed from link to slug
 });
 
 export const ItemsAddToMenuFields = z.object({

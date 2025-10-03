@@ -179,13 +179,21 @@ export async function prepareEntry<T extends CollectionKey>(
   
   const processedData = await processDataForReferences(entry.data);
   
-  return {
+  const result: PreparedItem = {
     ...processedData,
     slug: identifier,
-    ...(shouldItemHavePage(entry, meta) && {
-      url: `/${collection}/${identifier}`
-    })
-  } as PreparedItem;
+  };
+  
+  // For menu-items, use the slug field as the url
+  if (collection === 'menu-items' && processedData.slug) {
+    result.url = processedData.slug;
+  } 
+  // For other collections, add url if they should have pages
+  else if (shouldItemHavePage(entry, meta)) {
+    result.url = `/${collection}/${identifier}`;
+  }
+  
+  return result;
 }
 
 export async function prepareCollectionEntries<T extends CollectionKey>(

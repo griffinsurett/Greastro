@@ -4,7 +4,7 @@ import type { CollectionKey, CollectionEntry } from 'astro:content';
 import { metaSchema, type MetaData, type BaseData } from "@/content/schema";
 import { shouldItemHavePage } from '@/utils/pages';
 import { collections } from '@/content/config';
-import { z } from "astro:content";
+import { isCollectionReference } from '@/utils/references';
 
 // ============================================================================
 // COLLECTION UTILITIES
@@ -50,43 +50,26 @@ const mdxModules = import.meta.glob<{ frontmatter?: Record<string, any> }>(
   { eager: true }
 );
 
-const metaImageSchema = () => z.union([
-  z.string(),
-  z.object({
-    src: z.string(),
-    alt: z.string().optional(),
-  }),
-  z.any(),
-]);
-
 export function getCollectionMeta(collectionName: string): MetaData {
-  let data: Record<string, any> = {};
-
   const mdxKey = Object.keys(mdxModules).find((k) =>
     k.endsWith(`/${collectionName}/_meta.mdx`)
   );
   
-  if (mdxKey) {
-    data = (mdxModules[mdxKey] as any).frontmatter ?? {};
-  }
+  const data = mdxKey ? (mdxModules[mdxKey] as any).frontmatter ?? {} : {};
 
-  return metaSchema({ image: metaImageSchema }).parse(data);
+  // Use a simple image function for parsing frontmatter
+  // This allows string paths and image objects without full Astro image processing
+  const simpleImageFn = () => ({
+    parse: (val: any) => val,
+    _parse: (val: any) => ({ success: true, data: val })
+  });
+
+  return metaSchema({ image: simpleImageFn }).parse(data);
 }
 
 // ============================================================================
 // DYNAMIC REFERENCE RESOLUTION
 // ============================================================================
-
-function isCollectionReference(value: any): value is { collection: string; id: string } {
-  return (
-    value &&
-    typeof value === 'object' &&
-    'collection' in value &&
-    'id' in value &&
-    typeof value.collection === 'string' &&
-    typeof value.id === 'string'
-  );
-}
 
 async function resolveReference(ref: { collection: string; id: string }): Promise<any> {
   try {
@@ -179,21 +162,16 @@ export async function prepareEntry<T extends CollectionKey>(
   
   const processedData = await processDataForReferences(entry.data);
   
-  const result: PreparedItem = {
+  // If url already exists (like from menu-items loader), preserve it
+  const hasExistingUrl = processedData.url !== undefined;
+  
+  return {
     ...processedData,
     slug: identifier,
-  };
-  
-  // For menu-items, use the slug field as the url
-  if (collection === 'menu-items' && processedData.slug) {
-    result.url = processedData.slug;
-  } 
-  // For other collections, add url if they should have pages
-  else if (shouldItemHavePage(entry, meta)) {
-    result.url = `/${collection}/${identifier}`;
-  }
-  
-  return result;
+    ...(!hasExistingUrl && shouldItemHavePage(entry, meta) && {
+      url: `/${collection}/${identifier}`
+    })
+  } as PreparedItem;
 }
 
 export async function prepareCollectionEntries<T extends CollectionKey>(

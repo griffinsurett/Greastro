@@ -49,6 +49,11 @@ export const ItemsAddToMenuFields = z.object({
   respectHierarchy: z.boolean().optional().default(true),
 });
 
+export type MenuItemData = z.infer<typeof MenuItemFields>;
+export type MenuData = z.infer<typeof MenuSchema>;
+export type AddToMenuData = z.infer<typeof AddToMenuFields>;
+export type ItemsAddToMenuData = z.infer<typeof ItemsAddToMenuFields>;
+
 // ============================================================================
 // IMAGE SCHEMA
 // ============================================================================

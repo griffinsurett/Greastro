@@ -3,7 +3,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteData } from "@/content/siteData";
 import { getCollection } from "astro:content";
-import { formatPhoneNumber } from "@/utils/formatting";
+import { formatPhoneNumber } from "@/utils/string";
 import IntegrationsSnippet from "@/components/consent/PrivacyPolicy/IntegrationsSnippet.astro";
 
 const contacts = await getCollection("contact");

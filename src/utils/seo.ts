@@ -3,7 +3,9 @@ import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getEntry } from 'astro:content';
 import type { SEOData, MetaData, ImageInput } from '@/content/schema';
 
-// SEO props interface
+/**
+ * SEO props interface for page metadata
+ */
 export interface SEOProps {
   title?: string;
   description?: string;
@@ -14,61 +16,66 @@ export interface SEOProps {
   siteName?: string;
 }
 
-// Resolve author reference to a name
-export async function resolveAuthor(
-  author: any
-): Promise<string | undefined> {
+/**
+ * Resolves an author reference to a display name
+ * Handles: string IDs, reference objects, and author objects with name/title
+ */
+export async function resolveAuthor(author: any): Promise<string | undefined> {
   if (!author) return undefined;
   
-  if (typeof author === 'string') {
-    try {
-      const entry = await getEntry('authors', author);
-      return entry?.data.title || author;
-    } catch {
-      return author;
-    }
+  // Direct properties
+  if (author.title) return author.title;
+  if (author.name) return author.name;
+  
+  // Extract ID from reference or use string directly
+  const authorId = typeof author === 'string' ? author : author.id;
+  if (!authorId) return undefined;
+  
+  // Look up author entry
+  try {
+    const entry = await getEntry('authors', authorId);
+    return entry?.data.title || authorId;
+  } catch {
+    return authorId;
   }
-  
-  if (author?.collection === 'authors' && author?.id) {
-    const entry = await getEntry('authors', author.id);
-    return entry?.data.title || author.id;
-  }
-  
-  if (author?.title) return author.title;
-  if (author?.name) return author.name;
-  
-  return undefined;
 }
 
-// Build SEO props from collection item data
+/**
+ * Builds SEO props from a collection item entry
+ */
 export async function buildItemSEOProps(
   item: CollectionEntry<CollectionKey>,
   collectionMeta?: MetaData
 ): Promise<SEOProps> {
-  const authorName = 'author' in item.data 
-    ? await resolveAuthor(item.data.author) 
+  const itemData = item.data as any;
+  
+  const authorName = itemData.author
+    ? await resolveAuthor(itemData.author) 
     : undefined;
   
   return {
-    title: item.data.title,
-    description: item.data.description,
-    image: item.data.featuredImage || collectionMeta?.featuredImage,
+    title: itemData.title,
+    description: itemData.description,
+    image: itemData.featuredImage || collectionMeta?.featuredImage,
     author: authorName,
-    publishDate: item.data.publishDate,
+    publishDate: itemData.publishDate,
     seo: {
       ...collectionMeta?.seo,
-      ...item.data.seo,
+      ...itemData.seo,
     }
   };
 }
 
-// Build SEO props for collection index pages
+/**
+ * Builds SEO props for collection index pages
+ */
 export function buildCollectionSEOProps(
   collectionMeta: MetaData,
   collectionName: string
 ): SEOProps {
   const title = collectionMeta.title || 
     collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
+  
   const description = collectionMeta.description || 
     `Browse our ${collectionName} collection`;
   

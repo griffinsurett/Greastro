@@ -2,18 +2,9 @@
 import { file } from 'astro/loaders';
 import type { Loader, LoaderContext } from 'astro/loaders';
 import { getCollectionMeta, getCollectionNames } from '@/utils/collections';
-
-// Helper: Capitalize string
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// Helper: Normalize reference (extract ID from reference object)
-function normalizeRef(ref: any): string {
-  if (typeof ref === 'string') return ref;
-  if (ref?.id) return ref.id;
-  return String(ref);
-}
+import { capitalize } from '@/utils/string';
+import { normalizeRef } from '@/utils/references';
+import { parseContentPath, isMetaFile } from '@/utils/paths';
 
 export function MenuItemsLoader(): Loader {
   return {
@@ -25,16 +16,30 @@ export function MenuItemsLoader(): Loader {
       store.clear();
       await file('src/content/menu-items/menu-items.json').load(context);
 
-      // 2) Load all content files
+      // 2) Process manually loaded menu-items to add url field
+      for (const [id, entry] of store.entries()) {
+        const data = entry.data;
+        if (data && data.slug && !data.url) {
+          store.set({
+            id,
+            data: {
+              ...data,
+              url: data.slug,
+            },
+          });
+        }
+      }
+
+      // 3) Load all content files
       const mdxMods = import.meta.glob<{ frontmatter?: any; default?: any }>(
         '../../content/**/*.{mdx,md,json}',
         { eager: true }
       );
 
-      // 3) Process individual item addToMenu fields
+      // 4) Process individual item addToMenu fields
       await processItemMenus(mdxMods, store, logger);
 
-      // 4) Process collection-level menu configurations
+      // 5) Process collection-level menu configurations
       await processCollectionMenus(mdxMods, store, logger);
 
       logger.info(`Menu items loader: ${store.keys().length} items loaded`);
@@ -42,15 +47,13 @@ export function MenuItemsLoader(): Loader {
   };
 }
 
-// Process individual items with addToMenu
 async function processItemMenus(
   modules: Record<string, any>,
   store: any,
   logger: any
 ) {
   for (const [path, mod] of Object.entries(modules)) {
-    // Skip meta files
-    if (/_meta\.(mdx|md|json)$/.test(path)) continue;
+    if (isMetaFile(path)) continue;
 
     const data = mod.frontmatter ?? mod.default;
     if (!data?.addToMenu) continue;
@@ -62,7 +65,6 @@ async function processItemMenus(
 
     for (const menuConfig of menuItems) {
       const itemId = menuConfig.id ?? `${collection}/${slug}`;
-      // Auto-generate slug from file route, or use provided slug
       const itemSlug = menuConfig.slug ?? `/${collection}/${slug}`;
       const menus = Array.isArray(menuConfig.menu) 
         ? menuConfig.menu 
@@ -74,17 +76,16 @@ async function processItemMenus(
           title: menuConfig.title ?? data.title ?? capitalize(slug),
           description: menuConfig.description ?? data.description,
           slug: itemSlug,
+          url: itemSlug,
           menu: menus,
-          parent: menuConfig.parent ?? null,
+          parent: menuConfig.parent,
           openInNewTab: menuConfig.openInNewTab ?? false,
-          order: menuConfig.order ?? 0,
         },
       });
     }
   }
 }
 
-// Process collection-level menu configurations
 async function processCollectionMenus(
   modules: Record<string, any>,
   store: any,
@@ -97,7 +98,6 @@ async function processCollectionMenus(
   for (const collection of collections) {
     const meta = await getCollectionMeta(collection);
 
-    // Process collection addToMenu (adds collection index to menu)
     if (meta.addToMenu) {
       const menuConfigs = Array.isArray(meta.addToMenu) 
         ? meta.addToMenu 
@@ -105,7 +105,6 @@ async function processCollectionMenus(
 
       for (const menuConfig of menuConfigs) {
         const itemId = menuConfig.id ?? collection;
-        // Auto-generate slug from collection route, or use provided slug
         const itemSlug = menuConfig.slug ?? `/${collection}`;
         const menus = Array.isArray(menuConfig.menu) 
           ? menuConfig.menu 
@@ -117,15 +116,15 @@ async function processCollectionMenus(
             title: menuConfig.title ?? meta.title ?? capitalize(collection),
             description: menuConfig.description ?? meta.description,
             slug: itemSlug,
+            url: itemSlug,
             menu: menus,
-            parent: menuConfig.parent ?? null,
+            parent: menuConfig.parent,
             openInNewTab: menuConfig.openInNewTab ?? false,
           },
         });
       }
     }
 
-    // Process itemsAddToMenu (adds all items to menu)
     if (meta.itemsAddToMenu) {
       await processCollectionItems(
         collection,
@@ -137,7 +136,6 @@ async function processCollectionMenus(
   }
 }
 
-// Process all items in a collection for itemsAddToMenu
 async function processCollectionItems(
   collection: string,
   menuConfigs: any,
@@ -148,21 +146,20 @@ async function processCollectionItems(
 
   for (const [path, mod] of Object.entries(modules)) {
     if (!path.includes(`../../content/${collection}/`)) continue;
-    if (/_meta\.(mdx|md|json)$/.test(path)) continue;
+    if (isMetaFile(path)) continue;
 
     const data = mod.frontmatter ?? {};
     const { slug } = parseContentPath(path);
 
     for (const menuConfig of configs) {
       const itemId = menuConfig.id ?? `${collection}/${slug}`;
-      // Auto-generate slug from item route, or use provided slug
       const itemSlug = menuConfig.slug ?? `/${collection}/${slug}`;
       const menus = Array.isArray(menuConfig.menu) 
         ? menuConfig.menu 
         : [menuConfig.menu];
 
       // Handle parent hierarchy
-      let parent = null;
+      let parent: string | undefined;
       if (menuConfig.respectHierarchy && data.parent) {
         parent = `${collection}/${normalizeRef(data.parent)}`;
       } else if (menuConfig.parent) {
@@ -175,22 +172,12 @@ async function processCollectionItems(
           title: menuConfig.title ?? data.title ?? capitalize(slug),
           description: menuConfig.description ?? data.description,
           slug: itemSlug,
+          url: itemSlug,
           menu: menus,
-          parent,
+          parent: parent,
           openInNewTab: menuConfig.openInNewTab ?? false,
-          order: menuConfig.order ?? 0,
         },
       });
     }
   }
-}
-
-// Parse collection and slug from file path
-function parseContentPath(path: string): { collection: string; slug: string } {
-  const segments = path.split('/');
-  const fileName = segments.pop()!;
-  const collection = segments.pop()!;
-  const slug = fileName.replace(/\.(mdx|md|json)$/, '');
-  
-  return { collection, slug };
 }

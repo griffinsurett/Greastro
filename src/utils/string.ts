@@ -29,6 +29,16 @@ export function toPascalCase(str: string): string {
 }
 
 /**
+ * Normalizes a reference to extract its ID string
+ * Handles both string IDs and reference objects
+ */
+export function normalizeRef(ref: any): string {
+  if (typeof ref === 'string') return ref;
+  if (ref?.id) return ref.id;
+  return String(ref);
+}
+
+/**
  * Formats a phone number into the form "123-456-7890"
  */
 export function formatPhoneNumber(phone: string): string {

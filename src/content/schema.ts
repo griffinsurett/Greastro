@@ -133,6 +133,12 @@ export const baseSchema = ({ image }: { image: Function }) =>
   z.object({
     title: z.string(),
     description: z.string().optional(),
+    featuredImage: imageInputSchema({ image }).optional(),
+    bannerImage: imageInputSchema({ image }).optional(),
+    hasPage: z.boolean().optional(),
+    icon: iconSchema({ image }).optional(),
+    seo: seoSchema({ image }),
+    addToMenu: z.array(AddToMenuFields).optional(),
     publishDate: z
       .union([z.date(), z.string()])
       .optional()
@@ -142,13 +148,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
         return new Date(val);
       }),
     order: z.number().default(0),
-    featuredImage: imageInputSchema({ image }).optional(),
-    bannerImage: imageInputSchema({ image }).optional(),
-    hasPage: z.boolean().optional(),
     itemLayout: z.string().optional(),
-    icon: iconSchema({ image }).optional(),
-    addToMenu: z.array(AddToMenuFields).optional(),
-    seo: seoSchema({ image }),
   });
 
 export type BaseData = z.infer<ReturnType<typeof baseSchema>>;
@@ -162,11 +162,11 @@ export const metaSchema = ({ image }: { image: Function }) =>
     title: z.string().optional(),
     description: z.string().optional(),
     hasPage: z.boolean().default(true),
-    itemsHasPage: z.boolean().default(true),
     featuredImage: imageInputSchema({ image }).optional(),
-    addToMenu: z.array(AddToMenuFields).optional(),
-    itemsAddToMenu: z.array(ItemsAddToMenuFields).optional(),
     seo: seoSchema({ image }),
+    addToMenu: z.array(AddToMenuFields).optional(),
+    itemsHasPage: z.boolean().default(true),
+    itemsAddToMenu: z.array(ItemsAddToMenuFields).optional(),
     itemsLayout: z.string().default('CollectionLayout'),
   });
 

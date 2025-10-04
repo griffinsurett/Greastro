@@ -2,8 +2,7 @@
 import { file } from 'astro/loaders';
 import type { Loader, LoaderContext } from 'astro/loaders';
 import { getCollectionMeta, getCollectionNames } from '@/utils/collections';
-import { capitalize } from '@/utils/string';
-import { normalizeRef } from '@/utils/references';
+import { capitalize, normalizeRef } from '@/utils/string';
 import { parseContentPath, isMetaFile } from '@/utils/paths';
 
 export function MenuItemsLoader(): Loader {

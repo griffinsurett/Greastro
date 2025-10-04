@@ -1,4 +1,4 @@
-// src/utils/layoutHelpers.ts
+// src/layouts/collections/helpers/layoutHelpers.ts
 
 /**
  * Resolves author name from various author formats

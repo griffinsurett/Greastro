@@ -1,12 +1,10 @@
-// src/utils/layoutUtils.ts
-
 /**
  * Dynamically discover all collection layout components
  */
 export async function getCollectionLayouts() {
-const layouts = import.meta.glob('/src/layouts/collections/*.astro', { eager: true });
+  const layouts = import.meta.glob('../layouts/collections/*.astro', { eager: true });
   
-  return Object.entries(layouts).reduce((acc, [path, module]) => {
+  const result = Object.entries(layouts).reduce((acc, [path, module]) => {
     const fileName = path.split('/').pop()?.replace('.astro', '');
     
     if (fileName && module && typeof module === 'object' && 'default' in module) {
@@ -15,6 +13,8 @@ const layouts = import.meta.glob('/src/layouts/collections/*.astro', { eager: tr
     
     return acc;
   }, {} as Record<string, any>);
+  
+  return result;
 }
 
 /**
@@ -22,7 +22,17 @@ const layouts = import.meta.glob('/src/layouts/collections/*.astro', { eager: tr
  */
 export async function getLayoutComponent(layoutName: string) {
   const layouts = await getCollectionLayouts();
-  return layouts[layoutName] || layouts['CollectionLayout'];
+  
+  const component = layouts[layoutName] || layouts['CollectionLayout'];
+  
+  if (!component) {
+    throw new Error(
+      `Layout component "${layoutName}" not found. Available layouts: ${Object.keys(layouts).join(', ')}. ` +
+      `Make sure you have a CollectionLayout.astro file in src/layouts/collections/`
+    );
+  }
+  
+  return component;
 }
 
 /**
@@ -34,18 +44,13 @@ export function getLayoutName(
   isItemPage: boolean = false
 ): string {
   // Item-level override takes precedence
-  if (isItemPage && item?.data?.layout) {
-    return item.data.layout;
+  if (isItemPage && item?.data?.itemLayout) {
+    return item.data.itemLayout;
   }
   
-  // Use collection meta layout configuration
-  if (isItemPage && meta?.itemLayout) {
-    return meta.itemLayout;
-  }
-  
-  // For collection index pages
-  if (!isItemPage && meta?.layout) {
-    return meta.layout;
+  // Use collection meta itemsLayout for individual items
+  if (isItemPage && meta?.itemsLayout) {
+    return meta.itemsLayout;
   }
   
   // Default fallback is CollectionLayout

@@ -21,7 +21,7 @@ export const MenuReferenceField = {
 export const MenuItemFields = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  slug: z.string().optional(), // Changed from link to slug
+  slug: z.string().optional(),
   ...BaseMenuFields,
   menu: z.union([reference("menus"), z.array(reference("menus"))]).optional(),
 });
@@ -40,7 +40,7 @@ export const AddToMenuFields = z.object({
   id: z.string().optional(),
   title: z.string(),
   description: z.string().optional(),
-  slug: z.string().optional(), // Changed from link to slug
+  slug: z.string().optional(),
 });
 
 export const ItemsAddToMenuFields = z.object({
@@ -145,6 +145,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
     featuredImage: imageInputSchema({ image }).optional(),
     bannerImage: imageInputSchema({ image }).optional(),
     hasPage: z.boolean().optional(),
+    itemLayout: z.string().optional(),
     icon: iconSchema({ image }).optional(),
     addToMenu: z.array(AddToMenuFields).optional(),
     seo: seoSchema({ image }),
@@ -163,11 +164,10 @@ export const metaSchema = ({ image }: { image: Function }) =>
     hasPage: z.boolean().default(true),
     itemsHasPage: z.boolean().default(true),
     featuredImage: imageInputSchema({ image }).optional(),
-    bannerImage: imageInputSchema({ image }).optional(),
     addToMenu: z.array(AddToMenuFields).optional(),
     itemsAddToMenu: z.array(ItemsAddToMenuFields).optional(),
     seo: seoSchema({ image }),
-    itemLayout: z.string().default('CollectionLayout'),
+    itemsLayout: z.string().default('CollectionLayout'),
   });
 
 export type MetaData = z.infer<ReturnType<typeof metaSchema>>;

@@ -1,4 +1,6 @@
 // src/layouts/collections/helpers/layoutUtils.ts
+import { getItemProperty } from '@/utils/metaOverrides';
+
 /**
  * Dynamically discover all collection layout components
  */
@@ -44,16 +46,17 @@ export function getLayoutName(
   item?: any,
   isItemPage: boolean = false
 ): string {
-  // Item-level override takes precedence
-  if (isItemPage && item?.data?.itemLayout) {
-    return item.data.itemLayout;
+  // Index pages always use CollectionLayout
+  if (!isItemPage) {
+    return 'CollectionLayout';
   }
   
-  // Use collection meta itemsLayout for individual items
-  if (isItemPage && meta?.itemsLayout) {
-    return meta.itemsLayout;
-  }
-  
-  // Default fallback is CollectionLayout
-  return 'CollectionLayout';
+  // For item pages, use the override pattern
+  return getItemProperty(
+    item?.data,
+    meta,
+    'itemLayout',    // item-level property
+    'itemsLayout',   // collection-level property
+    'CollectionLayout' // default layout
+  );
 }

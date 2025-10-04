@@ -1,6 +1,7 @@
 ---
 // src/pages/[collection]/[slug].astro
 import { getCollection } from "astro:content";
+import type { CollectionKey } from "astro:content";
 import { getCollectionMeta, getItemKey } from "@/utils/collections";
 import { buildItemSEOProps } from "@/utils/seo";
 import { shouldItemHavePage, shouldProcessCollection } from "@/utils/pages";
@@ -51,7 +52,7 @@ const LayoutComponent = await getLayoutComponent(layoutName);
 
 // Prepare content if MDX
 let Content = null;
-if (typeof entry.render === "function") {
+if (entry && typeof entry.render === "function") {
   const rendered = await entry.render();
   Content = rendered.Content;
 }

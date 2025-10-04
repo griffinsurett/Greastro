@@ -3,6 +3,7 @@ import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getCollection } from 'astro:content';
 import { getCollectionMeta } from '@/utils/collections';
 import type { MetaData } from '@/content/schema';
+import { getItemProperty } from '@/utils/metaOverrides';
 
 /**
  * Determines if an individual item should have its own page
@@ -11,14 +12,13 @@ export function shouldItemHavePage(
   item: CollectionEntry<CollectionKey>,
   meta: MetaData
 ): boolean {
-  // Explicit item-level override takes precedence
-  const itemData = item.data as any;
-  if (itemData.hasPage !== undefined) {
-    return itemData.hasPage;
-  }
-  
-  // Fall back to collection-level setting
-  return meta.itemsHasPage !== false;
+  return getItemProperty(
+    item.data,
+    meta,
+    'hasPage',      // item-level property
+    'itemsHasPage', // collection-level property
+    true            // default value
+  );
 }
 
 /**
@@ -30,9 +30,6 @@ export function shouldCollectionHavePage(meta: MetaData): boolean {
 
 /**
  * Determines if a collection should be processed for static page generation
- * A collection should be processed if either:
- * - Items are configured to have pages (itemsHasPage !== false), OR
- * - At least one item explicitly requests a page
  */
 export async function shouldProcessCollection(
   collectionName: CollectionKey

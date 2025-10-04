@@ -37,26 +37,24 @@ const { title: pageTitle, description: pageDescription } = seoProps;
 ---
 <BaseLayout {...seoProps}>
   <main class="flex-1">
-    <div class="container mx-auto px-4">
-      {MDXContent ? (
-        <MDXContent />
-      ) : (
-        <>
-          <header class="text-center py-12">
-            <h1 class="text-4xl font-bold mb-4">{pageTitle}</h1>
-            {pageDescription && (
-              <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-                {pageDescription}
-              </p>
-            )}
-          </header>
-          
-          <Section 
-            collection={collection} 
-            variant="GridVariant"
-          />
-        </>
-      )}
-    </div>
+    {MDXContent ? (
+      <MDXContent />
+    ) : (
+      <div class="container mx-auto px-4">
+        <header class="text-center py-12">
+          <h1 class="text-4xl font-bold mb-4">{pageTitle}</h1>
+          {pageDescription && (
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+              {pageDescription}
+            </p>
+          )}
+        </header>
+        
+        <Section 
+          collection={collection} 
+          variant="GridVariant"
+        />
+      </div>
+    )}
   </main>
 </BaseLayout>

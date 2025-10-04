@@ -1,22 +1,18 @@
 ---
 // src/pages/[collection]/index.astro
-import type { CollectionKey } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/section/Section.astro";
-import { collections } from "@/content/config";
 import { getCollectionMeta } from "@/utils/collections";
 import { buildCollectionSEOProps } from "@/utils/seo";
 import { shouldCollectionHavePage } from "@/utils/pages";
 import { getCollectionMetaMDX } from "@/utils/content";
+import { getPageCollections } from "@/utils/pageGeneration";
 
 export async function getStaticPaths() {
-  const names = Object.keys(collections) as CollectionKey[];
+  const names = getPageCollections();
   const paths = [];
 
   for (const coll of names) {
-    // Skip menu-items and menus - they're navigation data only
-    if (coll === 'menu-items' || coll === 'menus') continue;
-    
     const meta = getCollectionMeta(coll);
     
     if (shouldCollectionHavePage(meta)) {

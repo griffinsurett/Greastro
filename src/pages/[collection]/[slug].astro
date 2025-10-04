@@ -1,23 +1,20 @@
 ---
 // src/pages/[collection]/[slug].astro
 import { getCollection } from "astro:content";
-import type { CollectionKey } from "astro:content";
-import { collections } from "@/content/config";
 import { getCollectionMeta, getItemKey } from "@/utils/collections";
 import { buildItemSEOProps } from "@/utils/seo";
 import { shouldItemHavePage, shouldProcessCollection } from "@/utils/pages";
-import { getLayoutName, getLayoutComponent } from "@/utils/layoutUtils";
+import { getLayoutName, getLayoutComponent } from "@/layouts/collections/helpers/layoutUtils";
+import { getPageCollections } from "@/utils/pageGeneration";
 
 export async function getStaticPaths() {
-  const names = Object.keys(collections) as CollectionKey[];
+  const names = getPageCollections();
   const paths: Array<{
     params: { collection: string; slug: string };
     props: any;
   }> = [];
 
   for (const coll of names) {
-    if (coll === 'menu-items' || coll === 'menus') continue;
-    
     const shouldProcess = await shouldProcessCollection(coll);
     if (!shouldProcess) continue;
 

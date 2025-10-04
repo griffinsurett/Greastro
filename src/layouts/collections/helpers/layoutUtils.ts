@@ -1,8 +1,9 @@
+// src/layouts/collections/helpers/layoutUtils.ts
 /**
  * Dynamically discover all collection layout components
  */
 export async function getCollectionLayouts() {
-  const layouts = import.meta.glob('../layouts/collections/*.astro', { eager: true });
+  const layouts = import.meta.glob('../*.astro', { eager: true });
   
   const result = Object.entries(layouts).reduce((acc, [path, module]) => {
     const fileName = path.split('/').pop()?.replace('.astro', '');

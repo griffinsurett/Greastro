@@ -2,11 +2,11 @@
 // src/pages/[collection]/[slug].astro
 import { getCollection } from "astro:content";
 import type { CollectionKey } from "astro:content";
-import BaseLayout from "@/layouts/BaseLayout.astro";
 import { collections } from "@/content/config";
 import { getCollectionMeta, getItemKey } from "@/utils/collections";
 import { buildItemSEOProps } from "@/utils/seo";
 import { shouldItemHavePage, shouldProcessCollection } from "@/utils/pages";
+import { getLayoutName, getLayoutComponent } from "@/utils/layoutUtils";
 
 export async function getStaticPaths() {
   const names = Object.keys(collections) as CollectionKey[];
@@ -16,7 +16,6 @@ export async function getStaticPaths() {
   }> = [];
 
   for (const coll of names) {
-    // Skip menu-items and menus - they're navigation data only
     if (coll === 'menu-items' || coll === 'menus') continue;
     
     const shouldProcess = await shouldProcessCollection(coll);
@@ -46,33 +45,27 @@ export async function getStaticPaths() {
 }
 
 const { entry, collectionMeta, collectionName } = Astro.props;
-const { data } = entry;
 
+// Get the layout name from meta or use default
+const layoutName = getLayoutName(collectionMeta, entry, true);
+
+// Get the actual layout component
+const LayoutComponent = await getLayoutComponent(layoutName);
+
+// Prepare content if MDX
 let Content = null;
-let hasContent = false;
-
 if (typeof entry.render === "function") {
   const rendered = await entry.render();
   Content = rendered.Content;
-  hasContent = entry.body && entry.body.trim().length > 0;
 }
 
 const seoProps = await buildItemSEOProps(entry, collectionMeta);
 ---
-
-<BaseLayout {...seoProps}>
-  <main class="container mx-auto px-4 py-8">
-    {
-      hasContent && Content ? (
-        <article class="prose lg:prose-xl mx-auto">
-          <Content />
-        </article>
-      ) : (
-        <div>
-          <h1>{data.title}</h1>
-          {data.description && <p>{data.description}</p>}
-        </div>
-      )
-    }
-  </main>
-</BaseLayout>
+<LayoutComponent
+  entry={entry}
+  collection={collectionName}
+  collectionMeta={collectionMeta}
+  seoProps={seoProps}
+  Content={Content}
+  {...collectionMeta}  
+/>

@@ -143,6 +143,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
       }),
     order: z.number().default(0),
     featuredImage: imageInputSchema({ image }).optional(),
+    bannerImage: imageInputSchema({ image }).optional(),
     hasPage: z.boolean().optional(),
     icon: iconSchema({ image }).optional(),
     addToMenu: z.array(AddToMenuFields).optional(),
@@ -162,9 +163,11 @@ export const metaSchema = ({ image }: { image: Function }) =>
     hasPage: z.boolean().default(true),
     itemsHasPage: z.boolean().default(true),
     featuredImage: imageInputSchema({ image }).optional(),
+    bannerImage: imageInputSchema({ image }).optional(),
     addToMenu: z.array(AddToMenuFields).optional(),
     itemsAddToMenu: z.array(ItemsAddToMenuFields).optional(),
     seo: seoSchema({ image }),
+    itemLayout: z.string().default('CollectionLayout'),
   });
 
 export type MetaData = z.infer<ReturnType<typeof metaSchema>>;

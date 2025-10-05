@@ -5,68 +5,27 @@
  * 
  * Generates pages for items with rootPath: true at the root level.
  * E.g., /about instead of /pages/about
- * 
- * Works alongside [collection]/[slug].astro - items can choose which path to use.
  */
 
-import { getCollection } from "astro:content";
-import { getCollectionMeta, getItemKey } from "@/utils/collections";
-import { buildItemSEOProps } from "@/utils/seo";
-import { shouldItemHavePage, shouldItemUseRootPath } from "@/utils/pages";
-import { getLayoutName, getLayoutComponent } from "@/layouts/collections/helpers/layoutUtils";
-import { getPageCollections } from "@/utils/pageGeneration";
+import {
+  generateItemPaths,
+  prepareItemPageData,
+  rootLevelFilter,
+  buildRootLevelParams,
+} from "@/utils/pageGeneration/itemPageHelpers";
 
 export async function getStaticPaths() {
-  const names = getPageCollections();
-  const paths: Array<{
-    params: { slug: string };
-    props: any;
-  }> = [];
-
-  for (const coll of names) {
-    const meta = getCollectionMeta(coll);
-    const entries = await getCollection(coll);
-
-    entries
-      .filter((entry) => {
-        // Only include items that:
-        // 1. Should have a page
-        // 2. Want to use root path
-        return shouldItemHavePage(entry, meta) && shouldItemUseRootPath(entry, meta);
-      })
-      .forEach((entry) => {
-        paths.push({
-          params: {
-            slug: getItemKey(entry),
-          },
-          props: { 
-            entry,
-            collectionMeta: meta,
-            collectionName: coll
-          },
-        });
-      });
-  }
-
-  return paths;
+  return generateItemPaths(rootLevelFilter, buildRootLevelParams);
 }
 
-const { entry, collectionMeta, collectionName } = Astro.props;
-
-// Get the layout name from meta or use default
-const layoutName = getLayoutName(collectionMeta, entry, true);
-
-// Get the actual layout component
-const LayoutComponent = await getLayoutComponent(layoutName);
-
-// Prepare content if MDX
-let Content = null;
-if (entry && typeof entry.render === "function") {
-  const rendered = await entry.render();
-  Content = rendered.Content;
-}
-
-const seoProps = await buildItemSEOProps(entry, collectionMeta);
+const {
+  LayoutComponent,
+  Content,
+  entry,
+  collectionName,
+  collectionMeta,
+  seoProps,
+} = await prepareItemPageData(Astro.props);
 ---
 <LayoutComponent
   entry={entry}

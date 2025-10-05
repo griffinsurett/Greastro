@@ -17,7 +17,7 @@ export interface RedirectEntry {
   from: string;           // Source path
   to: string;            // Destination path
   source: string;        // Where this redirect came from (for debugging)
-  type: 'collection' | 'item';
+  type: 'collection' | 'item' | 'path-alias';
 }
 
 /**

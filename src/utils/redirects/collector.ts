@@ -136,7 +136,13 @@ export function collectItemRedirects(
     
     // Extract slug from filename
     const slug = file.replace(/\.(mdx|md)$/, '');
-    const targetPath = `/${collectionName}/${slug}`;
+    
+    // Determine target path based on rootPath setting
+    const useRootPath = data.rootPath !== undefined 
+      ? data.rootPath 
+      : (meta.itemsRootPath !== undefined ? meta.itemsRootPath : false);
+    
+    const targetPath = useRootPath ? `/${slug}` : `/${collectionName}/${slug}`;
     
     for (const fromPath of redirectFromPaths) {
       redirects.push({

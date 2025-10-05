@@ -155,7 +155,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
     featuredImage: imageInputSchema({ image }).optional(),
     bannerImage: imageInputSchema({ image }).optional(),
     hasPage: z.boolean().optional(),
-    rootPath: z.boolean().optional(), // NEW: Individual item root path setting
+    rootPath: z.boolean().optional(),
     icon: iconSchema({ image }).optional(),
     seo: seoSchema({ image }),
     addToMenu: z.array(AddToMenuFields).optional(),
@@ -188,7 +188,7 @@ export const metaSchema = ({ image }: { image: Function }) =>
     addToMenu: z.array(AddToMenuFields).optional(),
     redirectFrom: redirectFromSchema,
     itemsHasPage: z.boolean().default(true),
-    itemsRootPath: z.boolean().default(false), // NEW: Collection-level root path default
+    itemsRootPath: z.boolean().default(false),
     itemsAddToMenu: z.array(ItemsAddToMenuFields).optional(),
     itemsLayout: z.string().default('CollectionLayout'),
   });

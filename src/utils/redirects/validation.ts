@@ -4,6 +4,9 @@
  * 
  * Validates redirect entries for security and correctness.
  * Checks for conflicts, circular redirects, and security issues.
+ * 
+ * Note: Path alias redirects are allowed to conflict with manual redirects
+ * (manual takes precedence), but manual redirects cannot conflict with each other.
  */
 
 import { isValidPath, getPathValidationError } from '../pathValidation';
@@ -42,9 +45,12 @@ export function validateRedirectTarget(
  * 
  * Checks for:
  * - Invalid/unsafe paths
- * - Duplicate source paths
+ * - Duplicate source paths (among manual redirects)
  * - Circular redirects
  * - Self-redirects
+ * 
+ * Note: Path alias redirects can overlap with manual redirects
+ * (manual takes precedence), but this is not an error.
  * 
  * @param redirects - Array of redirect entries
  * @returns Validation result with errors and warnings
@@ -52,7 +58,10 @@ export function validateRedirectTarget(
 export function validateRedirects(redirects: RedirectEntry[]): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
-  const fromPaths = new Map<string, RedirectEntry[]>();
+  
+  // Separate manual and path-alias redirects
+  const manualRedirects = redirects.filter(r => r.type !== 'path-alias');
+  const pathAliasRedirects = redirects.filter(r => r.type === 'path-alias');
   
   // Validate each redirect target and source
   for (const redirect of redirects) {
@@ -62,15 +71,16 @@ export function validateRedirects(redirects: RedirectEntry[]): ValidationResult 
     }
   }
   
-  // Group redirects by source path
-  for (const redirect of redirects) {
-    const existing = fromPaths.get(redirect.from) || [];
+  // Group manual redirects by source path
+  const manualFromPaths = new Map<string, RedirectEntry[]>();
+  for (const redirect of manualRedirects) {
+    const existing = manualFromPaths.get(redirect.from) || [];
     existing.push(redirect);
-    fromPaths.set(redirect.from, existing);
+    manualFromPaths.set(redirect.from, existing);
   }
   
-  // Check for duplicate source paths
-  for (const [from, entries] of fromPaths) {
+  // Check for duplicate source paths among manual redirects
+  for (const [from, entries] of manualFromPaths) {
     if (entries.length > 1) {
       const destinations = entries.map(e => e.to);
       const sources = entries.map(e => e.source);
@@ -78,12 +88,26 @@ export function validateRedirects(redirects: RedirectEntry[]): ValidationResult 
       // If all redirect to same place, it's just a warning
       if (new Set(destinations).size === 1) {
         warnings.push(
-          `Duplicate redirect from "${from}" defined in: ${sources.join(', ')}`
+          `Duplicate manual redirect from "${from}" defined in: ${sources.join(', ')}`
         );
       } else {
         errors.push(
-          `Conflicting redirects from "${from}":\n` +
-          entries.map(e => `  - ${e.source} -> ${e.to}`).join('\n')
+          `Conflicting manual redirects from "${from}":\n` +
+          entries.map(e => `  - ${e.source} → ${e.to}`).join('\n')
+        );
+      }
+    }
+  }
+  
+  // Check for path alias conflicts with manual redirects (informational only)
+  for (const aliasRedirect of pathAliasRedirects) {
+    const manualEntries = manualFromPaths.get(aliasRedirect.from);
+    if (manualEntries && manualEntries.length > 0) {
+      const manualTarget = manualEntries[0].to;
+      if (manualTarget !== aliasRedirect.to) {
+        warnings.push(
+          `Path alias redirect from "${aliasRedirect.from}" → "${aliasRedirect.to}" ` +
+          `is overridden by manual redirect to "${manualTarget}"`
         );
       }
     }
@@ -93,34 +117,39 @@ export function validateRedirects(redirects: RedirectEntry[]): ValidationResult 
   for (const redirect of redirects) {
     if (redirect.from === redirect.to) {
       errors.push(
-        `Self-redirect detected: "${redirect.from}" -> "${redirect.to}" in ${redirect.source}`
+        `Self-redirect detected: "${redirect.from}" → "${redirect.to}" in ${redirect.source}`
       );
     }
   }
   
   // Check for circular redirects
+  const redirectMap = new Map<string, string>();
+  for (const redirect of redirects) {
+    redirectMap.set(redirect.from, redirect.to);
+  }
+  
   const visited = new Set<string>();
   const checkCircular = (from: string, path: string[] = []): boolean => {
     if (path.includes(from)) {
-      errors.push(`Circular redirect detected: ${[...path, from].join(' -> ')}`);
+      errors.push(`Circular redirect detected: ${[...path, from].join(' → ')}`);
       return true;
     }
     
     if (visited.has(from)) return false;
     
     visited.add(from);
-    const redirect = redirects.find(r => r.from === from);
+    const to = redirectMap.get(from);
     
-    if (redirect) {
-      return checkCircular(redirect.to, [...path, from]);
+    if (to) {
+      return checkCircular(to, [...path, from]);
     }
     
     return false;
   };
   
-  for (const redirect of redirects) {
-    if (!visited.has(redirect.from)) {
-      checkCircular(redirect.from);
+  for (const [from] of redirectMap) {
+    if (!visited.has(from)) {
+      checkCircular(from);
     }
   }
   

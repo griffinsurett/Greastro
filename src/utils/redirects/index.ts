@@ -7,6 +7,7 @@
  */
 
 import { collectAllRedirects } from './collector';
+import { collectAllPathAliasRedirects } from './pathAliasCollector';
 import { validateRedirects } from './validation';
 import type { RedirectConfig, RedirectEntry } from './types';
 
@@ -24,11 +25,17 @@ export type { RedirectConfig, RedirectEntry } from './types';
  * @throws Error if validation fails
  */
 export function buildRedirectConfig(includeWarnings: boolean = true): RedirectConfig {
-  // Collect all redirects from filesystem
-  const redirects = collectAllRedirects();
+  // Collect manual redirects from frontmatter
+  const manualRedirects = collectAllRedirects();
+  
+  // Collect automatic path alias redirects
+  const pathAliasRedirects = collectAllPathAliasRedirects();
+  
+  // Combine all redirects
+  const allRedirects = [...manualRedirects, ...pathAliasRedirects];
   
   // Validate for security and correctness
-  const validation = validateRedirects(redirects);
+  const validation = validateRedirects(allRedirects);
   
   // Log validation results
   if (validation.errors.length > 0) {
@@ -44,11 +51,22 @@ export function buildRedirectConfig(includeWarnings: boolean = true): RedirectCo
     console.warn('');
   }
   
-  // Build config object, removing duplicates
+  // Build config object, removing duplicates (manual redirects take precedence)
   const config: RedirectConfig = {};
   const seen = new Set<string>();
   
-  for (const redirect of redirects) {
+  // Add manual redirects first (higher priority)
+  for (const redirect of manualRedirects) {
+    if (seen.has(redirect.from)) {
+      continue;
+    }
+    
+    seen.add(redirect.from);
+    config[redirect.from] = redirect.to;
+  }
+  
+  // Add path alias redirects (lower priority)
+  for (const redirect of pathAliasRedirects) {
     if (seen.has(redirect.from)) {
       continue;
     }
@@ -58,7 +76,9 @@ export function buildRedirectConfig(includeWarnings: boolean = true): RedirectCo
   }
   
   if (Object.keys(config).length > 0) {
-    console.log(`✅ Generated ${Object.keys(config).length} redirects`);
+    const manualCount = manualRedirects.length;
+    const aliasCount = pathAliasRedirects.length;
+    console.log(`✅ Generated ${Object.keys(config).length} redirects (${manualCount} manual, ${aliasCount} path aliases)`);
   }
   
   return config;
@@ -71,26 +91,41 @@ export function buildRedirectConfig(includeWarnings: boolean = true): RedirectCo
  * @param contentDir - Optional content directory path
  */
 export function logRedirects(contentDir?: string): void {
-  const redirects = collectAllRedirects(contentDir);
+  const manualRedirects = collectAllRedirects(contentDir);
+  const pathAliasRedirects = collectAllPathAliasRedirects(contentDir);
+  const allRedirects = [...manualRedirects, ...pathAliasRedirects];
   
   console.log('\n📋 All Redirects:');
   console.log('─'.repeat(80));
   
-  const byCollection = new Map<string, RedirectEntry[]>();
+  // Group by type
+  const byType = new Map<string, RedirectEntry[]>();
   
-  for (const redirect of redirects) {
-    const collection = redirect.source.split('/')[0];
-    const existing = byCollection.get(collection) || [];
+  for (const redirect of allRedirects) {
+    const existing = byType.get(redirect.type) || [];
     existing.push(redirect);
-    byCollection.set(collection, existing);
+    byType.set(redirect.type, existing);
   }
   
-  for (const [collection, items] of byCollection) {
-    console.log(`\n${collection}:`);
-    for (const redirect of items) {
+  // Display manual redirects
+  const manual = byType.get('collection') || [];
+  const item = byType.get('item') || [];
+  if (manual.length > 0 || item.length > 0) {
+    console.log('\n📝 Manual Redirects (from redirectFrom):');
+    [...manual, ...item].forEach(redirect => {
+      console.log(`  ${redirect.from} → ${redirect.to} (${redirect.source})`);
+    });
+  }
+  
+  // Display path alias redirects
+  const aliases = byType.get('path-alias') || [];
+  if (aliases.length > 0) {
+    console.log('\n🔄 Path Alias Redirects (automatic):');
+    aliases.forEach(redirect => {
       console.log(`  ${redirect.from} → ${redirect.to}`);
-    }
+    });
   }
   
   console.log('\n' + '─'.repeat(80));
+  console.log(`Total: ${allRedirects.length} redirects\n`);
 }

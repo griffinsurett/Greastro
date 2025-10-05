@@ -1,42 +1,66 @@
 ---
 // src/components/section/Section.astro
+/**
+ * Section Component - Universal Content Section Renderer
+ * 
+ * This is the main entry point for rendering content sections throughout the site.
+ * It acts as a router that:
+ * 1. Loads collection data if a collection name is provided
+ * 2. Prepares items with URLs and resolved references
+ * 3. Determines if collection links should be shown
+ * 4. Delegates rendering to the appropriate variant component
+ * 
+ * Supports two modes:
+ * - Collection mode: Automatically loads and displays items from a content collection
+ * - Static mode: Renders provided items/content without collection loading
+ * 
+ * Used extensively throughout the site for consistent section rendering.
+ */
+
 import type { SectionProps } from './Section.types';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
 import { getCollectionWithMeta, prepareCollectionEntries } from '@/utils/collections';
 import { shouldCollectionHavePage } from '@/utils/pages';
 
+// Load all available variant components
 const variantComponents = await getVariantComponents();
 
 const { 
-  collection, 
-  variant = 'GridVariant',
-  title: titleOverride,
-  description: descriptionOverride,
-  ...restProps 
+  collection,                       // Collection name to load (optional)
+  variant = 'GridVariant',         // Variant component to use
+  title: titleOverride,            // Override collection title
+  description: descriptionOverride, // Override collection description
+  ...restProps                     // Other props passed to variant
 } = Astro.props as SectionProps;
 
 let data: any;
 
 if (collection) {
+  // Collection mode: Load and prepare collection data
   const { entries, meta } = await getCollectionWithMeta(collection);
   const items = await prepareCollectionEntries(entries, collection, meta);
   
+  // Check if we're on the collection's index page
   const currentPath = Astro.url.pathname;
   const collectionIndexPath = `/${collection}`;
   const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
   
   data = { 
     items,
+    // Use override title if provided, otherwise use meta title (but not on collection page itself)
     title: titleOverride ?? (isOnCollectionPage ? undefined : meta.title),
     description: descriptionOverride ?? (isOnCollectionPage ? undefined : meta.description),
+    // Only show "View All" link if collection has a page and we're not already on it
     collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,
     collectionTitle: meta.title || collection.charAt(0).toUpperCase() + collection.slice(1),
     ...restProps 
   };
 } else {
+  // Static mode: Use provided items or empty array
   data = restProps.items ? restProps : { items: [], ...restProps };
 }
 
+// Get the variant component or throw error if not found
 const VariantComponent = variantComponents[variant];
 if (!VariantComponent) {
   throw new Error(`Variant "${variant}" not found`);

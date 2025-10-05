@@ -1,5 +1,20 @@
 ---
 // src/layouts/collections/CollectionLayout.astro
+/**
+ * Collection Layout - Default Item Page Layout
+ * 
+ * The standard layout for individual collection items.
+ * Features:
+ * - Optional hero image with gradient overlay
+ * - Large hero section for items with bannerImage
+ * - Simple header for items without images
+ * - Metadata display (date, author, reading time)
+ * - MDX content rendering
+ * 
+ * This is the default layout used when no custom layout is specified.
+ * Falls back gracefully when images or metadata are missing.
+ */
+
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getAuthorName, getImageSrc } from './helpers/layoutHelpers';
 import type { CollectionLayoutProps } from './types';
@@ -22,18 +37,22 @@ const hasHeroImage = !!bannerImageSrc;
 ---
 <BaseLayout {...seoProps}>
   <main class="flex-1">
+    {/* Hero section with background image */}
     {hasHeroImage && (
       <section class="relative">
         <div class="relative min-h-[50vh] md:min-h-[60vh] flex items-center justify-center overflow-hidden">
+          {/* Background image with gradient overlay */}
           <div class="absolute inset-0 -z-10">
             <img 
               src={bannerImageSrc} 
               alt={data.bannerImage?.alt || data.featuredImage?.alt || data.title}
               class="w-full h-full object-cover"
             />
+            {/* Dark gradient for text readability */}
             <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70"></div>
           </div>
 
+          {/* Hero content */}
           <div class="relative container mx-auto px-4 py-16 md:py-24">
             <div class="max-w-4xl mx-auto text-center text-white">
               <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 drop-shadow-lg">
@@ -46,6 +65,7 @@ const hasHeroImage = !!bannerImageSrc;
                 </p>
               )}
               
+              {/* Metadata row with icons */}
               <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-sm md:text-base text-white/90">
                 {data.publishDate && (
                   <time 
@@ -81,6 +101,7 @@ const hasHeroImage = !!bannerImageSrc;
       </section>
     )}
 
+    {/* Simple header (no hero image) */}
     {!hasHeroImage && (
       <header class="container mx-auto px-4 py-12 md:py-16">
         <div class="max-w-4xl mx-auto">
@@ -90,6 +111,7 @@ const hasHeroImage = !!bannerImageSrc;
             <p class="text-xl text-gray-600 mb-6">{data.description}</p>
           )}
           
+          {/* Metadata without icons */}
           <div class="flex flex-wrap gap-4 text-sm text-gray-500">
             {data.publishDate && (
               <time datetime={new Date(data.publishDate).toISOString()}>
@@ -107,6 +129,7 @@ const hasHeroImage = !!bannerImageSrc;
       </header>
     )}
 
+    {/* MDX content */}
     {Content && (
       <article class="container mx-auto px-4 py-8 md:py-12">
         <div class="prose prose-lg max-w-4xl mx-auto">

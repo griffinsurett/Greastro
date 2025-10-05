@@ -1,5 +1,17 @@
 ---
 // src/layouts/collections/BlogLayout.astro
+/**
+ * Blog Layout - Specialized Layout for Blog Posts
+ * 
+ * Alternative layout optimized for blog content.
+ * Simpler than CollectionLayout with:
+ * - Featured image above content
+ * - Traditional blog post structure
+ * - Author info at top
+ * 
+ * Specify in _meta.mdx with: itemsLayout: "BlogLayout"
+ */
+
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getAuthorName, getImageSrc } from './helpers/layoutHelpers';
 import type { CollectionLayoutProps } from './types';
@@ -20,6 +32,7 @@ const featuredImageSrc = getImageSrc(data.featuredImage);
 <BaseLayout {...seoProps}>
   <main class="container mx-auto px-4 py-8">
     <article class="max-w-4xl mx-auto">
+      {/* Featured image */}
       {featuredImageSrc && (
         <div class="mb-8 rounded-xl overflow-hidden">
           <img 
@@ -30,6 +43,7 @@ const featuredImageSrc = getImageSrc(data.featuredImage);
         </div>
       )}
       
+      {/* Article header */}
       <header class="mb-8">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">{data.title}</h1>
         
@@ -37,6 +51,7 @@ const featuredImageSrc = getImageSrc(data.featuredImage);
           <p class="text-xl text-gray-600">{data.description}</p>
         )}
         
+        {/* Metadata */}
         <div class="flex flex-wrap gap-4 mt-4 text-sm text-gray-500">
           {data.publishDate && (
             <time datetime={new Date(data.publishDate).toISOString()}>
@@ -52,6 +67,7 @@ const featuredImageSrc = getImageSrc(data.featuredImage);
         </div>
       </header>
       
+      {/* Article content */}
       {Content && (
         <div class="prose prose-lg max-w-none">
           <Content />

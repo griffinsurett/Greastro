@@ -1,12 +1,30 @@
 ---
 // src/layouts/BodyTags.astro
-// Placeholder for future body-level scripts and elements
+/**
+ * Body Tags Component
+ * 
+ * Placeholder for body-level scripts and elements.
+ * Can include:
+ * - Analytics components (Vercel Analytics, Speed Insights)
+ * - Chat widgets
+ * - Cookie consent banners (currently commented out)
+ * - Other scripts that should load in the body
+ * 
+ * Keeps BaseLayout clean by separating body-level concerns.
+ */
+
+// Commented out examples - uncomment when needed:
 // import SpeedInsights from "@vercel/speed-insights/astro";
 // import Analytics from '@vercel/analytics/astro';
 ---
+
 <!-- GDPR Manager loads when browser is idle -->
+<!-- Uncomment when ready to enable cookie consent: -->
+<!-- <GDPRManager client:idle testMode={false} /> -->
 
 <!-- Analytics, tracking scripts, or other body elements can be added here -->
 <!-- Example: Google Analytics, chat widgets, etc. -->
-<!-- <SpeedInsights/>
-<Analytics/> -->
+
+<!-- Vercel Analytics Examples (uncomment when needed): -->
+<!-- <SpeedInsights />
+<Analytics /> -->

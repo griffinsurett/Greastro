@@ -1,18 +1,34 @@
 ---
 // src/layouts/SEO.astro
+/**
+ * SEO Component - Meta Tag Generator
+ * 
+ * Comprehensive SEO meta tag generation for all pages.
+ * Handles:
+ * - Basic meta tags (title, description)
+ * - Open Graph tags (Facebook, LinkedIn)
+ * - Twitter Card tags
+ * - JSON-LD structured data (Schema.org)
+ * - Canonical URLs
+ * - Author and publisher information
+ * 
+ * Uses fallback chain: SEO overrides → Base props → Site defaults
+ * Generates absolute URLs for social sharing.
+ */
+
 import defaultOGImage from "@/assets/astro.svg";
 import { siteData } from "@/content/siteData";
 import { getImageUrl } from "@/utils/images";
 import type { ImageInput, SEOData } from "@/content/schema";
 
 export interface Props {
-  title?: string;
-  description?: string;
-  image?: ImageInput;
-  author?: string;
-  publishDate?: Date | string;
-  seo?: SEOData;
-  siteName?: string;
+  title?: string;              // Page title
+  description?: string;        // Page description
+  image?: ImageInput;          // Featured image
+  author?: string;            // Author name
+  publishDate?: Date | string; // Publication date (for articles)
+  seo?: SEOData;              // SEO overrides
+  siteName?: string;          // Site name override
 }
 
 const {
@@ -25,30 +41,40 @@ const {
   siteName = siteData.title,
 } = Astro.props;
 
+// Base values from props
 const baseTitle = title || "Page";
 const baseDescription = description || siteData.description;
 const baseImageUrl = getImageUrl(image, defaultOGImage.src);
 
+// Meta tag values (with SEO overrides)
 const finalMetaTitle = seo?.metaTitle || `${baseTitle} | ${siteData.title}`;
 const finalMetaDescription = seo?.metaDescription || baseDescription;
 
+// Open Graph values (with fallbacks)
 const finalOgTitle = seo?.ogTitle || seo?.metaTitle || baseTitle;
 const finalOgDescription = seo?.ogDescription || seo?.metaDescription || baseDescription;
 const finalOgImageUrl = getImageUrl(seo?.ogImage, baseImageUrl);
 const finalOgType = seo?.ogType || "website";
 
+// Twitter Card values (with fallbacks to OG values)
 const finalTwitterTitle = seo?.twitterTitle || seo?.ogTitle || finalOgTitle;
 const finalTwitterDescription = seo?.twitterDescription || seo?.ogDescription || finalOgDescription;
 const finalTwitterImageUrl = getImageUrl(seo?.twitterImage || seo?.ogImage, finalOgImageUrl);
 const finalTwitterCard = seo?.twitterCard || "summary_large_image";
 
+// Additional SEO fields
 const finalKeywords = seo?.keywords || ["astro", "static site generator", "web development"];
 const finalCanonicalUrl = seo?.canonicalUrl || `${siteData.url}${Astro.url.pathname}`;
 const effectiveRobots = seo?.robots || "index, follow";
 
+// Author and publisher
 const authorName = author || siteData.title;
 const publisherName = siteData.legalName || siteData.title;
 
+/**
+ * Convert relative URLs to absolute for social sharing
+ * Social platforms require absolute URLs for images
+ */
 const makeAbsolute = (url: string): string => {
   if (url.startsWith('http')) return url;
   if (url.startsWith('/')) return `${siteData.url}${url}`;
@@ -58,8 +84,13 @@ const makeAbsolute = (url: string): string => {
 const absoluteOgImage = makeAbsolute(finalOgImageUrl);
 const absoluteTwitterImage = makeAbsolute(finalTwitterImageUrl);
 
+// Determine schema type based on content
 const schemaType = !publishDate ? "WebSite" : "Article";
 
+/**
+ * Structured data for search engines (JSON-LD)
+ * Provides rich snippets in search results
+ */
 const structuredData = {
   "@context": "https://schema.org",
   "@type": schemaType,
@@ -83,6 +114,7 @@ const structuredData = {
     "@type": publishDate ? "Person" : "Organization",
     "name": authorName,
   },
+  // Article-specific fields
   ...(publishDate && {
     "datePublished": new Date(publishDate).toISOString(),
     "dateModified": new Date(publishDate).toISOString(),
@@ -104,7 +136,7 @@ const structuredData = {
 <link rel="canonical" href={finalCanonicalUrl} />
 <meta name="robots" content={effectiveRobots} />
 
-<!-- Open Graph -->
+<!-- Open Graph / Facebook / LinkedIn -->
 <meta property="og:title" content={finalOgTitle} />
 <meta property="og:description" content={finalOgDescription} />
 <meta property="og:image" content={absoluteOgImage} />
@@ -115,7 +147,7 @@ const structuredData = {
 <meta property="article:author" content={authorName} />
 <meta property="article:publisher" content={publisherName} />
 
-<!-- Twitter -->
+<!-- Twitter Card -->
 <meta name="twitter:card" content={finalTwitterCard} />
 <meta name="twitter:title" content={finalTwitterTitle} />
 <meta name="twitter:description" content={finalTwitterDescription} />
@@ -123,5 +155,5 @@ const structuredData = {
 <meta name="twitter:site" content={publisherName} />
 <meta name="twitter:creator" content={authorName} />
 
-<!-- JSON-LD -->
+<!-- JSON-LD Structured Data -->
 <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

@@ -1,4 +1,17 @@
 // src/utils/pages.ts
+/**
+ * Page Generation Decision Logic
+ * 
+ * Determines which collections and items should have pages generated.
+ * Uses the override pattern from metaOverrides.ts to respect both
+ * collection-level and item-level settings.
+ * 
+ * Three key functions:
+ * - shouldItemHavePage: Does this specific item get a page?
+ * - shouldCollectionHavePage: Does the collection get an index page?
+ * - shouldProcessCollection: Should we even look at this collection?
+ */
+
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import { getCollection } from 'astro:content';
 import { getCollectionMeta } from '@/utils/collections';
@@ -6,7 +19,22 @@ import type { MetaData } from '@/content/schema';
 import { getItemProperty } from '@/utils/metaOverrides';
 
 /**
- * Determines if an individual item should have its own page
+ * Determine if an individual item should have its own page
+ * 
+ * Uses override pattern:
+ * - Item's hasPage field (if present)
+ * - Collection's itemsHasPage setting from _meta.mdx
+ * - Default: true (most items should have pages)
+ * 
+ * @param item - Collection entry to check
+ * @param meta - Collection metadata
+ * @returns True if item should get a dedicated page
+ * @example
+ * // Item explicitly says no page
+ * shouldItemHavePage({ data: { hasPage: false } }, meta) // false
+ * 
+ * // Item has no preference, use collection default
+ * shouldItemHavePage({ data: {} }, { itemsHasPage: false }) // false
  */
 export function shouldItemHavePage(
   item: CollectionEntry<CollectionKey>,
@@ -22,21 +50,40 @@ export function shouldItemHavePage(
 }
 
 /**
- * Determines if a collection should have an index page
+ * Determine if a collection should have an index page
+ * 
+ * Checks the hasPage field in _meta.mdx (defaults to true).
+ * Index pages show all items in the collection.
+ * 
+ * @param meta - Collection metadata
+ * @returns True if collection should have /collection index page
+ * @example
+ * shouldCollectionHavePage({ hasPage: false }) // false
+ * shouldCollectionHavePage({}) // true (default)
  */
 export function shouldCollectionHavePage(meta: MetaData): boolean {
   return meta.hasPage !== false;
 }
 
 /**
- * Determines if a collection should be processed for static page generation
+ * Determine if a collection should be processed for page generation
+ * 
+ * A collection should be processed if:
+ * - Collection-level itemsHasPage is not false, OR
+ * - At least one item has hasPage: true
+ * 
+ * This allows collections with itemsHasPage: false to still have
+ * individual items opt-in to having pages.
+ * 
+ * @param collectionName - Collection to check
+ * @returns True if collection should be processed for static pages
  */
 export async function shouldProcessCollection(
   collectionName: CollectionKey
 ): Promise<boolean> {
   const meta = getCollectionMeta(collectionName);
   
-  // If collection allows item pages, process it
+  // If collection allows item pages by default, process it
   if (meta.itemsHasPage !== false) {
     return true;
   }

@@ -1,18 +1,30 @@
 ---
 // src/components/LoopComponents/ContactCard.astro
+/**
+ * Contact Card Component
+ * 
+ * Displays contact information with:
+ * - Icon (defaults based on tags: phone, email, or generic)
+ * - Title (phone number, email address, etc.)
+ * - Optional description
+ * - Clickable link if linkPrefix provided
+ * 
+ * Used in ContactVariant to display phone, email, address, etc.
+ */
+
 import Icon from '@/components/Icon';
 
 export interface Props {
-  title: string;
-  linkPrefix?: string;
-  tags?: string[];
-  description?: string;
-  icon?: any;
+  title: string;           // Contact info (phone number, email, etc.)
+  linkPrefix?: string;     // URL prefix (tel:, mailto:, etc.)
+  tags?: string[];        // Used to determine default icon
+  description?: string;    // Optional label/description
+  icon?: any;             // Custom icon (overrides default)
 }
 
 const { title, linkPrefix, tags, description, icon } = Astro.props;
 
-// Fallback icon if none provided
+// Smart icon selection based on tags if no custom icon provided
 const defaultIcon = tags?.includes('phone') 
   ? 'lu:phone' 
   : tags?.includes('email')
@@ -20,17 +32,23 @@ const defaultIcon = tags?.includes('phone')
   : 'lu:contact';
 
 const displayIcon = icon || defaultIcon;
+
+// Build full link if prefix provided (tel:, mailto:, etc.)
 const href = linkPrefix ? `${linkPrefix}${title}` : undefined;
 ---
 
 <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
   <div class="flex items-start gap-4">
+    {/* Icon circle */}
     <div class="flex-shrink-0">
       <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
         <Icon icon={displayIcon} size="md" className="text-blue-600" />
       </div>
     </div>
+    
+    {/* Contact info */}
     <div class="flex-1">
+      {/* Title as link or plain text */}
       {href ? (
         <a 
           href={href}
@@ -41,6 +59,8 @@ const href = linkPrefix ? `${linkPrefix}${title}` : undefined;
       ) : (
         <p class="text-lg font-semibold text-gray-900">{title}</p>
       )}
+      
+      {/* Optional description */}
       {description && (
         <p class="text-gray-600 mt-1">{description}</p>
       )}

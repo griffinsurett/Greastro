@@ -1,5 +1,18 @@
 ---
-// src/components/Footer.astro
+// src/layouts/Footer.astro
+/**
+ * Footer Component
+ * 
+ * Site-wide footer with:
+ * - Copyright notice
+ * - Social media links
+ * - Legal links (Privacy Policy, Cookie Policy)
+ * - Optional GDPR consent manager
+ * 
+ * Uses mt-auto to push to bottom in flex layout.
+ * Dark theme for visual contrast with main content.
+ */
+
 import { siteData } from "@/content/siteData";
 import Section from "@/components/section/Section.astro";
 import GDPRManager from "@/components/consent/GDPRManager";
@@ -8,10 +21,13 @@ import GDPRManager from "@/components/consent/GDPRManager";
 <footer class="bg-gray-900 text-white mt-auto">
   <div class="container mx-auto px-4 py-1">
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      {/* Copyright notice */}
       <p class="text-gray-400 text-sm">
         &copy; {new Date().getFullYear()}
         {siteData.legalName}. All rights reserved.
       </p>
+      
+      {/* Social media icons */}
       <Section
         collection="social-media"
         variant="SocialMediaVariant"
@@ -19,6 +35,8 @@ import GDPRManager from "@/components/consent/GDPRManager";
         alignment="left"
         className="text-white"
       />
+      
+      {/* Legal and privacy links */}
       <div class="flex flex-wrap items-center gap-4 text-sm">
         <a
           href="/privacy-policy"
@@ -32,7 +50,9 @@ import GDPRManager from "@/components/consent/GDPRManager";
         >
           Cookie Policy
         </a>
-        <!-- GDPR Manager renders modal + button inline -->
+        
+        {/* GDPR Manager - renders modal + privacy choices button */}
+        {/* Uncomment when ready to enable: */}
         <!-- <GDPRManager client:idle testMode={false} /> -->
       </div>
     </div>

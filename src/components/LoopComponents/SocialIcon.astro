@@ -1,20 +1,33 @@
 ---
 // src/components/LoopComponents/SocialIcon.astro
+/**
+ * Social Icon Component
+ * 
+ * Individual social media icon with:
+ * - Circular background
+ * - Hover scale effect
+ * - Size variants (sm, md, lg)
+ * - Optional link
+ * - Accessibility labels
+ * 
+ * Used in SocialMediaVariant for social media links.
+ */
+
 import Icon from '@/components/Icon';
 
 export interface Props {
-  title: string;
-  link?: string;
-  icon?: any;
-  size?: 'sm' | 'md' | 'lg';
+  title: string;              // Platform name (for aria-label)
+  link?: string;             // URL to social profile
+  icon?: any;                // Icon identifier
+  size?: 'sm' | 'md' | 'lg'; // Icon size
 }
 
 const { title, link, icon, size = 'md' } = Astro.props;
 
-// Default icon if none provided
+// Default to globe icon if none specified
 const displayIcon = icon || 'lu:globe';
 
-// Wrapper padding classes
+// Padding scales with size
 const wrapperPadding = {
   sm: 'p-2',
   md: 'p-2.5',
@@ -22,6 +35,7 @@ const wrapperPadding = {
 };
 ---
 
+{/* Render as link if URL provided */}
 {link ? (
   <a 
     href={link}
@@ -34,6 +48,7 @@ const wrapperPadding = {
     <Icon icon={displayIcon} size={size} className="text-gray-700" />
   </a>
 ) : (
+  /* Otherwise just display icon */
   <div 
     class={`${wrapperPadding[size]} bg-gray-100 rounded-full inline-flex items-center justify-center`}
     title={title}

@@ -1,5 +1,17 @@
 ---
-// src/components/section/loops/GridCard.astro
+// src/components/LoopComponents/GridCard.astro
+/**
+ * Grid Card Component
+ * 
+ * Simple card for grid layouts with:
+ * - Optional image
+ * - Title (linked or plain)
+ * - Description
+ * - Subtle hover effects
+ * 
+ * Generic card used in GridVariant - the default section variant.
+ */
+
 export interface Props {
   title: string;
   url?: string;
@@ -14,6 +26,7 @@ const { title, url, description, image } = Astro.props;
 ---
 
 <article class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+  {/* Optional image */}
   {image && (
     <img 
       src={image.src} 
@@ -21,6 +34,8 @@ const { title, url, description, image } = Astro.props;
       class="w-full h-48 object-cover"
     />
   )}
+  
+  {/* Card content */}
   <div class="p-6">
     <h3 class="text-xl font-semibold mb-2">
       {url ? (
@@ -31,6 +46,7 @@ const { title, url, description, image } = Astro.props;
         <span class="text-gray-900">{title}</span>
       )}
     </h3>
+    
     {description && (
       <p class="text-gray-600 leading-relaxed">{description}</p>
     )}

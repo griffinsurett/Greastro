@@ -1,12 +1,25 @@
 ---
-// src/components/section/loops/ArticleCard.astro
+// src/components/LoopComponents/ArticleCard.astro
+/**
+ * Article Card Component
+ * 
+ * Card component for displaying blog posts/articles with:
+ * - Title with optional link
+ * - Description with line clamping
+ * - Publication date
+ * - Tags (max 3 shown)
+ * - Author information with avatar/initials
+ * 
+ * Used in BlogVariant for blog post listings.
+ */
+
 export interface Props {
-  title: string;
-  url?: string;
-  description?: string;
-  date?: Date | string;
-  tags?: string[];
-  author?: {
+  title: string;           // Article title
+  url?: string;           // Link to full article
+  description?: string;    // Article excerpt/summary
+  date?: Date | string;   // Publication date
+  tags?: string[];        // Category/topic tags
+  author?: {              // Author information
     name: string;
     role?: string;
     initials: string;
@@ -18,8 +31,9 @@ const { title, url, description, date, tags, author } = Astro.props;
 
 <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
   <div class="p-6">
-    {/* Article info */}
+    {/* Article metadata and content */}
     <div class="mb-4">
+      {/* Tags - show first 3 */}
       {tags && tags.length > 0 && (
         <div class="flex flex-wrap gap-2 mb-3">
           {tags.slice(0, 3).map((tag: string) => (
@@ -30,6 +44,7 @@ const { title, url, description, date, tags, author } = Astro.props;
         </div>
       )}
       
+      {/* Title - linked if URL provided */}
       <h3 class="text-2xl font-bold mb-2">
         {url ? (
           <a href={url} class="text-gray-900 hover:text-blue-600 transition-colors">
@@ -40,12 +55,14 @@ const { title, url, description, date, tags, author } = Astro.props;
         )}
       </h3>
       
+      {/* Description with 2-line clamp */}
       {description && (
         <p class="text-gray-600 mb-4 line-clamp-2">
           {description}
         </p>
       )}
       
+      {/* Publication date */}
       <div class="flex items-center text-sm text-gray-500 gap-4">
         {date && (
           <time>{new Date(date).toLocaleDateString()}</time>
@@ -53,10 +70,11 @@ const { title, url, description, date, tags, author } = Astro.props;
       </div>
     </div>
     
-    {/* Author info */}
+    {/* Author info with avatar */}
     {author && (
       <div class="pt-4 mt-4 border-t border-gray-200">
         <div class="flex items-center gap-3">
+          {/* Avatar circle with initials */}
           <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
             <span class="text-blue-600 text-sm font-bold">
               {author.initials}
@@ -77,6 +95,7 @@ const { title, url, description, date, tags, author } = Astro.props;
 </article>
 
 <style>
+  /* CSS for 2-line text truncation */
   .line-clamp-2 {
     overflow: hidden;
     display: -webkit-box;

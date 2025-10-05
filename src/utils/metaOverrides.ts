@@ -1,16 +1,41 @@
 // src/utils/metaOverrides.ts
+/**
+ * Meta Override Utilities
+ * 
+ * Implements the override pattern used throughout the system:
+ * 1. Item-level overrides (highest priority)
+ * 2. Collection-level defaults (from _meta.mdx)
+ * 3. System defaults (lowest priority)
+ * 
+ * This allows fine-grained control - collections can set defaults
+ * while individual items can override on a case-by-case basis.
+ * 
+ * Example: itemsHasPage in _meta.mdx sets default, but individual
+ * items can override with hasPage in their frontmatter.
+ */
 
 /**
- * Gets a property value with fallback chain:
- * 1. Item-level override (e.g., hasPage on the item)
- * 2. Collection-level setting (e.g., itemsHasPage in _meta.mdx)
- * 3. Default value
+ * Get a property value with fallback chain
  * 
- * @param itemData - The item's data object
- * @param meta - The collection's metadata
+ * Implements the three-level override pattern:
+ * Item override → Collection default → System default
+ * 
+ * @param itemData - The item's data object (frontmatter)
+ * @param meta - The collection's metadata from _meta.mdx
  * @param itemKey - Property name on the item (e.g., 'hasPage')
  * @param metaKey - Property name in meta (e.g., 'itemsHasPage')
  * @param defaultValue - Fallback if neither is set
+ * @returns The resolved property value
+ * @example
+ * // Collection says items should have pages by default
+ * // But this specific item says no
+ * getItemProperty(
+ *   { hasPage: false },           // Item override
+ *   { itemsHasPage: true },       // Collection default
+ *   'hasPage',
+ *   'itemsHasPage',
+ *   true                          // System default
+ * ) // Returns: false (item override wins)
  */
 export function getItemProperty<T>(
   itemData: any,
@@ -24,11 +49,11 @@ export function getItemProperty<T>(
     return itemData[itemKey];
   }
   
-  // 2. Collection-level setting
+  // 2. Collection-level setting from _meta.mdx
   if (meta?.[metaKey] !== undefined) {
     return meta[metaKey];
   }
   
-  // 3. Default value
+  // 3. System default value
   return defaultValue;
 }

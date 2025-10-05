@@ -1,5 +1,16 @@
 ---
 // src/components/section/variants/ContactVariant.astro
+/**
+ * Contact Variant - Contact Information Layout
+ * 
+ * Specialized layout for contact pages with:
+ * - Contact cards (phone, email, etc.)
+ * - Embedded social media section
+ * - 1-3 column layouts
+ * 
+ * Combines ContactCard components with SocialMediaVariant.
+ */
+
 import Section from "../Section.astro";
 import type { BaseVariantProps } from "../Section.types";
 import ContactCard from "@/components/LoopComponents/ContactCard.astro";
@@ -29,6 +40,7 @@ const columnClasses = {
 ---
 
 <section class={`py-16 ${className}`}>
+  {/* Centered header */}
   {
     (title || description) && (
       <div class="text-center mb-12">
@@ -40,6 +52,7 @@ const columnClasses = {
     )
   }
 
+  {/* Grid of contact cards */}
   {
     items.length > 0 && (
       <ul class={`grid ${columnClasses[columns]} gap-6 list-none`}>
@@ -52,6 +65,7 @@ const columnClasses = {
     )
   }
 
+  {/* Embedded social media section */}
   <Section
     collection="social-media"
     variant="SocialMediaVariant"
@@ -60,6 +74,7 @@ const columnClasses = {
     alignment="center"
   />
 
+  {/* Optional CTA */}
   {
     collectionUrl && items.length > 0 && (
       <div class="mt-12 text-center">

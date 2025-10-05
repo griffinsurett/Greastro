@@ -7,6 +7,7 @@
  * - Resolving collection references to actual data
  * - Adding slug and URL fields
  * - Processing nested references recursively
+ * - Determining correct URL path (collection or root level)
  * 
  * The prepared items have all the data needed to render them without
  * additional lookups.
@@ -16,7 +17,7 @@ import type { CollectionKey, CollectionEntry } from 'astro:content';
 import type { MetaData, BaseData } from "@/content/schema";
 import { getItemKey } from './core';
 import { processDataForReferences } from './references';
-import { shouldItemHavePage } from '@/utils/pages';
+import { shouldItemHavePage, shouldItemUseRootPath } from '@/utils/pages';
 
 /**
  * Fields added during the preparation process
@@ -37,8 +38,9 @@ export type PreparedItem = BaseData & PreparedFields & Record<string, any>;
  * This function:
  * 1. Extracts the entry's unique identifier (slug/id)
  * 2. Recursively resolves any collection references to actual data
- * 3. Generates URL if the item should have its own page
- * 4. Preserves any existing URL (e.g., from menu-items loader)
+ * 3. Determines if item should use root path or collection path
+ * 4. Generates URL if the item should have its own page
+ * 5. Preserves any existing URL (e.g., from menu-items loader)
  * 
  * @param entry - Raw collection entry from Astro
  * @param collection - Name of the collection this entry belongs to
@@ -47,7 +49,7 @@ export type PreparedItem = BaseData & PreparedFields & Record<string, any>;
  * @example
  * const prepared = await prepareEntry(blogPost, 'blog', blogMeta);
  * // prepared.slug: 'my-post'
- * // prepared.url: '/blog/my-post'
+ * // prepared.url: '/blog/my-post' (or '/my-post' if rootPath: true)
  * // prepared.author: { name: 'Jane Doe', ... } // resolved from reference
  */
 export async function prepareEntry<T extends CollectionKey>(
@@ -65,14 +67,21 @@ export async function prepareEntry<T extends CollectionKey>(
   // Check if this entry already has a URL (e.g., from a custom loader)
   const hasExistingUrl = processedData.url !== undefined;
   
+  // Determine if item should have a page
+  const hasPage = shouldItemHavePage(entry, meta);
+  
+  // Determine URL path based on rootPath setting
+  let itemUrl: string | undefined;
+  if (!hasExistingUrl && hasPage) {
+    const useRootPath = shouldItemUseRootPath(entry, meta);
+    itemUrl = useRootPath ? `/${identifier}` : `/${collection}/${identifier}`;
+  }
+  
   // Return the prepared item with slug and conditional URL
   return {
     ...processedData,
     slug: identifier,
-    // Only add URL if entry doesn't have one and should have a page
-    ...(!hasExistingUrl && shouldItemHavePage(entry, meta) && {
-      url: `/${collection}/${identifier}`
-    })
+    ...(itemUrl && { url: itemUrl })
   } as PreparedItem;
 }
 

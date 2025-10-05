@@ -6,8 +6,9 @@
  * Uses the override pattern from metaOverrides.ts to respect both
  * collection-level and item-level settings.
  * 
- * Three key functions:
+ * Four key functions:
  * - shouldItemHavePage: Does this specific item get a page?
+ * - shouldItemUseRootPath: Should item be at root level (e.g., /about)?
  * - shouldCollectionHavePage: Does the collection get an index page?
  * - shouldProcessCollection: Should we even look at this collection?
  */
@@ -46,6 +47,40 @@ export function shouldItemHavePage(
     'hasPage',      // item-level property
     'itemsHasPage', // collection-level property
     true            // default value
+  );
+}
+
+/**
+ * Determine if an item should use root-level path
+ * 
+ * Uses override pattern:
+ * - Item's rootPath field (if present)
+ * - Collection's itemsRootPath setting from _meta.mdx
+ * - Default: false (most items use collection paths)
+ * 
+ * When true, item is accessible at /slug instead of /collection/slug
+ * 
+ * @param item - Collection entry to check
+ * @param meta - Collection metadata
+ * @returns True if item should use root path
+ * @example
+ * // Item says use root path
+ * shouldItemUseRootPath({ data: { rootPath: true } }, meta) // true
+ * // Result: /about instead of /pages/about
+ * 
+ * // Collection sets default for all items
+ * shouldItemUseRootPath({ data: {} }, { itemsRootPath: true }) // true
+ */
+export function shouldItemUseRootPath(
+  item: CollectionEntry<CollectionKey>,
+  meta: MetaData
+): boolean {
+  return getItemProperty(
+    item.data,
+    meta,
+    'rootPath',      // item-level property
+    'itemsRootPath', // collection-level property
+    false            // default value
   );
 }
 

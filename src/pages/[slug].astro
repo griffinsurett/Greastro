@@ -1,31 +1,29 @@
 ---
-// src/pages/[collection]/[slug].astro
+// src/pages/[slug].astro
 /**
- * Collection-Level Item Pages
+ * Root-Level Item Pages
  * 
- * Generates pages for items at /collection/slug path.
- * Items with rootPath: true will NOT be generated here (they use /[slug].astro instead).
+ * Generates pages for items with rootPath: true at the root level.
+ * E.g., /about instead of /pages/about
+ * 
+ * Works alongside [collection]/[slug].astro - items can choose which path to use.
  */
 
 import { getCollection } from "astro:content";
-import type { CollectionKey } from "astro:content";
 import { getCollectionMeta, getItemKey } from "@/utils/collections";
 import { buildItemSEOProps } from "@/utils/seo";
-import { shouldItemHavePage, shouldItemUseRootPath, shouldProcessCollection } from "@/utils/pages";
+import { shouldItemHavePage, shouldItemUseRootPath } from "@/utils/pages";
 import { getLayoutName, getLayoutComponent } from "@/layouts/collections/helpers/layoutUtils";
 import { getPageCollections } from "@/utils/pageGeneration";
 
 export async function getStaticPaths() {
   const names = getPageCollections();
   const paths: Array<{
-    params: { collection: string; slug: string };
+    params: { slug: string };
     props: any;
   }> = [];
 
   for (const coll of names) {
-    const shouldProcess = await shouldProcessCollection(coll);
-    if (!shouldProcess) continue;
-
     const meta = getCollectionMeta(coll);
     const entries = await getCollection(coll);
 
@@ -33,13 +31,12 @@ export async function getStaticPaths() {
       .filter((entry) => {
         // Only include items that:
         // 1. Should have a page
-        // 2. Should NOT use root path (those go to /[slug].astro)
-        return shouldItemHavePage(entry, meta) && !shouldItemUseRootPath(entry, meta);
+        // 2. Want to use root path
+        return shouldItemHavePage(entry, meta) && shouldItemUseRootPath(entry, meta);
       })
       .forEach((entry) => {
         paths.push({
           params: {
-            collection: coll,
             slug: getItemKey(entry),
           },
           props: { 

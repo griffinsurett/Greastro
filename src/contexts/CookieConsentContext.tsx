@@ -4,7 +4,7 @@ import { useConsentPreferences } from "@/hooks/useConsentPreferences";
 import {
   defaultConsentConfig,
   type ConsentConfig,
-} from "@/utils/consentConfig";
+} from "@/utils/consent/config";
 
 export interface ConsentPreferences {
   necessary: boolean;
@@ -27,9 +27,9 @@ interface CookieConsentContextType {
   isConsentBannerOpen: boolean;
 }
 
-const CookieConsentContext = createContext<CookieConsentContextType | undefined>(
-  undefined
-);
+const CookieConsentContext = createContext<
+  CookieConsentContextType | undefined
+>(undefined);
 
 export const useCookieConsent = () => {
   const context = useContext(CookieConsentContext);

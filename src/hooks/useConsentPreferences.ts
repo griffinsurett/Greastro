@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCookieStorage } from "./useCookieStorage";
 import type { ConsentPreferences } from "@/contexts/CookieConsentContext";
-import type { ConsentConfig } from "@/utils/consentConfig";
+import type { ConsentConfig } from "@/utils/consent/config";
 
 export function useConsentPreferences(config: ConsentConfig) {
   const { getCookie, setCookie } = useCookieStorage();
@@ -18,7 +18,9 @@ export function useConsentPreferences(config: ConsentConfig) {
     const loadPreferences = () => {
       // If test mode is enabled, always show the banner
       if (config.testMode) {
-        console.log('🧪 Cookie Consent Test Mode: Banner will show on every load');
+        console.log(
+          "🧪 Cookie Consent Test Mode: Banner will show on every load"
+        );
         setIsConsentBannerOpen(true);
         setHasConsented(false);
         setPreferences(null);
@@ -63,10 +65,10 @@ export function useConsentPreferences(config: ConsentConfig) {
 
         // In test mode, log the preferences but don't actually save
         if (config.testMode) {
-          console.log('🧪 Test Mode: Preferences would be saved:', prefsToSave);
+          console.log("🧪 Test Mode: Preferences would be saved:", prefsToSave);
           setPreferences(prefsToSave);
           setHasConsented(true);
-          
+
           // Dispatch event even in test mode
           if (typeof window !== "undefined") {
             window.dispatchEvent(

@@ -98,6 +98,14 @@ async function processItemMenus(
 
     const { collection, slug } = parseContentPath(path);
     
+    // Get collection meta to check rootPath settings
+    const meta = await getCollectionMeta(collection);
+    
+    // Determine if item should use root path
+    const useRootPath = data.rootPath !== undefined 
+      ? data.rootPath 
+      : (meta.itemsRootPath !== undefined ? meta.itemsRootPath : false);
+    
     // Support single object or array of menu configs
     const menuItems = Array.isArray(data.addToMenu) 
       ? data.addToMenu 
@@ -105,7 +113,10 @@ async function processItemMenus(
 
     for (const menuConfig of menuItems) {
       const itemId = menuConfig.id ?? `${collection}/${slug}`;
-      const itemSlug = menuConfig.slug ?? `/${collection}/${slug}`;
+      
+      // Use rootPath to determine the correct slug
+      const defaultSlug = useRootPath ? `/${slug}` : `/${collection}/${slug}`;
+      const itemSlug = menuConfig.slug ?? defaultSlug;
       
       // Normalize menu reference to array
       const menus = Array.isArray(menuConfig.menu) 
@@ -213,6 +224,9 @@ async function processCollectionItems(
   store: any
 ) {
   const configs = Array.isArray(menuConfigs) ? menuConfigs : [menuConfigs];
+  
+  // Get collection meta for rootPath defaults
+  const meta = await getCollectionMeta(collection);
 
   for (const [path, mod] of Object.entries(modules)) {
     // Only process items from this collection
@@ -224,7 +238,16 @@ async function processCollectionItems(
 
     for (const menuConfig of configs) {
       const itemId = menuConfig.id ?? `${collection}/${slug}`;
-      const itemSlug = menuConfig.slug ?? `/${collection}/${slug}`;
+      
+      // Determine if item should use root path
+      const useRootPath = data.rootPath !== undefined 
+        ? data.rootPath 
+        : (meta.itemsRootPath !== undefined ? meta.itemsRootPath : false);
+      
+      // Use rootPath to determine the correct slug
+      const defaultSlug = useRootPath ? `/${slug}` : `/${collection}/${slug}`;
+      const itemSlug = menuConfig.slug ?? defaultSlug;
+      
       const menus = Array.isArray(menuConfig.menu) 
         ? menuConfig.menu 
         : [menuConfig.menu];

@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import partytown from '@astrojs/partytown';
+import { buildRedirectConfig } from './src/utils/redirects';
 
 // Load environment variables from .env files
 const env = loadEnv(
@@ -12,6 +13,9 @@ const env = loadEnv(
   process.cwd(),
   ''
 );
+
+// Build redirects from collections
+const redirects = await buildRedirectConfig();
 
 const siteUrl = `https://${env.PUBLIC_SITE_DOMAIN}`;
 console.log(`Site URL: ${siteUrl}`);
@@ -51,4 +55,10 @@ export default defineConfig({
       },
     }),
   ],
+  // Apply collected redirects
+  redirects: {
+    ...redirects,
+    // You can still add manual redirects here - they'll override collection redirects
+    // '/old-page': '/new-page',
+  },
 });

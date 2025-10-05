@@ -55,6 +55,25 @@ export type AddToMenuData = z.infer<typeof AddToMenuFields>;
 export type ItemsAddToMenuData = z.infer<typeof ItemsAddToMenuFields>;
 
 // ============================================================================
+// REDIRECT SCHEMA
+// ============================================================================
+
+/**
+ * Schema for redirect configuration
+ * Accepts either a single string or array of strings
+ * Each string represents a path that should redirect to this item/collection
+ */
+export const redirectFromSchema = z
+  .union([z.string(), z.array(z.string())])
+  .optional()
+  .transform((val) => {
+    if (!val) return [];
+    return Array.isArray(val) ? val : [val];
+  });
+
+export type RedirectFrom = z.infer<typeof redirectFromSchema>;
+
+// ============================================================================
 // IMAGE SCHEMA
 // ============================================================================
 
@@ -139,6 +158,7 @@ export const baseSchema = ({ image }: { image: Function }) =>
     icon: iconSchema({ image }).optional(),
     seo: seoSchema({ image }),
     addToMenu: z.array(AddToMenuFields).optional(),
+    redirectFrom: redirectFromSchema,
     publishDate: z
       .union([z.date(), z.string()])
       .optional()
@@ -165,6 +185,7 @@ export const metaSchema = ({ image }: { image: Function }) =>
     featuredImage: imageInputSchema({ image }).optional(),
     seo: seoSchema({ image }),
     addToMenu: z.array(AddToMenuFields).optional(),
+    redirectFrom: redirectFromSchema,
     itemsHasPage: z.boolean().default(true),
     itemsAddToMenu: z.array(ItemsAddToMenuFields).optional(),
     itemsLayout: z.string().default('CollectionLayout'),

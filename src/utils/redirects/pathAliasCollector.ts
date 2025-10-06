@@ -14,74 +14,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseFrontmatter } from '../filesystem/frontmatter';
 import { normalizePath } from '../pathValidation';
+import { getCollectionDirs } from '../filesystem/shared';
+import { shouldItemHavePage, shouldItemUseRootPath } from '../filesystem/pageLogic';
 import type { RedirectEntry } from './types';
-
-/**
- * Get all collection directories
- * 
- * @param contentDir - Path to content directory
- * @returns Array of collection names
- */
-function getCollectionDirs(contentDir: string): string[] {
-  if (!fs.existsSync(contentDir)) {
-    return [];
-  }
-  
-  const entries = fs.readdirSync(contentDir, { withFileTypes: true });
-  return entries
-    .filter(entry => entry.isDirectory())
-    .map(entry => entry.name)
-    .filter(name => !name.startsWith('.') && !name.startsWith('_'));
-}
-
-/**
- * Get property value using override pattern
- * Item property > Collection property > Default
- * 
- * @param itemData - Item frontmatter data
- * @param metaData - Collection meta data
- * @param itemKey - Property key on item
- * @param metaKey - Property key on meta
- * @param defaultValue - Default value
- * @returns Resolved property value
- */
-function getItemProperty<T>(
-  itemData: any,
-  metaData: any,
-  itemKey: string,
-  metaKey: string,
-  defaultValue: T
-): T {
-  if (itemData?.[itemKey] !== undefined) {
-    return itemData[itemKey];
-  }
-  if (metaData?.[metaKey] !== undefined) {
-    return metaData[metaKey];
-  }
-  return defaultValue;
-}
-
-/**
- * Determine if an item should have a page
- * 
- * @param itemData - Item frontmatter
- * @param metaData - Collection meta
- * @returns True if item should have a page
- */
-function shouldItemHavePage(itemData: any, metaData: any): boolean {
-  return getItemProperty(itemData, metaData, 'hasPage', 'itemsHasPage', true);
-}
-
-/**
- * Determine if an item should use root path
- * 
- * @param itemData - Item frontmatter
- * @param metaData - Collection meta
- * @returns True if item should be at root level
- */
-function shouldItemUseRootPath(itemData: any, metaData: any): boolean {
-  return getItemProperty(itemData, metaData, 'rootPath', 'itemsRootPath', false);
-}
 
 /**
  * Collect path alias redirects for a single collection
@@ -120,7 +55,7 @@ export function collectPathAliasRedirects(
     const filePath = path.join(collectionDir, file);
     const itemData = parseFrontmatter(filePath);
     
-    // Skip items without pages
+    // Skip items without pages - using Node.js-compatible function from filesystem/pageLogic
     if (!shouldItemHavePage(itemData, meta)) {
       continue;
     }
@@ -131,6 +66,8 @@ export function collectPathAliasRedirects(
     // Determine paths
     const rootPath = `/${slug}`;
     const collectionPath = `/${collectionName}/${slug}`;
+    
+    // Use Node.js-compatible function from filesystem/pageLogic
     const useRootPath = shouldItemUseRootPath(itemData, meta);
     
     // Create redirect based on rootPath setting

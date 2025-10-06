@@ -21,6 +21,7 @@ import * as SiIcons from 'react-icons/si';
 import * as BiIcons from 'react-icons/bi';
 import * as AiIcons from 'react-icons/ai';
 import * as MdIcons from 'react-icons/md';
+import { toPascalCase } from '@/utils/string';
 
 /**
  * Map icon size names to pixel values
@@ -123,21 +124,6 @@ export function isValidIconString(icon: string): boolean {
 }
 
 /**
- * Convert kebab-case icon name to PascalCase component name
- * 
- * @param name - Icon name in kebab-case
- * @returns Component name in PascalCase
- * @example
- * toComponentName('arrow-right') // 'ArrowRight'
- */
-export function toComponentName(name: string): string {
-  return name
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-}
-
-/**
  * Get React component for an icon from a library
  * 
  * @param library - Library prefix (lu, fa, etc.)
@@ -153,8 +139,8 @@ export function getIconComponent(library: string, iconName: string): any {
     return null;
   }
 
-  // Build component name: Lu + ArrowRight = LuArrowRight
-  const componentName = toComponentName(iconName);
+  // Build component name using toPascalCase from string.ts
+  const componentName = toPascalCase(iconName);
   const shortPrefix = libraryPrefixes[library].charAt(0).toUpperCase() + libraryPrefixes[library].slice(1);
   const IconComponent = lib[`${shortPrefix}${componentName}`];
 

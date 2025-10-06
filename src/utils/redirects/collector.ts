@@ -10,25 +10,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseFrontmatter } from '../filesystem/frontmatter';
 import { normalizePath } from '../pathValidation';
+import { getCollectionDirs } from '../filesystem/shared';
 import type { RedirectEntry } from './types';
-
-/**
- * Get all collection directories
- * 
- * @param contentDir - Path to content directory
- * @returns Array of collection names
- */
-function getCollectionDirs(contentDir: string): string[] {
-  if (!fs.existsSync(contentDir)) {
-    return [];
-  }
-  
-  const entries = fs.readdirSync(contentDir, { withFileTypes: true });
-  return entries
-    .filter(entry => entry.isDirectory())
-    .map(entry => entry.name)
-    .filter(name => !name.startsWith('.') && !name.startsWith('_'));
-}
 
 /**
  * Normalize redirectFrom field to array

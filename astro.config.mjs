@@ -15,6 +15,7 @@ const env = loadEnv(
 
 const redirects = await buildRedirectConfig();
 const siteUrl = `https://${env.PUBLIC_SITE_DOMAIN}`;
+console.log(`Site URL: ${siteUrl}`);
 
 export default defineConfig({
   site: siteUrl,
@@ -29,38 +30,65 @@ export default defineConfig({
       assetsInlineLimit: 4096,
       cssCodeSplit: true,
       cssMinify: 'lightningcss',
+      
+      // Minify more aggressively
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true, // Remove console.logs in production
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+        },
+        format: {
+          comments: false, // Remove all comments
+        },
+      },
+      
       rollupOptions: {
         output: {
+          // Optimize chunk sizes
           manualChunks(id) {
-            // CRITICAL: Separate React completely - don't bundle with main
-            if (id.includes('node_modules/react/')) {
-              return 'react-core';
-            }
-            if (id.includes('node_modules/react-dom/')) {
-              return 'react-dom';
-            }
-            if (id.includes('node_modules/scheduler')) {
-              return 'react-scheduler';
+            // React - keep together but separate from main bundle
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler')
+            ) {
+              return 'react-vendor';
             }
             
-            // Consent system (lazy loaded, needs React)
-            if (id.includes('/components/consent/')) {
-              return 'consent-ui';
+            // React Icons - split by library
+            if (id.includes('react-icons/lu')) {
+              return 'icons-lucide';
+            }
+            if (id.includes('react-icons/fi')) {
+              return 'icons-feather';
+            }
+            if (id.includes('react-icons/')) {
+              return 'icons-other';
             }
             
-            // Modal (used by consent)
+            // Consent system - all together (loaded with client:idle)
+            if (
+              id.includes('/components/consent/') ||
+              id.includes('/hooks/useCookieStorage')
+            ) {
+              return 'consent';
+            }
+            
+            // Modal - separate (only loaded when needed)
             if (id.includes('/components/Modal')) {
-              return 'modal-ui';
+              return 'modal';
             }
             
-            // Hooks (needed by consent)
+            // Other React components
+            if (id.includes('/components/') && id.includes('.tsx')) {
+              return 'components';
+            }
+            
+            // Hooks
             if (id.includes('/hooks/')) {
               return 'hooks';
-            }
-            
-            // Icons
-            if (id.includes('react-icons')) {
-              return 'icons';
             }
             
             // Other vendor code
@@ -89,17 +117,18 @@ export default defineConfig({
     },
     
     optimizeDeps: {
-      // Don't pre-bundle React (load on demand)
-      exclude: ['react', 'react-dom', '@astrojs/react'],
+      include: ['react', 'react-dom'],
+      exclude: ['@astrojs/react'],
     },
+    
+    // Enable build cache
+    cacheDir: '.vite',
   },
   
   integrations: [
     mdx(),
     react({
-      include: ['**/components/consent/**', '**/hooks/**'],
-      // CRITICAL: Don't inject React runtime globally
-      experimentalReactChildren: false,
+      include: ['**/components/**/*.{jsx,tsx}', '**/hooks/**/*.{js,ts,jsx,tsx}'],
     }),
     partytown({
       config: {

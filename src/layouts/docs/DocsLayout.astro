@@ -1,16 +1,11 @@
 ---
 // src/layouts/docs/DocsLayout.astro
-/**
- * Documentation Layout
- * Professional documentation theme with sidebar navigation
- */
-
 import HeadTags from '@/layouts/HeadTags.astro';
 import SEO from '@/layouts/SEO.astro';
 import DocsTheme from './DocsTheme.astro';
 import BodyTags from '@/layouts/BodyTags.astro';
 import DocsThemeToggle from '@/components/docs/DocsThemeToggle.jsx';
-import DocsSidebar from '@/components/docs/Sidebar.astro';
+import Sidebar from '@/components/docs/sidebar/Sidebar.astro';
 
 export interface Props {
   title: string;
@@ -22,7 +17,6 @@ export interface Props {
     items: {
       label: string;
       href: string;
-      active?: boolean;
     }[];
   }[];
   [key: string]: any;
@@ -57,7 +51,7 @@ const {
 
     <div class="min-h-screen">
       <!-- Sidebar -->
-      <DocsSidebar sections={sections} />
+      <Sidebar sections={sections} />
 
       <!-- Main Content -->
       <main class="lg:ml-72">
@@ -72,6 +66,15 @@ const {
               <div class="flex items-center gap-3">
                 <DocsThemeToggle client:load />
                 
+                <a 
+                  href="/examples/query-cheatsheet" 
+                  class="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-docs-accent text-white text-sm font-semibold rounded-lg hover:bg-docs-accent/90 transition shadow-sm hover:shadow"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="hidden sm:inline">Cheatsheet</span>
+                </a>
               </div>
             </div>
           </div>

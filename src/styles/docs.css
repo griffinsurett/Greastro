@@ -279,4 +279,17 @@
   .docs-p {
     @apply text-docs-text-muted;
   }
+
+  .docs-sidebar-link {
+    @apply transition-all duration-200;
+  }
+  
+  .docs-sidebar-link-active {
+    @apply text-docs-accent bg-docs-accent/10 relative;
+  }
+  
+  .docs-sidebar-link-active::before {
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3/5 bg-docs-accent rounded-r opacity-100 transition-opacity duration-200;
+    content: '';
+  }
 }

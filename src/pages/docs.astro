@@ -72,6 +72,128 @@ import ApiMethodCard from '@/components/docs/ApiMethodCard.astro';
     />
   </DocSection>
 
+  <!-- Simple Queries Section -->
+  <DocSection 
+    id="simple-queries" 
+    title="Simple Queries"
+    description="Basic query patterns for getting started"
+  >
+    <CodeExample 
+      title="Get all items from a collection"
+      code={`const posts = query('blog').get();`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Get first item"
+      code={`const latestPost = query('blog')
+  .orderBy('data.date', 'desc')
+  .first();`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Count items"
+      code={`const totalPosts = query('blog').count();`}
+      language="typescript"
+    />
+  </DocSection>
+
+  <!-- Filtering Section -->
+  <DocSection 
+    id="filtering" 
+    title="Filtering"
+    description="Filter query results based on conditions"
+  >
+    <CodeExample 
+      title="Simple filter"
+      code={`const featuredPosts = query('blog')
+  .filter(post => post.data.featured === true)
+  .get();`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Multiple conditions"
+      code={`const recentTechPosts = query('blog')
+  .filter(post => 
+    post.data.category === 'tech' && 
+    post.data.published === true
+  )
+  .get();`}
+      language="typescript"
+    />
+
+    <InfoBox type="info">
+      Filters are applied during the query execution, so they're efficient and type-safe.
+    </InfoBox>
+  </DocSection>
+
+  <!-- Sorting Section -->
+  <DocSection 
+    id="sorting" 
+    title="Sorting"
+    description="Order your query results"
+  >
+    <CodeExample 
+      title="Sort ascending"
+      code={`const postsByDate = query('blog')
+  .orderBy('data.date', 'asc')
+  .get();`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Sort descending"
+      code={`const newestFirst = query('blog')
+  .orderBy('data.date', 'desc')
+  .get();`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Multiple sort fields"
+      code={`const sorted = query('blog')
+  .orderBy('data.category', 'asc')
+  .orderBy('data.date', 'desc')
+  .get();`}
+      language="typescript"
+    />
+  </DocSection>
+
+  <!-- Pagination Section -->
+  <DocSection 
+    id="pagination" 
+    title="Pagination"
+    description="Limit and paginate query results"
+  >
+    <CodeExample 
+      title="Limit results"
+      code={`const topPosts = query('blog')
+  .orderBy('data.views', 'desc')
+  .limit(10)
+  .get();`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Pagination with offset"
+      code={`const page = 2;
+const pageSize = 10;
+
+const posts = query('blog')
+  .orderBy('data.date', 'desc')
+  .limit(pageSize)
+  .offset((page - 1) * pageSize)
+  .get();`}
+      language="typescript"
+    />
+
+    <InfoBox type="tip" title="Performance">
+      Always use <code>limit()</code> when you don't need all results to improve performance.
+    </InfoBox>
+  </DocSection>
+
   <!-- Multi-Collection Section -->
   <DocSection 
     id="multi-collection" 
@@ -91,6 +213,77 @@ import ApiMethodCard from '@/components/docs/ApiMethodCard.astro';
       code={`const results = query(['blog', 'portfolio'])
   .filter(item => item.data.featured)
   .get();`}
+      language="typescript"
+    />
+  </DocSection>
+
+  <!-- Hierarchical Section -->
+  <DocSection 
+    id="hierarchical" 
+    title="Hierarchical Queries"
+    description="Work with parent-child relationships"
+  >
+    <CodeExample 
+      title="Get root items"
+      code={`const topLevelPages = getRoots('pages');`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Get children of an item"
+      code={`const childPages = query('pages')
+  .filter(page => page.data.parent === parentId)
+  .get();`}
+      language="typescript"
+    />
+  </DocSection>
+
+  <!-- Relations Section -->
+  <DocSection 
+    id="relations" 
+    title="Relations"
+    description="Query related content across collections"
+  >
+    <CodeExample 
+      title="Get related items"
+      code={`const postWithAuthor = query('blog')
+  .filter(post => post.id === postId)
+  .first();
+
+const author = getRelations(postWithAuthor, 'author');`}
+      language="typescript"
+    />
+
+    <InfoBox type="info">
+      Relations are resolved at build time for optimal performance.
+    </InfoBox>
+  </DocSection>
+
+  <!-- Statistics Section -->
+  <DocSection 
+    id="statistics" 
+    title="Statistics"
+    description="Aggregate and analyze your content"
+  >
+    <CodeExample 
+      title="Count by category"
+      code={`const categories = query('blog')
+  .get()
+  .reduce((acc, post) => {
+    const cat = post.data.category;
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {});`}
+      language="typescript"
+    />
+
+    <CodeExample 
+      title="Get unique values"
+      code={`const uniqueTags = [...new Set(
+  query('blog')
+    .get()
+    .flatMap(post => post.data.tags || [])
+)];`}
       language="typescript"
     />
   </DocSection>
@@ -127,9 +320,27 @@ import ApiMethodCard from '@/components/docs/ApiMethodCard.astro';
       />
       
       <ApiMethodCard
+        method=".offset(n)"
+        description="Skip n results"
+        returnType="QueryBuilder"
+      />
+      
+      <ApiMethodCard
         method=".get()"
         description="Execute query and return results"
         returnType="T[]"
+      />
+      
+      <ApiMethodCard
+        method=".first()"
+        description="Get first result"
+        returnType="T | undefined"
+      />
+      
+      <ApiMethodCard
+        method=".count()"
+        description="Count results"
+        returnType="number"
       />
     </div>
   </DocSection>
@@ -158,5 +369,9 @@ const posts = query('blog')
   .get();`}
       language="typescript"
     />
+
+    <InfoBox type="tip" title="Type Safety">
+      Always use TypeScript to get full type inference and catch errors at build time.
+    </InfoBox>
   </DocSection>
 </DocsLayout>

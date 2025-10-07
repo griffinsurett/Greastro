@@ -15,7 +15,6 @@ const env = loadEnv(
 
 const redirects = await buildRedirectConfig();
 const siteUrl = `https://${env.PUBLIC_SITE_DOMAIN}`;
-console.log(`Site URL: ${siteUrl}`);
 
 export default defineConfig({
   site: siteUrl,
@@ -27,56 +26,44 @@ export default defineConfig({
     plugins: [tailwindcss()],
     
     build: {
-      // Inline small assets (CSS under 4KB gets inlined)
       assetsInlineLimit: 4096,
-      
-      // Enable CSS code splitting
       cssCodeSplit: true,
-      
-      // Minify CSS aggressively
       cssMinify: 'lightningcss',
-      
       rollupOptions: {
         output: {
-          // Better chunk splitting for CSS
-          assetFileNames: (assetInfo) => {
-            // Separate CSS by type
-            if (assetInfo.name?.endsWith('.css')) {
-              // Critical CSS gets different name for preloading
-              if (assetInfo.name.includes('global') || assetInfo.name.includes('base')) {
-                return 'assets/critical-[hash][extname]';
-              }
-              return 'assets/styles-[hash][extname]';
-            }
-            return 'assets/[name]-[hash][extname]';
-          },
-          
           manualChunks(id) {
-            // React vendor bundle
-            if (
-              id.includes('node_modules/react') ||
-              id.includes('node_modules/react-dom') ||
-              id.includes('node_modules/scheduler')
-            ) {
-              return 'react-vendor';
+            // CRITICAL: Separate React completely - don't bundle with main
+            if (id.includes('node_modules/react/')) {
+              return 'react-core';
+            }
+            if (id.includes('node_modules/react-dom/')) {
+              return 'react-dom';
+            }
+            if (id.includes('node_modules/scheduler')) {
+              return 'react-scheduler';
             }
             
-            // Consent system (lazy loaded)
+            // Consent system (lazy loaded, needs React)
             if (id.includes('/components/consent/')) {
-              return 'consent';
+              return 'consent-ui';
             }
             
-            // Modal system (used by consent)
+            // Modal (used by consent)
             if (id.includes('/components/Modal')) {
-              return 'modal';
+              return 'modal-ui';
             }
             
-            // Icons (if large)
+            // Hooks (needed by consent)
+            if (id.includes('/hooks/')) {
+              return 'hooks';
+            }
+            
+            // Icons
             if (id.includes('react-icons')) {
               return 'icons';
             }
             
-            // Other node_modules
+            // Other vendor code
             if (id.includes('node_modules')) {
               return 'vendor';
             }
@@ -85,59 +72,48 @@ export default defineConfig({
       },
     },
     
-    // Optimize CSS processing
     css: {
       devSourcemap: false,
-      
-      // Lightning CSS transformer (faster than PostCSS)
       transformer: 'lightningcss',
-      
       lightningcss: {
-        // Optimize for modern browsers (smaller CSS)
         targets: {
           chrome: 90,
           firefox: 88,
           safari: 14,
           edge: 90,
         },
-        
-        // Enable CSS nesting and other modern features
         drafts: {
           nesting: true,
         },
       },
     },
     
-    // Optimize dependencies
     optimizeDeps: {
-      include: ['react', 'react-dom'],
-      exclude: ['@astrojs/react'],
+      // Don't pre-bundle React (load on demand)
+      exclude: ['react', 'react-dom', '@astrojs/react'],
     },
   },
   
   integrations: [
     mdx(),
     react({
-      include: ['**/react/*', '**/components/**/*.jsx', '**/components/**/*.tsx', '**/hooks/**/*.js', '**/hooks/**/*.ts'],
+      include: ['**/components/consent/**', '**/hooks/**'],
+      // CRITICAL: Don't inject React runtime globally
+      experimentalReactChildren: false,
     }),
     partytown({
       config: {
         forward: ['dataLayer.push'],
-        debug: process.env.NODE_ENV === 'development',
+        debug: false,
       },
     }),
   ],
   
-  // Astro build optimizations
   build: {
-    // Inline small stylesheets automatically
     inlineStylesheets: 'auto',
-    
-    // Split code by page
     split: true,
   },
   
-  // Compress HTML
   compressHTML: true,
   
   redirects: {

@@ -21,17 +21,15 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     build: {
-      assetsInlineLimit: 4096,
+      assetsInlineLimit: 10240, // 10KB - will inline your 7.3KB CSS automatically
       cssCodeSplit: true,
-      cssMinify: 'esbuild', // Changed from 'lightningcss' - more compatible
+      cssMinify: 'esbuild',
       rollupOptions: {
         output: { assetFileNames, manualChunks },
       },
     },
     css: {
       devSourcemap: false,
-      // Remove transformer - let Tailwind handle it
-      // transformer: 'lightningcss', 
     },
     optimizeDeps: {
       include: ['react', 'react-dom'],
@@ -53,7 +51,7 @@ export default defineConfig({
   ],
   
   build: {
-    inlineStylesheets: 'auto',
+    inlineStylesheets: 'always', // This tells Astro to inline CSS automatically
     split: true,
   },
   

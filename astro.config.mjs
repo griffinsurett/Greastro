@@ -51,7 +51,7 @@ export default defineConfig({
   ],
   
   build: {
-    inlineStylesheets: 'always', // This tells Astro to inline CSS automatically
+    inlineStylesheets: 'always',
     split: true,
   },
   

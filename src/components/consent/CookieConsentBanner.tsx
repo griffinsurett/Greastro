@@ -69,7 +69,7 @@ export default function CookieConsentBanner() {
         onClose={() => setShowBanner(false)}
         closeButton={false}
         position="bottom-left"
-        className="bg-white rounded-lg border-none p-6 shadow-xl max-w-lg w-full"
+        className="bg-white rounded-lg p-6 shadow-xl max-w-lg w-full"
         overlayClass="bg-transparent pointer-events-none"
         allowScroll={true}
         ssr={false}

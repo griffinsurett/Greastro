@@ -7,17 +7,17 @@
  * - Copyright notice
  * - Social media links
  * - Legal links (Privacy Policy, Cookie Policy)
- * 
- * Uses mt-auto to push to bottom in flex layout.
- * Dark theme for visual contrast with main content.
+ * - Cookie preferences button (client-side)
  */
 
 import { siteData } from "@/content/siteData";
 import Section from "@/components/section/Section.astro";
+import CookiePreferencesButton from "@/components/consent/CookiePreferencesButton";
+import CookieConsentBanner from "@/components/consent/CookieConsentBanner";
 ---
 
 <footer class="bg-gray-900 text-white mt-auto">
-  <div class="container mx-auto px-4 py-1">
+  <div class="container mx-auto px-4 py-8">
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
       {/* Copyright notice */}
       <p class="text-gray-400 text-sm">
@@ -48,7 +48,10 @@ import Section from "@/components/section/Section.astro";
         >
           Cookie Policy
         </a>
-
+        
+        {/* Cookie Preferences Button - Client-side only */}
+        <CookiePreferencesButton client:visible />
+        <CookieConsentBanner client:load />
       </div>
     </div>
   </div>

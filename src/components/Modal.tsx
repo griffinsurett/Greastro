@@ -1,5 +1,5 @@
 // src/components/Modal.tsx
-import { useState, useEffect, useRef, type ReactNode, type ReactPortal, type MouseEvent } from 'react';
+import { useState, useEffect, useRef, memo, type ReactNode, type ReactPortal, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ModalProps {
@@ -17,7 +17,30 @@ export interface ModalProps {
   ssr?: boolean;
 }
 
-export default function Modal({
+// Cache portal root - only create once
+let portalRoot: HTMLElement | null = null;
+
+function getPortalRoot(): HTMLElement {
+  if (portalRoot) return portalRoot;
+  
+  if (typeof document === 'undefined') {
+    return null as any; // SSR safety
+  }
+  
+  portalRoot = document.body;
+  return portalRoot;
+}
+
+// Position classes - computed once
+const POSITION_CLASSES = {
+  'center': 'flex items-center justify-center',
+  'bottom-left': 'flex items-end justify-start p-4',
+  'bottom-right': 'flex items-end justify-end p-4',
+  'top-left': 'flex items-start justify-start p-4',
+  'top-right': 'flex items-start justify-end p-4',
+} as const;
+
+function Modal({
   isOpen,
   onClose,
   children,
@@ -33,57 +56,78 @@ export default function Modal({
 }: ModalProps): ReactPortal | null {
   const [mounted, setMounted] = useState<boolean>(ssr ? isOpen : false);
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   // Only mount on client side if ssr is false
   useEffect(() => {
-    if (!ssr) {
+    if (!ssr && !mounted) {
       setMounted(true);
     }
-  }, [ssr]);
+  }, [ssr, mounted]);
 
   // Track isOpen state for animations
   useEffect(() => {
     if (isOpen) {
       setMounted(true);
+      // Store previously focused element
+      previousFocusRef.current = document.activeElement as HTMLElement;
     }
   }, [isOpen]);
 
   // Lock body scroll when modal is open
   useEffect(() => {
-    if (mounted && isOpen && !allowScroll) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
+    if (!mounted || !isOpen || allowScroll) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+    
+    // Prevent layout shift from scrollbar
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+    };
   }, [mounted, isOpen, allowScroll]);
 
-  // Handle Escape key
+  // Handle Escape key - passive listener for better performance
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !isOpen) return;
     
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, { passive: true });
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [mounted, isOpen, onClose]);
 
-  // Focus management
+  // Focus management - only when modal opens
   useEffect(() => {
     if (mounted && isOpen && modalRef.current) {
-      const previouslyFocused = document.activeElement as HTMLElement;
-      modalRef.current.focus();
-      return () => {
-        previouslyFocused?.focus();
-      };
+      // Small delay to ensure modal is rendered
+      requestAnimationFrame(() => {
+        modalRef.current?.focus();
+      });
     }
+    
+    return () => {
+      // Restore focus when unmounting
+      if (!isOpen && previousFocusRef.current) {
+        requestAnimationFrame(() => {
+          previousFocusRef.current?.focus();
+        });
+      }
+    };
   }, [mounted, isOpen]);
 
   // Unmount modal after exit animation completes
@@ -103,32 +147,20 @@ export default function Modal({
     e.stopPropagation();
   };
 
-  const positionClasses = {
-    'center': 'flex items-center justify-center',
-    'bottom-left': 'flex items-end justify-start p-4',
-    'bottom-right': 'flex items-end justify-end p-4',
-    'top-left': 'flex items-start justify-start p-4',
-    'top-right': 'flex items-start justify-end p-4',
-  };
-
   // Check if overlay has pointer-events-none
   const hasNonInteractiveOverlay = overlayClass.includes('pointer-events-none');
 
   // Don't render during SSR if ssr is false
   if (!ssr && !mounted) return null;
-
-  // Don't render if not mounted (for animations)
   if (!mounted) return null;
+
+  const root = getPortalRoot();
+  if (!root) return null;
 
   // Render modal as a portal to document.body
   return createPortal(
     <div
-      className={`
-        fixed inset-0 z-[10000] ${positionClasses[position]}
-        ${overlayClass}
-        transform transition-opacity duration-300 ease-in-out
-        ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-      `.trim()}
+      className={`fixed inset-0 z-[10000] ${POSITION_CLASSES[position]} ${overlayClass} transform transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       onClick={handleOverlayClick}
       onTransitionEnd={handleAnimationEnd}
       role="dialog"
@@ -138,16 +170,7 @@ export default function Modal({
     >
       <div
         ref={modalRef}
-        className={`
-          relative ${className}
-          ${hasNonInteractiveOverlay ? 'pointer-events-auto' : ''}
-          transform-gpu transition-all duration-300 ease-in-out
-          origin-center
-          ${isOpen 
-            ? 'scale-100 translate-y-0 opacity-100' 
-            : 'scale-95 translate-y-4 opacity-0'
-          }
-        `.trim()}
+        className={`relative ${className} ${hasNonInteractiveOverlay ? 'pointer-events-auto' : ''} transform-gpu transition-all duration-300 ease-in-out origin-center ${isOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'}`}
         onClick={handleModalClick}
         tabIndex={-1}
       >
@@ -177,6 +200,9 @@ export default function Modal({
         {children}
       </div>
     </div>,
-    document.body
+    root
   );
 }
+
+// Memoize to prevent unnecessary re-renders
+export default memo(Modal);

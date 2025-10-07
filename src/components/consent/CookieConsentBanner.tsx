@@ -1,12 +1,12 @@
 // src/components/consent/CookieConsentBanner.tsx
 // Clear cookie and reload the page
 // document.cookie = 'cookie-consent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; location.reload();
+// src/components/consent/CookieConsentBanner.tsx
 import { useState, useEffect, lazy, Suspense, useTransition } from 'react';
 import { useCookieStorage } from '@/hooks/useCookieStorage';
-import Modal from '@/components/Modal';
+import Modal from '@/components/Modal'; // Now optimized!
 import type { CookieConsent } from './types';
 
-// Lazy load the heavy modal - saves ~5-10KB initial bundle
 const CookiePreferencesModal = lazy(() => import('./CookiePreferencesModal'));
 
 export default function CookieConsentBanner() {
@@ -16,16 +16,15 @@ export default function CookieConsentBanner() {
   const { getCookie, setCookie } = useCookieStorage();
 
   useEffect(() => {
-    const existingConsent = getCookie('cookie-consent');
+    // Quick inline check
+    if (document.cookie.includes('cookie-consent=')) return;
+
+    const timer = setTimeout(() => {
+      setShowBanner(true);
+    }, 1000);
     
-    if (!existingConsent) {
-      const timer = setTimeout(() => {
-        setShowBanner(true);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [getCookie]);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleAcceptAll = () => {
     const consent: CookieConsent = {
@@ -37,8 +36,6 @@ export default function CookieConsentBanner() {
     };
     
     setCookie('cookie-consent', JSON.stringify(consent), { expires: 365 });
-    
-    // Use transition for non-urgent UI update
     startTransition(() => {
       setShowBanner(false);
     });
@@ -60,15 +57,8 @@ export default function CookieConsentBanner() {
   };
 
   const handleOpenSettings = () => {
-    // Non-urgent update - keeps UI responsive
     startTransition(() => {
       setShowModal(true);
-    });
-  };
-
-  const handleCloseModal = () => {
-    startTransition(() => {
-      setShowModal(false);
     });
   };
 
@@ -106,7 +96,7 @@ export default function CookieConsentBanner() {
         <div className="flex flex-col gap-2 sm:flex-row">
           <button
             onClick={handleRejectAll}
-            className="flex-1 rounded-lg border-2 border-blue-600 bg-white px-4 py-2 font-semibold text-blue-600 transition-colors hover:bg-blue-50"
+            className="flex-1 rounded-lg border-2 border-blue-600 bg-white px-4 py-2 font-semibold text-blue-600 transition-colors hover:bg-blue-50 disabled:opacity-50"
             type="button"
             disabled={isPending}
           >
@@ -114,7 +104,7 @@ export default function CookieConsentBanner() {
           </button>
           <button
             onClick={handleAcceptAll}
-            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
+            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
             type="button"
             disabled={isPending}
           >
@@ -134,12 +124,11 @@ export default function CookieConsentBanner() {
         </div>
       </Modal>
 
-      {/* Lazy loaded modal with Suspense boundary */}
       {showModal && (
         <Suspense fallback={null}>
           <CookiePreferencesModal
             isOpen={showModal}
-            onClose={handleCloseModal}
+            onClose={() => setShowModal(false)}
           />
         </Suspense>
       )}

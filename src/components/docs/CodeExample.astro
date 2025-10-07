@@ -1,0 +1,120 @@
+---
+// src/components/docs/CodeExample.astro
+
+export interface Props {
+  title: string;
+  code: string;
+  language?: string;
+  result?: string;
+}
+
+const { title, code, language = 'typescript', result } = Astro.props;
+const exampleId = `example-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div class="not-prose docs-code-card">
+  <div class="docs-code-header">
+    <div class="flex items-center justify-between">
+      <h4 class="font-semibold text-docs-text">{title}</h4>
+      <button
+        data-code-button
+        data-code-id={exampleId}
+        class="docs-copy-button text-sm flex items-center gap-2"
+        title="Copy code"
+      >
+        <svg class="copy-icon w-4 h-4 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <svg class="check-icon w-4 h-4 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span class="button-text">Copy</span>
+      </button>
+    </div>
+  </div>
+  <div class="p-6">
+    <pre class="docs-code-block"><code id={exampleId} class={`language-${language} text-sm text-docs-text`}>{code}</code></pre>
+    {result && (
+      <div class="mt-4 pt-4 border-t border-docs-border">
+        <div class="text-sm font-medium mb-2 text-docs-text-muted">Result:</div>
+        <div class="docs-result-box">
+          <slot />
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('[data-code-button]');
+    
+    buttons.forEach(button => {
+      button.addEventListener('click', async () => {
+        const codeId = button.getAttribute('data-code-id');
+        const codeElement = document.getElementById(codeId!);
+        
+        if (!codeElement) return;
+        
+        try {
+          await navigator.clipboard.writeText(codeElement.textContent || '');
+          
+          button.classList.add('copied');
+          const buttonText = button.querySelector('.button-text');
+          if (buttonText) {
+            buttonText.textContent = 'Copied!';
+          }
+          
+          showToast('Code copied to clipboard!');
+          
+          setTimeout(() => {
+            button.classList.remove('copied');
+            if (buttonText) {
+              buttonText.textContent = 'Copy';
+            }
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+          showToast('Failed to copy code', 'error');
+        }
+      });
+    });
+  });
+  
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const existingToast = document.querySelector('.docs-toast');
+    if (existingToast) {
+      existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'docs-toast';
+    
+    const iconColorClass = type === 'success' ? 'text-docs-success' : 'text-docs-danger';
+    const iconPath = type === 'success' 
+      ? 'M5 13l4 4L19 7'
+      : 'M6 18L18 6M6 6l12 12';
+    
+    toast.innerHTML = `
+      <div class="flex items-center gap-3">
+        <svg class="w-5 h-5 flex-shrink-0 ${iconColorClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}" />
+        </svg>
+        <span class="text-sm font-medium text-docs-text-muted">${message}</span>
+      </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        toast.classList.add('show');
+      });
+    });
+    
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+</script>

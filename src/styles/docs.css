@@ -1,0 +1,282 @@
+/* src/styles/docs.css */
+/**
+ * Documentation Theme Styles
+ * Clean, semantic color system that doesn't flip meanings
+ */
+
+@import "tailwindcss";
+
+/* ============================================================================
+   CUSTOM VARIANTS FOR LIGHT + DARK
+   ============================================================================ */
+
+@custom-variant light  (&:where([data-theme="light"], [data-theme="light"] *));
+@custom-variant dark   (&:where([data-theme="dark"],  [data-theme="dark"]  *));
+
+/* ============================================================================
+   THEME - Base color definitions
+   ============================================================================ */
+
+@theme {
+  /* Base Colors - Raw color definitions */
+  --color-docs-primary-dark: #0f172a;
+  --color-docs-secondary-dark: #1e293b;
+  --color-docs-tertiary-dark: #334155;
+  
+  --color-docs-primary-light: #ffffff;
+  --color-docs-secondary-light: #f8fafc;
+  --color-docs-tertiary-light: #f1f5f9;
+  
+  /* Accent colors - these stay constant */
+  --color-docs-accent: #2563eb;
+  --color-docs-purple: #a855f7;
+  --color-docs-success: #10b981;
+  --color-docs-warning: #f59e0b;
+  --color-docs-danger: #ef4444;
+  --color-docs-info: #06b6d4;
+  
+  /* Border colors */
+  --color-docs-border-light: #e2e8f0;
+  --color-docs-border-dark: #475569;
+  
+  /* Semantic tokens - these are what change */
+  --color-docs-text: var(--color-docs-primary-dark);
+  --color-docs-text-muted: var(--color-docs-secondary-dark);
+  --color-docs-text-light: var(--color-docs-tertiary-dark);
+  
+  --color-docs-bg: var(--color-docs-primary-light);
+  --color-docs-bg2: var(--color-docs-secondary-light);
+  --color-docs-bg3: var(--color-docs-tertiary-light);
+  
+  --color-docs-border: var(--color-docs-border-light);
+  
+  /* Accent backgrounds - subtle tints for info boxes */
+  --color-docs-accent-bg: #eff6ff;
+  --color-docs-purple-bg: #faf5ff;
+  --color-docs-success-bg: #f0fdf4;
+  --color-docs-warning-bg: #fffbeb;
+  --color-docs-danger-bg: #fef2f2;
+  --color-docs-info-bg: #ecfeff;
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+  }
+  
+  /* Light theme - default */
+  [data-theme="light"] {
+    --color-docs-text: var(--color-docs-primary-dark);
+    --color-docs-text-muted: var(--color-docs-secondary-dark);
+    --color-docs-text-light: var(--color-docs-tertiary-dark);
+    
+    --color-docs-bg: var(--color-docs-primary-light);
+    --color-docs-bg2: var(--color-docs-secondary-light);
+    --color-docs-bg3: var(--color-docs-tertiary-light);
+    
+    --color-docs-border: var(--color-docs-border-light);
+    
+    /* Light backgrounds for info boxes */
+    --color-docs-accent-bg: #eff6ff;
+    --color-docs-purple-bg: #faf5ff;
+    --color-docs-success-bg: #f0fdf4;
+    --color-docs-warning-bg: #fffbeb;
+    --color-docs-danger-bg: #fef2f2;
+    --color-docs-info-bg: #ecfeff;
+  }
+  
+  /* Dark theme - flip text/bg, darken accent backgrounds */
+  [data-theme="dark"] {
+    --color-docs-text: var(--color-docs-primary-light);
+    --color-docs-text-muted: var(--color-docs-secondary-light);
+    --color-docs-text-light: var(--color-docs-tertiary-light);
+    
+    --color-docs-bg: var(--color-docs-primary-dark);
+    --color-docs-bg2: var(--color-docs-secondary-dark);
+    --color-docs-bg3: var(--color-docs-tertiary-dark);
+    
+    --color-docs-border: var(--color-docs-border-dark);
+    
+    /* Darker backgrounds for info boxes in dark mode */
+    --color-docs-accent-bg: #1e3a8a;
+    --color-docs-purple-bg: #581c87;
+    --color-docs-success-bg: #065f46;
+    --color-docs-warning-bg: #78350f;
+    --color-docs-danger-bg: #7f1d1d;
+    --color-docs-info-bg: #164e63;
+  }
+  
+  :not(pre) > code {
+    @apply bg-docs-bg3 border-docs-border text-docs-text border rounded px-1.5 py-0.5 text-sm font-mono font-medium;
+  }
+  
+  body {
+    @apply bg-docs-bg2 text-docs-text;
+  }
+  
+  ::selection {
+    @apply text-docs-accent;
+    transition: all 0.3s ease-in-out;
+  }
+}
+
+/* ============================================================================
+   COMPONENT CLASSES - Using @apply properly
+   ============================================================================ */
+
+@layer components {
+  /* Sidebar */
+  .docs-sidebar {
+    @apply fixed left-0 top-0 bottom-0 w-72 bg-docs-bg border-r border-docs-border overflow-y-auto hidden lg:block;
+    z-index: 50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-docs-text-light) transparent;
+  }
+  
+  .docs-sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .docs-sidebar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  .docs-sidebar::-webkit-scrollbar-thumb {
+    @apply bg-docs-text-light rounded;
+  }
+  
+  .docs-sidebar::-webkit-scrollbar-thumb:hover {
+    @apply bg-docs-text-muted;
+  }
+  
+  /* Toast notification */
+  .docs-toast {
+    @apply fixed bottom-8 right-8 bg-docs-bg border-docs-border rounded-xl px-6 py-4 shadow-xl border transform translate-y-24 opacity-0 transition-all duration-300 max-w-sm;
+    z-index: 9999;
+  }
+  
+  .docs-toast.show {
+    @apply translate-y-0 opacity-100;
+  }
+  
+  /* Copy button states */
+  .docs-copy-button .copy-icon {
+    @apply block;
+  }
+  
+  .docs-copy-button .check-icon {
+    @apply hidden;
+  }
+  
+  .docs-copy-button.copied .copy-icon {
+    @apply hidden;
+  }
+  
+  .docs-copy-button.copied .check-icon {
+    @apply block text-docs-success;
+  }
+  
+  /* Code example card */
+  .docs-code-card {
+    @apply bg-docs-bg border-docs-border border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition;
+  }
+  
+  .docs-code-header {
+    @apply px-6 py-4 border-b border-docs-border bg-docs-bg2;
+  }
+  
+  .docs-code-block {
+    @apply bg-docs-bg3 rounded-lg p-4 overflow-x-auto;
+  }
+  
+  .docs-result-box {
+    @apply rounded-lg p-4 text-sm text-docs-text-muted bg-docs-bg3;
+  }
+  
+  /* Copy button */
+  .docs-copy-button {
+    @apply text-docs-text-muted transition;
+  }
+  
+  .docs-copy-button:hover {
+    @apply text-docs-accent;
+  }
+  
+  /* Info boxes */
+  .docs-info-box {
+    @apply rounded-lg border-2 p-6 my-6;
+  }
+  
+  .docs-info-box.info {
+    @apply bg-docs-accent-bg border-docs-accent text-docs-text;
+  }
+  
+  .docs-info-box.tip {
+    @apply bg-docs-success-bg border-docs-success text-docs-text;
+  }
+  
+  .docs-info-box.warning {
+    @apply bg-docs-warning-bg border-docs-warning text-docs-text;
+  }
+  
+  .docs-info-box.danger {
+    @apply bg-docs-danger-bg border-docs-danger text-docs-text;
+  }
+  
+  /* Feature cards */
+  .docs-feature-card {
+    @apply rounded-xl p-6 bg-docs-bg border-docs-border border transition-all hover:shadow-lg;
+  }
+  
+  .docs-stat-card {
+    @apply rounded-xl p-8 text-center bg-docs-bg border-docs-border border transition-all;
+  }
+  
+  /* Icon backgrounds */
+  .docs-icon-blue {
+    @apply bg-docs-accent-bg text-docs-accent;
+  }
+  
+  .docs-icon-purple {
+    @apply bg-docs-purple-bg text-docs-purple;
+  }
+  
+  .docs-icon-green {
+    @apply bg-docs-success-bg text-docs-success;
+  }
+  
+  /* Theme toggle button */
+  .docs-theme-toggle {
+    @apply w-10 h-10 rounded-lg flex items-center justify-center bg-docs-bg3 text-docs-text transition-all;
+  }
+  
+  .docs-theme-toggle:hover {
+    @apply bg-docs-accent/30;
+  }
+  
+  /* Typography */
+  .docs-h1 {
+    @apply text-3xl sm:text-4xl md:text-5xl font-bold text-docs-text;
+  }
+  
+  .docs-h2 {
+    @apply text-2xl sm:text-3xl font-bold text-docs-text;
+  }
+  
+  .docs-h3 {
+    @apply text-xl font-semibold text-docs-text;
+  }
+  
+  .docs-h4 {
+    @apply text-lg font-semibold text-docs-text;
+  }
+  
+  .docs-p {
+    @apply text-docs-text-muted;
+  }
+}

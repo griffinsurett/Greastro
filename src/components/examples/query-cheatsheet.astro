@@ -1,0 +1,213 @@
+---
+// src/pages/examples/query-cheatsheet.astro
+/**
+ * Quick reference guide for the query system
+ */
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout 
+  title="Query System Cheatsheet" 
+  description="Quick reference for querying content"
+>
+  <main class="container mx-auto px-4 py-12 max-w-4xl">
+    <h1 class="text-5xl font-bold mb-8">Query System Cheatsheet</h1>
+
+    <!-- Basic Queries -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">Basic Queries</h2>
+      <div class="space-y-4">
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">query('blog').all()</code>
+          <p class="text-sm text-gray-600 mt-2">Get all entries from a collection</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">query('blog').first()</code>
+          <p class="text-sm text-gray-600 mt-2">Get first entry</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">query('blog').count()</code>
+          <p class="text-sm text-gray-600 mt-2">Count entries without fetching</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">find('blog', 'post-id')</code>
+          <p class="text-sm text-gray-600 mt-2">Find entry by ID</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filtering -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">Filtering</h2>
+      <div class="space-y-4">
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">where(whereEquals('author', 'john'))</code>
+          <p class="text-sm text-gray-600 mt-2">Exact match</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">where(whereContains('title', 'astro'))</code>
+          <p class="text-sm text-gray-600 mt-2">Text contains</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">where(whereAfter('date', '2024-01-01'))</code>
+          <p class="text-sm text-gray-600 mt-2">Date comparison</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">where(whereArrayContains('tags', 'web'))</code>
+          <p class="text-sm text-gray-600 mt-2">Array contains value</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">where(and(filter1, filter2))</code>
+          <p class="text-sm text-gray-600 mt-2">Combine filters with AND</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">where(or(filter1, filter2))</code>
+          <p class="text-sm text-gray-600 mt-2">Combine filters with OR</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sorting -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">Sorting</h2>
+      <div class="space-y-4">
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">orderBy(sortByDate('publishDate', 'desc'))</code>
+          <p class="text-sm text-gray-600 mt-2">Sort by date</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">orderBy(sortByTitle())</code>
+          <p class="text-sm text-gray-600 mt-2">Sort alphabetically</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">orderBy(sortBy('order', 'asc'))</code>
+          <p class="text-sm text-gray-600 mt-2">Sort by custom field</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">orderBy(sort1).orderBy(sort2)</code>
+          <p class="text-sm text-gray-600 mt-2">Multi-level sorting</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">Pagination</h2>
+      <div class="space-y-4">
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">limit(10)</code>
+          <p class="text-sm text-gray-600 mt-2">Limit results</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">offset(20)</code>
+          <p class="text-sm text-gray-600 mt-2">Skip entries</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <pre class="text-sm">limit(pageSize).offset((page - 1) * pageSize)</pre>
+          <p class="text-sm text-gray-600 mt-2">Page-based pagination</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hierarchy -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">Hierarchical Queries</h2>
+      <div class="space-y-4">
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getParent(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">Get parent entry</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getChildren(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">Get direct children</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getChildren(collection, id, {`{ recursive: true }`})</code>
+          <p class="text-sm text-gray-600 mt-2">Get all descendants</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getAncestors(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">Get all ancestors</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getSiblings(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">Get sibling entries</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getRoots(collection)</code>
+          <p class="text-sm text-gray-600 mt-2">Get root entries (no parent)</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getTree(collection, id, maxDepth)</code>
+          <p class="text-sm text-gray-600 mt-2">Get full tree structure</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getBreadcrumbs(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">Get path from root to entry</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Relations -->
+    <section class="mb-12">
+      <h2 class="text-3xl font-bold mb-6">Relations</h2>
+      <div class="space-y-4">
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getRelations(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">Get all relations for an entry</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getReferencedEntries(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">What this entry references</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getReferencingEntries(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">What references this entry</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">getAllRelatedEntries(collection, id)</code>
+          <p class="text-sm text-gray-600 mt-2">All related entries (both directions)</p>
+        </div>
+        <div class="border rounded-lg p-4">
+          <code class="text-sm">withRelations(true)</code>
+          <p class="text-sm text-gray-600 mt-2">Include relations in query results</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Complete Example -->
+    <section class="mb-12 bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+      <h2 class="text-2xl font-bold mb-4">Complete Example</h2>
+      <pre class="bg-white p-4 rounded border overflow-x-auto"><code class="text-sm">{`const results = await query('blog')
+  .where(and(
+    whereContains('title', 'astro'),
+    whereAfter('publishDate', '2024-01-01')
+  ))
+  .orderBy(sortByDate('publishDate', 'desc'))
+  .orderBy(sortByTitle())
+  .limit(10)
+  .offset(0)
+  .withRelations(true, 2)
+  .get();
+
+// Access results
+results.entries.forEach(entry => {
+  console.log(entry.data.title);
+  
+  // Access relations
+  const relations = results.relations?.get(\`blog:\${entry.id}\`);
+  console.log('References:', relations?.references.length);
+});`}</code></pre>
+    </section>
+
+    <div class="text-center">
+      <a 
+        href="/examples/queries" 
+        class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+      >
+        ← Back to Live Examples
+      </a>
+    </div>
+  </main>
+</BaseLayout>

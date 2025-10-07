@@ -1,0 +1,30 @@
+---
+// src/components/docs/FeatureCard.astro
+
+export interface Props {
+  icon: string;
+  iconColor?: 'blue' | 'purple' | 'green' | 'warning' | 'danger';
+  title: string;
+  description: string;
+}
+
+const { icon, iconColor = 'blue', title, description } = Astro.props;
+
+const iconClasses = {
+  blue: 'docs-icon-blue',
+  purple: 'docs-icon-purple',
+  green: 'docs-icon-green',
+  warning: 'bg-docs-warning-bg text-docs-warning',
+  danger: 'bg-docs-danger-bg text-docs-danger',
+};
+---
+
+<div class="docs-feature-card">
+  <div class={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${iconClasses[iconColor]}`}>
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={icon} />
+    </svg>
+  </div>
+  <h3 class="font-semibold mb-2 text-docs-text">{title}</h3>
+  <p class="text-sm text-docs-text-muted">{description}</p>
+</div>

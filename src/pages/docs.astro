@@ -1,0 +1,162 @@
+---
+// src/pages/docs/index.astro
+import DocsLayout from '@/layouts/docs/DocsLayout.astro';
+import CodeExample from '@/components/docs/CodeExample.astro';
+import InfoBox from '@/components/docs/InfoBox.astro';
+import DocSection from '@/components/docs/DocSection.astro';
+import FeatureCard from '@/components/docs/FeatureCard.astro';
+import FeatureGrid from '@/components/docs/FeatureGrid.astro';
+import StatCard from '@/components/docs/StatCard.astro';
+import StatsGrid from '@/components/docs/StatsGrid.astro';
+import CollectionBadge from '@/components/docs/CollectionBadge.astro';
+import ApiMethodCard from '@/components/docs/ApiMethodCard.astro';
+---
+
+<DocsLayout 
+  title="Query System Documentation"
+  description="Complete guide to querying Astro content collections"
+>
+  <!-- Overview Section -->
+  <DocSection 
+    id="overview" 
+    title="Overview"
+    description="A powerful, type-safe query system for Astro content collections"
+  >
+    <!-- Feature Cards -->
+    <FeatureGrid columns={3}>
+      <FeatureCard
+        icon="M13 10V3L4 14h7v7l9-11h-7z"
+        iconColor="blue"
+        title="Fast"
+        description="Graph built once at build time with intelligent caching"
+      />
+      
+      <FeatureCard
+        icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+        iconColor="purple"
+        title="Type-Safe"
+        description="Full TypeScript support with type inference"
+      />
+      
+      <FeatureCard
+        icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        iconColor="green"
+        title="Powerful"
+        description="Supports hierarchies, relations, and complex queries"
+      />
+    </FeatureGrid>
+
+    <!-- Stats Display -->
+    <StatsGrid columns={4}>
+      <StatCard value="14" label="Total Entries" color="accent" />
+      <StatCard value="8" label="Collections" color="purple" />
+      <StatCard value="1" label="Blog Posts" color="success" />
+      <StatCard value="2" label="Services" color="warning" />
+    </StatsGrid>
+  </DocSection>
+
+  <!-- Installation Section -->
+  <DocSection 
+    id="installation" 
+    title="Installation"
+    description="Get started with the query system"
+  >
+    <InfoBox type="tip" title="Pro Tip">
+      Make sure you have Astro 4.0+ installed before proceeding.
+    </InfoBox>
+
+    <CodeExample 
+      title="Import the query system"
+      code={`import { query, getRelations, getRoots } from '@/utils/query';`}
+      language="typescript"
+    />
+  </DocSection>
+
+  <!-- Multi-Collection Section -->
+  <DocSection 
+    id="multi-collection" 
+    title="Multi-Collection Queries"
+    description="Query across multiple collections"
+  >
+    <!-- Collection Badges -->
+    <div class="flex flex-wrap gap-4 mb-8">
+      <CollectionBadge count={1} label="Blog" color="accent" />
+      <CollectionBadge count={2} label="Services" color="purple" />
+      <CollectionBadge count={1} label="Portfolio" color="success" />
+      <CollectionBadge count={1} label="Authors" color="warning" />
+    </div>
+
+    <CodeExample 
+      title="Query multiple collections"
+      code={`const results = query(['blog', 'portfolio'])
+  .filter(item => item.data.featured)
+  .get();`}
+      language="typescript"
+    />
+  </DocSection>
+
+  <!-- API Reference Section -->
+  <DocSection 
+    id="api-reference" 
+    title="API Reference"
+    description="Complete API documentation"
+  >
+    <div class="space-y-4">
+      <ApiMethodCard
+        method="query(collection)"
+        description="Create a new query for a collection"
+        returnType="QueryBuilder"
+      />
+      
+      <ApiMethodCard
+        method=".filter(predicate)"
+        description="Add filter condition"
+        returnType="QueryBuilder"
+      />
+      
+      <ApiMethodCard
+        method=".orderBy(field)"
+        description="Add sorting"
+        returnType="QueryBuilder"
+      />
+      
+      <ApiMethodCard
+        method=".limit(n)"
+        description="Limit results"
+        returnType="QueryBuilder"
+      />
+      
+      <ApiMethodCard
+        method=".get()"
+        description="Execute query and return results"
+        returnType="T[]"
+      />
+    </div>
+  </DocSection>
+
+  <!-- Best Practices Section -->
+  <DocSection 
+    id="best-practices" 
+    title="Best Practices"
+    description="Tips for optimal performance"
+  >
+    <InfoBox type="info" title="Performance Tip">
+      Use <code>limit()</code> when you don't need all results to improve performance.
+    </InfoBox>
+
+    <InfoBox type="warning" title="Warning">
+      Avoid using <code>.first()</code> without <code>.orderBy()</code> as results may be unpredictable.
+    </InfoBox>
+
+    <CodeExample 
+      title="Optimized query pattern"
+      code={`// Good: Limit results for better performance
+const posts = query('blog')
+  .filter(p => p.data.category === 'tech')
+  .orderBy('data.date', 'desc')
+  .limit(10)
+  .get();`}
+      language="typescript"
+    />
+  </DocSection>
+</DocsLayout>

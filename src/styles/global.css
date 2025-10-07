@@ -51,6 +51,7 @@
   }
 }
 
+@layer utilities {
 @keyframes slide-up {
   from {
     opacity: 0;
@@ -64,4 +65,5 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
+}
 }

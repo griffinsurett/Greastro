@@ -23,23 +23,15 @@ export default defineConfig({
     build: {
       assetsInlineLimit: 4096,
       cssCodeSplit: true,
-      cssMinify: 'lightningcss',
+      cssMinify: 'esbuild', // Changed from 'lightningcss' - more compatible
       rollupOptions: {
         output: { assetFileNames, manualChunks },
       },
     },
     css: {
       devSourcemap: false,
-      transformer: 'lightningcss',
-      lightningcss: {
-        targets: {
-          chrome: 90,
-          firefox: 88,
-          safari: 14,
-          edge: 90,
-        },
-        drafts: { nesting: true },
-      },
+      // Remove transformer - let Tailwind handle it
+      // transformer: 'lightningcss', 
     },
     optimizeDeps: {
       include: ['react', 'react-dom'],

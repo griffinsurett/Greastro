@@ -17,3 +17,21 @@
 
 <!-- Additional head tags can be added here as needed -->
 <!-- Example: Google Analytics, Plausible, font preloads, etc. -->
+ {/* Preload CSS */}
+<link rel="preload" href="/assets/styles-BlJ3Vp_R.css" as="style" />
+
+{/* Load async */}
+<script>
+  // Load CSS after window load
+  window.addEventListener('load', () => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/assets/styles-BlJ3Vp_R.css';
+    document.head.appendChild(link);
+  });
+</script>
+
+{/* Fallback for no-JS */}
+<noscript>
+  <link rel="stylesheet" href="/assets/styles-BlJ3Vp_R.css" />
+</noscript>

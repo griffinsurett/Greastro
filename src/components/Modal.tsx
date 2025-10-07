@@ -1,39 +1,22 @@
 // src/components/Modal.tsx
-/**
- * Modal Component
- * 
- * A flexible, accessible modal dialog component with:
- * - Portal rendering (renders outside normal DOM hierarchy)
- * - Keyboard support (Escape to close)
- * - Focus management (traps focus, returns focus on close)
- * - Smooth animations (fade and scale transitions)
- * - Flexible positioning (center, corners)
- * - Optional overlay click-to-close
- * - Optional scroll locking
- * 
- * Used for cookie consent banners, settings modals, and other overlay content.
- */
-
 import { useState, useEffect, useRef, type ReactNode, type ReactPortal, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ModalProps {
-  isOpen: boolean;                  // Controls modal visibility
-  onClose: () => void;              // Callback when modal should close
-  children: ReactNode;              // Modal content
-  closeButton?: boolean;            // Show X button in top right
-  closeButtonClass?: string;        // Custom classes for close button
-  overlayClass?: string;            // Custom classes for backdrop
-  className?: string;               // Custom classes for modal container
-  allowScroll?: boolean;            // Allow body scrolling when open
-  ariaLabel?: string;               // Accessibility label
-  ariaDescribedBy?: string;         // ID of element describing modal
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  closeButton?: boolean;
+  closeButtonClass?: string;
+  overlayClass?: string;
+  className?: string;
+  allowScroll?: boolean;
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
   position?: 'center' | 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+  ssr?: boolean;
 }
 
-/**
- * Modal component with portal rendering and accessibility features
- */
 export default function Modal({
   isOpen,
   onClose,
@@ -46,91 +29,80 @@ export default function Modal({
   ariaLabel,
   ariaDescribedBy,
   position = 'center',
+  ssr = true,
 }: ModalProps): ReactPortal | null {
-  // Track whether modal has ever been opened (for portal mounting)
-  const [mounted, setMounted] = useState<boolean>(isOpen);
+  const [mounted, setMounted] = useState<boolean>(ssr ? isOpen : false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  /**
-   * Mount modal when it opens
-   */
+  // Only mount on client side if ssr is false
   useEffect(() => {
-    if (isOpen) setMounted(true);
+    if (!ssr) {
+      setMounted(true);
+    }
+  }, [ssr]);
+
+  // Track isOpen state for animations
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(true);
+    }
   }, [isOpen]);
 
-  /**
-   * Lock body scroll when modal is open (unless allowScroll is true)
-   */
+  // Lock body scroll when modal is open
   useEffect(() => {
-    if (mounted && !allowScroll) {
+    if (mounted && isOpen && !allowScroll) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [mounted, allowScroll]);
+  }, [mounted, isOpen, allowScroll]);
 
-  /**
-   * Handle Escape key to close modal
-   */
+  // Handle Escape key
   useEffect(() => {
+    if (!mounted) return;
+    
     const handleKeyDown = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
 
-    if (mounted) {
-      document.addEventListener('keydown', handleKeyDown);
-    }
-
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mounted, onClose]);
+  }, [mounted, isOpen, onClose]);
 
-  /**
-   * Focus modal when it opens, return focus when it closes
-   */
+  // Focus management
   useEffect(() => {
-    if (isOpen && modalRef.current) {
+    if (mounted && isOpen && modalRef.current) {
       const previouslyFocused = document.activeElement as HTMLElement;
       modalRef.current.focus();
       return () => {
         previouslyFocused?.focus();
       };
     }
-  }, [isOpen]);
+  }, [mounted, isOpen]);
 
-  /**
-   * Unmount modal after exit animation completes
-   */
+  // Unmount modal after exit animation completes
   const handleAnimationEnd = (): void => {
     if (!isOpen) {
       setMounted(false);
     }
   };
 
-  /**
-   * Close modal when clicking overlay (not the modal itself)
-   */
   const handleOverlayClick = (e: MouseEvent<HTMLDivElement>): void => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  /**
-   * Prevent clicks on modal from closing it
-   */
   const handleModalClick = (e: MouseEvent<HTMLDivElement>): void => {
     e.stopPropagation();
   };
 
-  /**
-   * Position classes for different modal placements
-   */
   const positionClasses = {
     'center': 'flex items-center justify-center',
     'bottom-left': 'flex items-end justify-start p-4',
@@ -139,14 +111,20 @@ export default function Modal({
     'top-right': 'flex items-start justify-end p-4',
   };
 
-  // Don't render anything if never mounted
+  // Check if overlay has pointer-events-none
+  const hasNonInteractiveOverlay = overlayClass.includes('pointer-events-none');
+
+  // Don't render during SSR if ssr is false
+  if (!ssr && !mounted) return null;
+
+  // Don't render if not mounted (for animations)
   if (!mounted) return null;
 
   // Render modal as a portal to document.body
   return createPortal(
     <div
       className={`
-        fixed inset-0 z-[9999] ${positionClasses[position]}
+        fixed inset-0 z-[10000] ${positionClasses[position]}
         ${overlayClass}
         transform transition-opacity duration-300 ease-in-out
         ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
@@ -162,6 +140,7 @@ export default function Modal({
         ref={modalRef}
         className={`
           relative ${className}
+          ${hasNonInteractiveOverlay ? 'pointer-events-auto' : ''}
           transform-gpu transition-all duration-300 ease-in-out
           origin-center
           ${isOpen 
@@ -172,7 +151,6 @@ export default function Modal({
         onClick={handleModalClick}
         tabIndex={-1}
       >
-        {/* Optional close button */}
         {closeButton && (
           <button
             onClick={onClose}

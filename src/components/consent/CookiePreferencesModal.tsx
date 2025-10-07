@@ -2,21 +2,14 @@
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
 import { useCookieStorage } from '@/hooks/useCookieStorage';
-import type { CookieConsent } from './CookieConsentBanner';
+import type { CookieConsent, CookieCategoryInfo } from './types';
 
 interface CookiePreferencesModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface CookieCategory {
-  id: keyof Omit<CookieConsent, 'timestamp'>;
-  title: string;
-  description: string;
-  required?: boolean;
-}
-
-const cookieCategories: CookieCategory[] = [
+const cookieCategories: CookieCategoryInfo[] = [
   {
     id: 'necessary',
     title: 'Strictly Necessary Cookies',
@@ -86,7 +79,7 @@ export default function CookiePreferencesModal({
   };
 
   const handleToggle = (categoryId: keyof Omit<CookieConsent, 'timestamp'>) => {
-    if (categoryId === 'necessary') return; // Can't disable necessary cookies
+    if (categoryId === 'necessary') return;
 
     setPreferences((prev) => ({
       ...prev,
@@ -121,8 +114,9 @@ export default function CookiePreferencesModal({
       onClose={onClose}
       closeButton={true}
       className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-      overlayClass="bg-black bg-opacity-50"
+      overlayClass="bg-black/50 bg-opacity-50"
       ariaLabel="Manage cookie consent preferences"
+      ssr={false}  // Disable SSR for this modal
     >
       {/* Header */}
       <div className="mb-6">
@@ -132,7 +126,7 @@ export default function CookiePreferencesModal({
         <p className="text-gray-600 text-sm leading-relaxed">
           We use cookies and similar technologies to help personalize content
           and offer a better experience. You can click{' '}
-          <a
+            <a
             href="/cookie-policy"
             className="text-blue-600 underline hover:text-blue-700"
           >

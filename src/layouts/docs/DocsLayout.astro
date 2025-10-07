@@ -10,51 +10,32 @@ import SEO from '@/layouts/SEO.astro';
 import DocsTheme from './DocsTheme.astro';
 import BodyTags from '@/layouts/BodyTags.astro';
 import DocsThemeToggle from '@/components/docs/DocsThemeToggle.jsx';
+import DocsSidebar from '@/components/docs/Sidebar.astro';
 
 export interface Props {
   title: string;
   description: string;
   noindex?: boolean;
   nofollow?: boolean;
+  sections?: {
+    title: string;
+    items: {
+      label: string;
+      href: string;
+      active?: boolean;
+    }[];
+  }[];
   [key: string]: any;
 }
 
-const { title, description, noindex = true, nofollow = true, ...seoProps } = Astro.props;
-
-const sections = [
-  {
-    title: 'Getting Started',
-    items: [
-      { label: 'Overview', href: '#overview' },
-      { label: 'Installation', href: '#installation' },
-    ]
-  },
-  {
-    title: 'Basic Queries',
-    items: [
-      { label: 'Simple Queries', href: '#basic-queries' },
-      { label: 'Filtering', href: '#filtering' },
-      { label: 'Sorting', href: '#sorting' },
-      { label: 'Pagination', href: '#pagination' },
-    ]
-  },
-  {
-    title: 'Advanced Features',
-    items: [
-      { label: 'Multi-Collection', href: '#multi-collection' },
-      { label: 'Hierarchical Queries', href: '#hierarchical' },
-      { label: 'Relations', href: '#relations' },
-      { label: 'Statistics', href: '#statistics' },
-    ]
-  },
-  {
-    title: 'Reference',
-    items: [
-      { label: 'API Reference', href: '#api-reference' },
-      { label: 'Best Practices', href: '#best-practices' },
-    ]
-  },
-];
+const { 
+  title, 
+  description, 
+  noindex = true, 
+  nofollow = true, 
+  sections,
+  ...seoProps 
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -76,36 +57,7 @@ const sections = [
 
     <div class="min-h-screen">
       <!-- Sidebar -->
-      <aside class="docs-sidebar">
-        <div class="p-6 pb-32">
-          <a href="/" class="flex items-center gap-3 mb-10 group">
-            <div class="w-10 h-10 bg-gradient-to-br from-docs-accent to-docs-purple rounded-xl group-hover:scale-105 transition-transform"></div>
-            <span class="font-bold text-xl text-docs-text">Query Docs</span>
-          </a>
-
-          <nav class="space-y-8">
-            {sections.map(section => (
-              <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider mb-4 px-3 text-docs-text-light">
-                  {section.title}
-                </h3>
-                <ul class="space-y-1">
-                  {section.items.map(item => (
-                    <li>
-                      <a 
-                        href={item.href}
-                        class="block px-4 py-3 text-sm rounded-lg transition-all font-medium relative text-docs-text-muted hover:text-docs-accent hover:bg-docs-accent/10"
-                      >
-                        {item.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
-        </div>
-      </aside>
+      <DocsSidebar sections={sections} />
 
       <!-- Main Content -->
       <main class="lg:ml-72">
@@ -120,15 +72,6 @@ const sections = [
               <div class="flex items-center gap-3">
                 <DocsThemeToggle client:load />
                 
-                <a 
-                  href="/examples/query-cheatsheet" 
-                  class="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-docs-accent text-white text-sm font-semibold rounded-lg hover:bg-docs-accent/90 transition shadow-sm hover:shadow"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span class="hidden sm:inline">Cheatsheet</span>
-                </a>
               </div>
             </div>
           </div>

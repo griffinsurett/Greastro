@@ -1,17 +1,32 @@
 // src/components/consent/CookiePreferencesButton.tsx
-import { useState } from 'react';
-import CookiePreferencesModal from './CookiePreferencesModal';
+import { useState, useTransition, lazy, Suspense, memo } from 'react';
 
-export default function CookiePreferencesButton() {
+const CookiePreferencesModal = lazy(() => import('./CookiePreferencesModal'));
+
+function CookiePreferencesButton() {
   const [showModal, setShowModal] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleOpenModal = () => {
+    startTransition(() => {
+      setShowModal(true);
+    });
+  };
+
+  const handleCloseModal = () => {
+    startTransition(() => {
+      setShowModal(false);
+    });
+  };
 
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
+        onClick={handleOpenModal}
         className="text-gray-400 hover:text-white transition-colors inline-flex items-center gap-2"
         type="button"
         aria-label="Manage cookie preferences"
+        disabled={isPending}
       >
         Your Privacy Choices
         <svg
@@ -36,11 +51,15 @@ export default function CookiePreferencesButton() {
       </button>
 
       {showModal && (
-        <CookiePreferencesModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-        />
+        <Suspense fallback={null}>
+          <CookiePreferencesModal
+            isOpen={showModal}
+            onClose={handleCloseModal}
+          />
+        </Suspense>
       )}
     </>
   );
 }
+
+export default memo(CookiePreferencesButton);

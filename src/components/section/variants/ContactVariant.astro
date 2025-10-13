@@ -15,6 +15,7 @@ import Section from "../Section.astro";
 import type { BaseVariantProps } from "../Section.types";
 import ContactCard from "@/components/LoopComponents/ContactCard.astro";
 import Button from "@/components/Button/Button";
+import { query } from "@/utils/query";
 
 interface Props extends BaseVariantProps {
   columns?: 1 | 2 | 3;
@@ -65,9 +66,9 @@ const columnClasses = {
     )
   }
 
-  {/* Embedded social media section */}
+  {/* Embedded social media section - UPDATED TO USE QUERY */}
   <Section
-    collection="social-media"
+    query={query("social-media")}
     variant="SocialMediaVariant"
     title="Follow Us"
     size="lg"

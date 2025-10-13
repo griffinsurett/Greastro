@@ -6,6 +6,7 @@
  * Provides a consistent interface for all section variants.
  */
 
+import type { Query } from '@/utils/query';
 import type { CollectionKey } from 'astro:content';
 import type { PreparedItem } from '@/utils/collections';
 
@@ -23,10 +24,10 @@ export interface BaseVariantProps {
 
 /**
  * Props for the main Section component
- * Extends BaseVariantProps with collection loading capabilities
+ * Uses Query object instead of collection string
  */
 export interface SectionProps extends Partial<BaseVariantProps> {
-  collection?: CollectionKey;  // Name of collection to load
-  variant?: string;            // Variant component to render with
-  [key: string]: any;          // Allow additional variant-specific props
+  query?: Query<CollectionKey>;  // Query object for fetching items
+  variant?: string;               // Variant component to render with
+  [key: string]: any;             // Allow additional variant-specific props
 }

@@ -3,66 +3,102 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Section from "@/components/section/Section.astro";
 import { siteData } from "@/content/siteData";
+import {
+  query,
+  whereArrayContains,
+  whereEquals,
+  sortByDate,
+  sortByOrder,
+  sortBy,
+} from "@/utils/query";
 ---
+
 <BaseLayout title="Home" description={siteData.description}>
   <main class="flex-1">
-
+    <!-- Simple query - auto-populates from menu-items meta -->
     <Section
-      collection="menu-items"
+      query={query("menu-items")
+        .where((entry) => {
+          const menus = entry.data.menu;
+          // Handle both single menu and array of menus
+          if (Array.isArray(menus)) {
+            return menus.some((m) => m.id === "main-menu");
+          }
+          return menus?.id === "main-menu";
+        })
+        .orderBy(sortBy("order", "asc"))}
       variant="GridVariant"
-      columns={3}
-      gap="lg"
     />
 
-    <!-- Hero Section -->
+    <!-- Hero Section with static content -->
     <Section
       variant="HeroVariant"
       title="Welcome"
       description="Static hero without collection"
     />
 
-    <Section
-      collection="blog"
-      variant="BlogVariant"
-      columns={2}
-    />
+    <!-- Blog with limit - auto-populates from blog meta -->
+    <Section query={query("blog").limit(2)} variant="BlogVariant" columns={2} />
 
+    <!-- Services - auto-populates from services meta -->
     <Section
-      collection="services"
+      query={query("services").orderBy(sortByOrder())}
       variant="GridVariant"
       columns={3}
       gap="lg"
     />
 
+    <!-- Filtered query - still gets meta from authors -->
     <Section
-      collection="authors"
+      query={query("authors").where(whereArrayContains("tags", "featured"))}
       variant="GridVariant"
       columns={3}
       gap="lg"
     />
 
+    <!-- Portfolio with sorting -->
     <Section
-      collection="portfolio"
+      query={query("portfolio")
+        .orderBy(sortByDate("publishDate", "desc"))
+        .limit(5)}
       variant="ListVariant"
     />
 
+    <!-- Testimonials with rating filter -->
     <Section
-      collection="testimonials"
+      query={query("testimonials").where((entry) => entry.data.rating >= 4)}
       variant="MasonryVariant"
     />
 
     <!-- FAQ Section -->
     <Section
-      collection="faq"
+      query={query("faq").orderBy(sortByOrder())}
       variant="AccordionVariant"
       allowMultiple={false}
     />
 
     <!-- Contact Section -->
+    <Section query={query("contact-us")} variant="ContactVariant" columns={2} />
+
+    <!-- Multi-collection query - requires manual title/description -->
     <Section
-      collection="contact-us"
-      variant="ContactVariant"
-      columns={2}
+      query={query(["blog", "portfolio"]).orderBy(sortByDate()).limit(10)}
+      variant="ListVariant"
+      title="Recent Updates"
+      description="Latest from our blog and portfolio"
+    />
+      <Section
+      query={query("menu-items")
+        .where((entry) => {
+          const menus = entry.data.menu;
+          // Handle both single menu and array of menus
+          if (Array.isArray(menus)) {
+            return menus.some((m) => m.id === "footer-menu");
+          }
+          return menus?.id === "footer-menu";
+        })
+        .orderBy(sortBy("order", "asc"))}
+      variant="GridVariant"
     />
   </main>
 </BaseLayout>

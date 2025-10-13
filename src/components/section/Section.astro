@@ -4,57 +4,87 @@
  * Section Component - Universal Content Section Renderer
  * 
  * This is the main entry point for rendering content sections throughout the site.
- * It acts as a router that:
- * 1. Loads collection data if a collection name is provided
- * 2. Prepares items with URLs and resolved references
- * 3. Determines if collection links should be shown
- * 4. Delegates rendering to the appropriate variant component
+ * Now uses Query objects directly instead of collection strings.
  * 
- * Supports two modes:
- * - Collection mode: Automatically loads and displays items from a content collection
- * - Static mode: Renders provided items/content without collection loading
+ * It acts as a router that:
+ * 1. Executes the provided query
+ * 2. Extracts collection metadata for titles/descriptions
+ * 3. Prepares items with URLs and resolved references
+ * 4. Determines if collection links should be shown
+ * 5. Delegates rendering to the appropriate variant component
  * 
  * Used extensively throughout the site for consistent section rendering.
  */
 
 import type { SectionProps } from './Section.types';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
-import { getCollectionWithMeta, prepareCollectionEntries } from '@/utils/collections';
+import { prepareCollectionEntries } from '@/utils/collections';
+import { getCollectionMeta } from '@/utils/collections';
 import { shouldCollectionHavePage } from '@/utils/pages';
+import { getQueryCollection } from './utils/queryIntrospection';
 
 // Load all available variant components
 const variantComponents = await getVariantComponents();
 
 const { 
-  collection,                       // Collection name to load (optional)
-  variant = 'GridVariant',         // Variant component to use
-  title: titleOverride,            // Override collection title
-  description: descriptionOverride, // Override collection description
-  ...restProps                     // Other props passed to variant
+  query: queryProp,
+  variant = 'GridVariant',
+  title: titleOverride,
+  description: descriptionOverride,
+  ...restProps
 } = Astro.props as SectionProps;
 
 let data: any;
 
-if (collection) {
-  // Collection mode: Load and prepare collection data
-  const { entries, meta } = await getCollectionWithMeta(collection);
-  const items = await prepareCollectionEntries(entries, collection, meta);
+if (queryProp) {
+  // Execute the query
+  const result = await queryProp.get();
   
-  // Check if we're on the collection's index page
-  const currentPath = Astro.url.pathname;
-  const collectionIndexPath = `/${collection}`;
-  const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
+  // Extract collection from query (null for multi-collection)
+  const queryCollection = getQueryCollection(queryProp);
   
-  data = { 
-    items,
-    // Use override title if provided, otherwise use meta title (but not on collection page itself)
-    title: titleOverride ?? (isOnCollectionPage ? undefined : meta.title),
-    description: descriptionOverride ?? (isOnCollectionPage ? undefined : meta.description),
-    // Only show "View All" link if collection has a page and we're not already on it
-    collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,
-    collectionTitle: meta.title || collection.charAt(0).toUpperCase() + collection.slice(1),
-    ...restProps 
-  };
+  if (queryCollection) {
+    // Single collection query - normal processing
+    const meta = getCollectionMeta(queryCollection);
+    
+    // Prepare items with full collection context
+    const preparedItems = await prepareCollectionEntries(
+      result.entries,
+      queryCollection,
+      meta
+    );
+    
+    // Check if we're on the collection's index page
+    const currentPath = Astro.url.pathname;
+    const collectionIndexPath = `/${queryCollection}`;
+    const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
+    
+    data = {
+      items: preparedItems,
+      // Use override title if provided, otherwise use meta title (but not on collection page itself)
+      title: titleOverride ?? (isOnCollectionPage ? undefined : meta.title),
+      description: descriptionOverride ?? (isOnCollectionPage ? undefined : meta.description),
+      // Only show "View All" link if collection has a page and we're not already on it
+      collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,
+      collectionTitle: meta.title || queryCollection.charAt(0).toUpperCase() + queryCollection.slice(1),
+      ...restProps
+    };
+  } else {
+    // Multi-collection query - manual overrides required
+    const preparedItems = result.entries.map(entry => ({
+      ...entry.data,
+      slug: entry.id,
+      url: `/${entry.collection}/${entry.id}`
+    }));
+    
+    data = {
+      items: preparedItems,
+      title: titleOverride,  // Must be provided manually
+      description: descriptionOverride,  // Must be provided manually
+      // No collection URL for multi-collection queries
+      ...restProps
+    };
+  }
 } else {
   // Static mode: Use provided items or empty array
   data = restProps.items ? restProps : { items: [], ...restProps };

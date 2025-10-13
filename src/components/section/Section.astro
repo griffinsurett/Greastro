@@ -70,6 +70,7 @@ if (queryProp) {
       title: titleOverride ?? (isOnCollectionPage ? undefined : meta.title),
       description: descriptionOverride ?? (isOnCollectionPage ? undefined : meta.description),
       // Only show "View All" link if collection has a page and we're not already on it
+      // FIXED: Uses shouldCollectionHavePage - single source of truth from _meta.mdx
       collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,
       collectionTitle: meta.title || queryCollection.charAt(0).toUpperCase() + queryCollection.slice(1),
       ...restProps

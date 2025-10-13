@@ -87,6 +87,7 @@ export function shouldItemUseRootPath(
 /**
  * Determine if a collection should have an index page
  * 
+ * This is the SINGLE SOURCE OF TRUTH for collection page generation.
  * Checks the hasPage field in _meta.mdx (defaults to true).
  * Index pages show all items in the collection.
  * 

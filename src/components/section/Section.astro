@@ -3,22 +3,24 @@
 /**
  * Section Component - Universal Content Section Renderer
  * 
- * This is the main entry point for rendering content sections throughout the site.
- * Now uses Query objects directly instead of collection strings.
+ * Designed for single-collection queries with automatic metadata.
+ * For multi-collection queries, provide title/description manually.
  * 
- * It acts as a router that:
- * 1. Executes the provided query
- * 2. Extracts collection metadata for titles/descriptions
- * 3. Prepares items with URLs and resolved references
- * 4. Determines if collection links should be shown
- * 5. Delegates rendering to the appropriate variant component
+ * Single-collection example (auto-populates title/description):
+ *   <Section query={query('blog').limit(5)} variant="BlogVariant" />
  * 
- * Used extensively throughout the site for consistent section rendering.
+ * Multi-collection example (requires manual props):
+ *   <Section 
+ *     query={query(['blog', 'portfolio']).limit(10)} 
+ *     variant="ListVariant"
+ *     title="Recent Updates"
+ *     description="Latest content"
+ *   />
  */
 
 import type { SectionProps } from './Section.types';
 import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
-import { prepareCollectionEntries } from '@/utils/collections';
+import { prepareCollectionEntries, prepareEntry } from '@/utils/collections';
 import { getCollectionMeta } from '@/utils/collections';
 import { shouldCollectionHavePage } from '@/utils/pages';
 import { getQueryCollection } from './utils/queryIntrospection';
@@ -44,7 +46,9 @@ if (queryProp) {
   const queryCollection = getQueryCollection(queryProp);
   
   if (queryCollection) {
-    // Single collection query - normal processing
+    // ═══════════════════════════════════════════════════════════
+    // SINGLE COLLECTION - Automatic metadata population
+    // ═══════════════════════════════════════════════════════════
     const meta = getCollectionMeta(queryCollection);
     
     // Prepare items with full collection context
@@ -57,7 +61,8 @@ if (queryProp) {
     // Check if we're on the collection's index page
     const currentPath = Astro.url.pathname;
     const collectionIndexPath = `/${queryCollection}`;
-    const isOnCollectionPage = currentPath === collectionIndexPath || currentPath === `${collectionIndexPath}/`;
+    const isOnCollectionPage = currentPath === collectionIndexPath || 
+                                currentPath === `${collectionIndexPath}/`;
     
     data = {
       items: preparedItems,
@@ -70,23 +75,44 @@ if (queryProp) {
       ...restProps
     };
   } else {
-    // Multi-collection query - manual overrides required
-    const preparedItems = result.entries.map(entry => ({
-      ...entry.data,
-      slug: entry.id,
-      url: `/${entry.collection}/${entry.id}`
-    }));
+    // ═══════════════════════════════════════════════════════════
+    // MULTI-COLLECTION - Proper preparation with prepareEntry
+    // ═══════════════════════════════════════════════════════════
+    // Prepare each entry using the same logic as single-collection
+    // This ensures proper handling of:
+    // - rootPath (items at /slug vs /collection/slug)
+    // - hasPage (items without pages get no URL)
+    // - Reference resolution (author references, etc.)
+    const preparedItems = await Promise.all(
+      result.entries.map(async (entry) => {
+        const collection = entry.collection;
+        const meta = getCollectionMeta(collection);
+        
+        // Use the same prepareEntry logic as single-collection
+        return await prepareEntry(entry, collection, meta);
+      })
+    );
     
     data = {
       items: preparedItems,
-      title: titleOverride,  // Must be provided manually
-      description: descriptionOverride,  // Must be provided manually
-      // No collection URL for multi-collection queries
+      title: titleOverride,
+      description: descriptionOverride,
+      // No collectionUrl or collectionTitle for multi-collection
       ...restProps
     };
+    
+    // Warn if title/description not provided for multi-collection
+    if (!titleOverride || !descriptionOverride) {
+      console.warn(
+        `[Section] Multi-collection query used without title/description. ` +
+        `Please provide these props manually when querying multiple collections.`
+      );
+    }
   }
 } else {
-  // Static mode: Use provided items or empty array
+  // ═══════════════════════════════════════════════════════════
+  // STATIC MODE - No query, just items
+  // ═══════════════════════════════════════════════════════════
   data = restProps.items ? restProps : { items: [], ...restProps };
 }
 

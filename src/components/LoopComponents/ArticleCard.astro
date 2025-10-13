@@ -33,7 +33,6 @@ const authorRole = author?.role || '';
 const authorInitials = author?.initials || 
   (authorName ? authorName.split(' ').map((w: string) => w[0]).join('').toUpperCase() : '??');
 ---
-
 <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
   <div class="p-6">
     {/* Article metadata and content */}

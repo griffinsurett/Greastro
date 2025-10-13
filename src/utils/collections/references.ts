@@ -28,6 +28,7 @@ export function isCollectionReference(value: any): value is { collection: string
  * Resolve any reference to its data
  * Works with refSchema output (array or single)
  * Uses getItemKey to handle slug/id differences
+ * Automatically normalizes single-item arrays to single objects
  */
 export async function resolve(ref: any) {
   if (!ref) return undefined;
@@ -44,7 +45,10 @@ export async function resolve(ref: any) {
         }
       })
     );
-    return items.filter(Boolean);
+    const filtered = items.filter(Boolean);
+    
+    // Normalize: return single item if array length is 1, otherwise return array
+    return filtered.length === 1 ? filtered[0] : filtered;
   }
   
   if (ref?.collection && ref?.id) {

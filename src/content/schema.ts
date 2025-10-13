@@ -1,18 +1,39 @@
 // src/content/schema.ts
-import { z, reference } from "astro:content";
+import { z, reference, type CollectionKey } from "astro:content";
+
+// ============================================================================
+// REFERENCE SCHEMA
+// ============================================================================
+
+/**
+ * Create a reference field that accepts single or array of references
+ * 
+ * @param targetCollection - Collection(s) to reference
+ * @example
+ * author: refSchema('authors')
+ * related: refSchema(['blog', 'portfolio'])
+ */
+export function refSchema(targetCollection: CollectionKey | CollectionKey[]) {
+  const collections = Array.isArray(targetCollection) ? targetCollection : [targetCollection];
+  
+  const singleRef = collections.length === 1
+    ? reference(collections[0])
+    : z.union(collections.map(coll => reference(coll)) as any);
+  
+  // Just accept both - no transformation
+  return z.union([singleRef, z.array(singleRef)]).optional();
+}
 
 // ============================================================================
 // MENU SCHEMA
 // ============================================================================
 export const BaseMenuFields = {
-  parent: z
-    .union([reference("menu-items"), z.array(reference("menu-items"))])
-    .optional(),
+  parent: refSchema("menu-items"),
   openInNewTab: z.boolean().default(false),
 };
 
 export const MenuReferenceField = {
-  menu: z.union([reference("menus"), z.array(reference("menus"))]).optional(),
+  menu: refSchema("menus"),
 };
 
 /* ─── Menu Schemas ──────────────────────────────────────────────────── */
@@ -23,7 +44,7 @@ export const MenuItemFields = z.object({
   description: z.string().optional(),
   slug: z.string().optional(),
   ...BaseMenuFields,
-  menu: z.union([reference("menus"), z.array(reference("menus"))]).optional(),
+  menu: refSchema("menus"),
 });
 
 // Menus.json

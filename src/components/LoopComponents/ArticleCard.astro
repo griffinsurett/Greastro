@@ -11,22 +11,27 @@
  * - Author information with avatar/initials
  * 
  * Used in BlogVariant for blog post listings.
+ * Author data should already be resolved by prepareEntry.
  */
 
 export interface Props {
-  title: string;           // Article title
-  url?: string;           // Link to full article
-  description?: string;    // Article excerpt/summary
-  date?: Date | string;   // Publication date
-  tags?: string[];        // Category/topic tags
-  author?: {              // Author information
-    name: string;
-    role?: string;
-    initials: string;
-  };
+  title: string;
+  url?: string;
+  description?: string;
+  date?: Date | string;
+  tags?: string[];
+  author?: any; // Resolved author object from prepareEntry
 }
 
 const { title, url, description, date, tags, author } = Astro.props;
+
+// Extract author data - should already be resolved
+const authorName = author?.title || author?.name || '';
+const authorRole = author?.role || '';
+
+// Generate initials from name
+const authorInitials = author?.initials || 
+  (authorName ? authorName.split(' ').map((w: string) => w[0]).join('').toUpperCase() : '??');
 ---
 
 <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
@@ -71,21 +76,21 @@ const { title, url, description, date, tags, author } = Astro.props;
     </div>
     
     {/* Author info with avatar */}
-    {author && (
+    {authorName && (
       <div class="pt-4 mt-4 border-t border-gray-200">
         <div class="flex items-center gap-3">
           {/* Avatar circle with initials */}
           <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
             <span class="text-blue-600 text-sm font-bold">
-              {author.initials}
+              {authorInitials}
             </span>
           </div>
           <div>
             <p class="font-medium text-gray-900">
-              {author.name}
+              {authorName}
             </p>
-            {author.role && (
-              <p class="text-xs text-gray-500">{author.role}</p>
+            {authorRole && (
+              <p class="text-xs text-gray-500">{authorRole}</p>
             )}
           </div>
         </div>

@@ -2,30 +2,16 @@
 /**
  * Collection Reference Resolution
  * 
- * Handles resolving Astro collection references to actual data.
- * When an entry has a reference like `author: reference('authors')`,
- * this module fetches and processes the referenced entry.
- * 
- * Features:
- * - Recursive resolution (references can contain references)
- * - Depth limiting to prevent infinite loops
- * - URL generation for referenced items
- * - Additional computed fields (name, initials from title)
+ * Single source of truth for resolving Astro collection references.
+ * Works with refSchema from schema.ts
  */
 
 import { getEntry } from 'astro:content';
 import type { CollectionKey } from 'astro:content';
-import { getCollectionMeta } from './meta';
 import { getItemKey } from './core';
-import { shouldItemHavePage } from '@/utils/pages';
 
 /**
  * Type guard to check if a value is a collection reference
- * 
- * Collection references have the shape: { collection: string, id: string }
- * 
- * @param value - Value to check
- * @returns True if value is a collection reference
  */
 export function isCollectionReference(value: any): value is { collection: string; id: string } {
   return (
@@ -39,78 +25,45 @@ export function isCollectionReference(value: any): value is { collection: string
 }
 
 /**
- * Resolve a collection reference to actual data
- * 
- * Fetches the referenced entry and enriches it with:
- * - slug (from entry id/slug)
- * - url (if item has a page)
- * - name (copy of title for consistency)
- * - initials (computed from title words)
- * 
- * @param ref - Reference object with collection and id
- * @returns Resolved entry data with enriched fields, or null if not found
- * @example
- * // Entry has: author: reference('authors', 'jane-doe')
- * const resolved = await resolveReference({ collection: 'authors', id: 'jane-doe' });
- * // resolved: { title: 'Jane Doe', name: 'Jane Doe', initials: 'JD', slug: 'jane-doe', url: '/authors/jane-doe', ... }
+ * Resolve any reference to its data
+ * Works with refSchema output (array or single)
+ * Uses getItemKey to handle slug/id differences
  */
-async function resolveReference(ref: { collection: string; id: string }): Promise<any> {
-  try {
-    // Fetch the referenced entry
-    const entry = await getEntry(ref.collection as CollectionKey, ref.id);
-    if (!entry) {
-      console.warn(`Reference not found: ${ref.collection}/${ref.id}`);
-      return null;
+export async function resolve(ref: any) {
+  if (!ref) return undefined;
+  
+  if (Array.isArray(ref)) {
+    const items = await Promise.all(
+      ref.map(async r => {
+        if (!r?.collection || !r?.id) return null;
+        try {
+          const entry = await getEntry(r.collection, r.id);
+          return entry ? { ...entry.data, slug: getItemKey(entry) } : null;
+        } catch {
+          return null;
+        }
+      })
+    );
+    return items.filter(Boolean);
+  }
+  
+  if (ref?.collection && ref?.id) {
+    try {
+      const entry = await getEntry(ref.collection, ref.id);
+      return entry ? { ...entry.data, slug: getItemKey(entry) } : undefined;
+    } catch {
+      return undefined;
     }
-    
-    // Build resolved object with entry data
-    const resolved: any = {
-      ...entry.data,
-      _collection: ref.collection,  // Track original collection
-      _id: ref.id,                   // Track original id
-      slug: getItemKey(entry),
-    };
-    
-    // Add URL if this item has a page
-    const refMeta = getCollectionMeta(ref.collection);
-    if (shouldItemHavePage(entry, refMeta)) {
-      resolved.url = `/${ref.collection}/${resolved.slug}`;
-    }
-    
-    // Add computed fields from title if present
-    if (resolved.title) {
-      // Copy title to name for consistency
-      resolved.name = resolved.title;
-      
-      // Generate initials from title words
-      const words = String(resolved.title).split(' ').filter(Boolean);
-      resolved.initials = words.map(w => w[0]).join('').toUpperCase();
-    }
-    
-    return resolved;
-  } catch (error) {
-    console.error(`Error resolving reference ${ref.collection}/${ref.id}:`, error);
-    return null;
   }
 }
 
 /**
  * Recursively process data to resolve all collection references
  * 
- * Traverses objects and arrays, resolving any collection references found.
- * Includes depth limiting to prevent infinite loops from circular references.
- * 
  * @param data - Data to process (can be any type)
  * @param depth - Current recursion depth
  * @param maxDepth - Maximum recursion depth (default 3)
  * @returns Data with all references resolved
- * @example
- * const data = {
- *   author: { collection: 'authors', id: 'jane-doe' },
- *   tags: ['javascript', 'astro']
- * };
- * const processed = await processDataForReferences(data);
- * // processed.author is now full author object, not a reference
  */
 export async function processDataForReferences(
   data: any, 
@@ -121,10 +74,10 @@ export async function processDataForReferences(
   if (depth >= maxDepth) return data;
   if (data == null) return data;
   
-  // If this is a collection reference, resolve it
-  if (isCollectionReference(data)) {
-    const resolved = await resolveReference(data);
-    // Recursively process the resolved data
+  // Check if this is a reference (single or array)
+  if (isCollectionReference(data) || (Array.isArray(data) && data.some(isCollectionReference))) {
+    const resolved = await resolve(data);
+    // Recursively process resolved data
     return resolved ? await processDataForReferences(resolved, depth + 1, maxDepth) : null;
   }
   

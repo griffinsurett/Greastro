@@ -17,8 +17,8 @@
  * - seo: SEO overrides
  */
 import { file } from "astro/loaders";
-import { defineCollection, reference, z } from "astro:content";
-import { baseSchema, MenuSchema, MenuItemFields } from "./schema";
+import { defineCollection, z } from "astro:content";
+import { baseSchema, MenuSchema, MenuItemFields, refSchema } from "./schema";
 import { MenuItemsLoader } from "@/utils/loaders/MenuItemsLoader";
 
 // Define your collections with the base schema - all support MDX
@@ -53,7 +53,7 @@ export const collections = {
   "blog": defineCollection({
     schema: ({ image }) =>
       baseSchema({ image }).extend({
-        author: reference("authors"),
+        author: refSchema("authors"),
         tags: z.array(z.string()).default([]),
         readingTime: z.number().optional(),
       }),

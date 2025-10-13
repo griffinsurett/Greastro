@@ -12,8 +12,8 @@
  */
 
 import type { CollectionEntry, CollectionKey } from 'astro:content';
-import { getEntry } from 'astro:content';
 import type { SEOData, MetaData, ImageInput } from '@/content/schema';
+import { resolve } from '@/utils/collections/references';
 
 /**
  * SEO props interface for page metadata
@@ -35,32 +35,21 @@ export interface SEOProps {
  * Handles multiple author formats:
  * - String IDs: 'jane-doe'
  * - Reference objects: { collection: 'authors', id: 'jane-doe' }
+ * - Arrays of references (gets first)
  * - Author objects: { title: 'Jane Doe', ... }
  * 
  * @param author - Author in any supported format
  * @returns Author display name or undefined
- * @example
- * await resolveAuthor('jane-doe') // 'Jane Doe'
- * await resolveAuthor({ title: 'John Smith' }) // 'John Smith'
  */
 export async function resolveAuthor(author: any): Promise<string | undefined> {
   if (!author) return undefined;
   
-  // Direct properties (already resolved object)
-  if (author.title) return author.title;
-  if (author.name) return author.name;
+  const resolved = await resolve(author);
   
-  // Extract ID from reference or use string directly
-  const authorId = typeof author === 'string' ? author : author.id;
-  if (!authorId) return undefined;
+  // Handle array (get first) or single
+  const authorData = Array.isArray(resolved) ? resolved[0] : resolved;
   
-  // Look up author entry
-  try {
-    const entry = await getEntry('authors', authorId);
-    return entry?.data.title || authorId;
-  } catch {
-    return authorId;
-  }
+  return authorData?.title || authorData?.name;
 }
 
 /**
@@ -74,9 +63,6 @@ export async function resolveAuthor(author: any): Promise<string | undefined> {
  * @param item - Collection entry to build SEO for
  * @param collectionMeta - Optional collection metadata for defaults
  * @returns Complete SEO props object for layout
- * @example
- * const seo = await buildItemSEOProps(blogPost, blogMeta);
- * // Returns: { title, description, image, author, seo: {...} }
  */
 export async function buildItemSEOProps(
   item: CollectionEntry<CollectionKey>,
@@ -112,9 +98,6 @@ export async function buildItemSEOProps(
  * @param collectionMeta - Collection metadata from _meta.mdx
  * @param collectionName - Collection name for fallback title
  * @returns SEO props for collection index page
- * @example
- * const seo = buildCollectionSEOProps(blogMeta, 'blog');
- * // Returns: { title: 'Blog', description: '...', seo: {...} }
  */
 export function buildCollectionSEOProps(
   collectionMeta: MetaData,

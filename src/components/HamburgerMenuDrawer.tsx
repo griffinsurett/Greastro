@@ -23,7 +23,7 @@ export default function MobileMenuDrawer({ items, className = '' }: MobileMenuDr
   };
   
   return (
-    <div className={className}>
+    <>
       {/* Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
@@ -61,6 +61,6 @@ export default function MobileMenuDrawer({ items, className = '' }: MobileMenuDr
           </ul>
         </nav>
       </Modal>
-    </div>
+    </>
   );
 }

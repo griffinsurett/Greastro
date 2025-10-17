@@ -9,7 +9,7 @@
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
 import MenuList from '@/components/LoopTemplates/Menu/MenuList.astro';
-import MobileMenuDrawer from '@/components/HamburgerMenuDrawer';
+import MobileMenuDrawer from '@/components/Menu/HamburgerMenuDrawer';
 
 interface Props extends BaseVariantProps {
   maxDepth?: number;
@@ -73,7 +73,6 @@ const showMobile = mode === 'responsive' || mode === 'mobile-only';
 const desktopClasses = mode === 'responsive' ? 'hidden md:block' : '';
 const mobileClasses = mode === 'responsive' ? 'md:hidden' : '';
 ---
-
 <div id={id} class={`menu-variant ${className}`}>
   {showDesktop && (
     <nav class={`menu-desktop ${desktopClasses}`} aria-label="Main navigation">

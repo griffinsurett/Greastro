@@ -49,7 +49,7 @@ export default function MobileMenuDrawer({
         ariaLabel="Mobile navigation menu"
         ssr={false}
       >
-        <nav className="h-full overflow-y-auto p-6" aria-label="Mobile navigation">
+        <nav className={`${className} h-full overflow-y-auto p-6`} aria-label="Mobile navigation">
           <ul className="space-y-1" role="menu">
             {items.map((item) => (
               <MobileMenuItem

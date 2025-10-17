@@ -1,7 +1,7 @@
 ---
 // src/pages/index.astro
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Section from "@/components/section/Section.astro";
+import Section from "@/components/ContentRenderer/Section.astro";
 import { siteData } from "@/content/siteData";
 import {
   query,
@@ -87,7 +87,7 @@ import {
       title="Recent Updates"
       description="Latest from our blog and portfolio"
     />
-      <Section
+    <Section
       query={query("menu-items")
         .where((entry) => {
           const menus = entry.data.menu;

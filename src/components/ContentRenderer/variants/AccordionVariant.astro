@@ -2,22 +2,22 @@
 // src/components/section/variants/AccordionVariant.astro
 /**
  * Accordion Variant - Expandable List Layout
- * 
+ *
  * Collapsible accordion interface with:
  * - Single or multiple expansion modes
  * - Client-side interactivity (React Accordion component)
  * - Perfect for FAQs, documentation
  * - Left-aligned header
- * 
+ *
  * Uses the Accordion React component with client:visible hydration.
  */
 
-import type { BaseVariantProps } from "../Section.types";
+import type { BaseVariantProps } from "../ContentRenderer.types";
 import Accordion from "@/components/LoopTemplates/Accordion";
 import Button from "@/components/Button/Button";
 
 interface Props extends BaseVariantProps {
-  allowMultiple?: boolean;  // Allow multiple items expanded at once
+  allowMultiple?: boolean; // Allow multiple items expanded at once
 }
 
 const {
@@ -32,6 +32,7 @@ const {
 
 const viewAllText = `View All ${collectionTitle || ""}`.trim();
 ---
+
 <section class={`py-16 ${className}`}>
   {/* Left-aligned header */}
   {

@@ -1,0 +1,84 @@
+---
+// src/components/section/variants/ListVariant.astro
+/**
+ * List Variant - Horizontal List Layout
+ *
+ * Vertical list with horizontal cards:
+ * - Side-by-side image and content
+ * - Better for detailed content with images
+ * - Full-width layout
+ * - Custom "See Complete" CTA
+ *
+ * Best for portfolios, case studies, detailed listings.
+ */
+
+import type { BaseVariantProps } from "../ContentRenderer.types";
+import ListCard from "@/components/LoopComponents/ListCard.astro";
+
+type Props = BaseVariantProps;
+
+const {
+  items = [],
+  title,
+  description,
+  className = "",
+  collectionUrl,
+  collectionTitle,
+} = Astro.props as Props;
+
+const viewAllText = `See Complete ${collectionTitle || "List"}`;
+---
+
+<section class={`py-16 ${className}`}>
+  {/* Left-aligned header */}
+  {
+    (title || description) && (
+      <div class="mb-12">
+        {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+        {description && (
+          <p class="text-lg text-gray-600 max-w-3xl">{description}</p>
+        )}
+      </div>
+    )
+  }
+
+  {/* Vertical stack of horizontal cards */}
+  {
+    items.length > 0 && (
+      <ul class="flex flex-col gap-8 list-none">
+        {items.map((item) => (
+          <li>
+            <ListCard {...item} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {/* Inline CTA with arrow */}
+  {
+    collectionUrl && items.length > 0 && (
+      <div class="mt-12">
+        <a
+          href={collectionUrl}
+          class="inline-flex items-center px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          {viewAllText}
+          <svg
+            class="ml-2 w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </a>
+      </div>
+    )
+  }
+</section>

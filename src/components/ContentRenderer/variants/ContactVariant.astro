@@ -2,17 +2,17 @@
 // src/components/section/variants/ContactVariant.astro
 /**
  * Contact Variant - Contact Information Layout
- * 
+ *
  * Specialized layout for contact pages with:
  * - Contact cards (phone, email, etc.)
  * - Embedded social media section
  * - 1-3 column layouts
- * 
+ *
  * Combines ContactCard components with SocialMediaVariant.
  */
 
 import Section from "../Section.astro";
-import type { BaseVariantProps } from "../Section.types";
+import type { BaseVariantProps } from "../ContentRenderer.types";
 import ContactCard from "@/components/LoopComponents/ContactCard.astro";
 import Button from "@/components/Button/Button";
 import { query } from "@/utils/query";

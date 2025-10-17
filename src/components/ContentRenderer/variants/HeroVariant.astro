@@ -2,29 +2,30 @@
 // src/components/section/variants/HeroVariant.astro
 /**
  * Hero Variant - Full-Width Hero Section
- * 
+ *
  * Large hero banner with:
  * - Optional background image with gradient overlay
  * - Large centered text
  * - Primary and secondary CTAs
  * - Minimum 60vh height
  * - Slot for additional content below
- * 
+ *
  * Can use collection (first item) or static props.
  * Best for homepage heroes, landing pages.
  */
 
-import type { BaseVariantProps } from "../Section.types";
+import type { BaseVariantProps } from "../ContentRenderer.types";
 import Button from "@/components/Button/Button";
 import { ctaData } from "@/content/siteData";
 
 interface Props extends BaseVariantProps {
-  image?: {              // Background image
+  image?: {
+    // Background image
     src: string;
     alt: string;
   };
-  ctaText?: string;      // Primary button text
-  ctaLink?: string;      // Primary button URL
+  ctaText?: string; // Primary button text
+  ctaLink?: string; // Primary button URL
 }
 
 const {

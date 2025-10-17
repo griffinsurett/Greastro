@@ -2,35 +2,35 @@
 // src/components/section/Section.astro
 /**
  * Section Component - Universal Content Section Renderer
- * 
+ *
  * Designed for single-collection queries with automatic metadata.
  * For multi-collection queries, provide title/description manually.
- * 
+ *
  * Single-collection example (auto-populates title/description):
  *   <Section query={query('blog').limit(5)} variant="BlogVariant" />
- * 
+ *
  * Multi-collection example (requires manual props):
- *   <Section 
- *     query={query(['blog', 'portfolio']).limit(10)} 
+ *   <Section
+ *     query={query(['blog', 'portfolio']).limit(10)}
  *     variant="ListVariant"
  *     title="Recent Updates"
  *     description="Latest content"
  *   />
  */
 
-import type { SectionProps } from './Section.types';
-import { getVariantComponents } from '@/components/section/variants/utils/VariantUtils';
-import { prepareCollectionEntries, prepareEntry } from '@/utils/collections';
-import { getCollectionMeta } from '@/utils/collections';
-import { shouldCollectionHavePage } from '@/utils/pages';
-import { getQueryCollection } from './utils/queryIntrospection';
+import type { SectionProps } from "./ContentRenderer.types";
+import { getVariantComponents } from "@/components/ContentRenderer/variants/utils/VariantUtils";
+import { prepareCollectionEntries, prepareEntry } from "@/utils/collections";
+import { getCollectionMeta } from "@/utils/collections";
+import { shouldCollectionHavePage } from "@/utils/pages";
+import { getQueryCollection } from "./utils/queryIntrospection";
 
 // Load all available variant components
 const variantComponents = await getVariantComponents();
 
-const { 
+const {
   query: queryProp,
-  variant = 'GridVariant',
+  variant = "GridVariant",
   title: titleOverride,
   description: descriptionOverride,
   ...restProps
@@ -41,39 +41,47 @@ let data: any;
 if (queryProp) {
   // Execute the query
   const result = await queryProp.get();
-  
+
   // Extract collection from query (null for multi-collection)
   const queryCollection = getQueryCollection(queryProp);
-  
+
   if (queryCollection) {
     // ═══════════════════════════════════════════════════════════
     // SINGLE COLLECTION - Automatic metadata population
     // ═══════════════════════════════════════════════════════════
     const meta = getCollectionMeta(queryCollection);
-    
+
     // Prepare items with full collection context
     const preparedItems = await prepareCollectionEntries(
       result.entries,
       queryCollection,
       meta
     );
-    
+
     // Check if we're on the collection's index page
     const currentPath = Astro.url.pathname;
     const collectionIndexPath = `/${queryCollection}`;
-    const isOnCollectionPage = currentPath === collectionIndexPath || 
-                                currentPath === `${collectionIndexPath}/`;
-    
+    const isOnCollectionPage =
+      currentPath === collectionIndexPath ||
+      currentPath === `${collectionIndexPath}/`;
+
     data = {
       items: preparedItems,
       // Use override title if provided, otherwise use meta title (but not on collection page itself)
       title: titleOverride ?? (isOnCollectionPage ? undefined : meta.title),
-      description: descriptionOverride ?? (isOnCollectionPage ? undefined : meta.description),
+      description:
+        descriptionOverride ??
+        (isOnCollectionPage ? undefined : meta.description),
       // Only show "View All" link if collection has a page and we're not already on it
       // FIXED: Uses shouldCollectionHavePage - single source of truth from _meta.mdx
-      collectionUrl: shouldCollectionHavePage(meta) && !isOnCollectionPage ? collectionIndexPath : undefined,
-      collectionTitle: meta.title || queryCollection.charAt(0).toUpperCase() + queryCollection.slice(1),
-      ...restProps
+      collectionUrl:
+        shouldCollectionHavePage(meta) && !isOnCollectionPage
+          ? collectionIndexPath
+          : undefined,
+      collectionTitle:
+        meta.title ||
+        queryCollection.charAt(0).toUpperCase() + queryCollection.slice(1),
+      ...restProps,
     };
   } else {
     // ═══════════════════════════════════════════════════════════
@@ -88,25 +96,25 @@ if (queryProp) {
       result.entries.map(async (entry) => {
         const collection = entry.collection;
         const meta = getCollectionMeta(collection);
-        
+
         // Use the same prepareEntry logic as single-collection
         return await prepareEntry(entry, collection, meta);
       })
     );
-    
+
     data = {
       items: preparedItems,
       title: titleOverride,
       description: descriptionOverride,
       // No collectionUrl or collectionTitle for multi-collection
-      ...restProps
+      ...restProps,
     };
-    
+
     // Warn if title/description not provided for multi-collection
     if (!titleOverride || !descriptionOverride) {
       console.warn(
         `[Section] Multi-collection query used without title/description. ` +
-        `Please provide these props manually when querying multiple collections.`
+          `Please provide these props manually when querying multiple collections.`
       );
     }
   }
@@ -123,4 +131,5 @@ if (!VariantComponent) {
   throw new Error(`Variant "${variant}" not found`);
 }
 ---
+
 <VariantComponent {...data} />

@@ -2,7 +2,7 @@
 /**
  * Mobile Menu Drawer Template
  * 
- * Manages open/close state for mobile menu with animated hamburger button.
+ * Manages open/close state for mobile menu with checkbox-based hamburger button.
  */
 
 import { useState } from 'react';
@@ -29,12 +29,13 @@ export default function MobileMenuDrawer({
   
   return (
     <>
-      {/* Hamburger Button */}
+      {/* Checkbox-based Hamburger Button */}
       <HamburgerButton
         isOpen={isOpen}
-        onClick={() => setIsOpen(!isOpen)}
+        onChange={setIsOpen}
         hamburgerTransform={hamburgerTransform}
         ariaLabel={isOpen ? 'Close menu' : 'Open menu'}
+        id="mobile-menu-toggle"
       />
       
       {/* Mobile Menu Modal */}

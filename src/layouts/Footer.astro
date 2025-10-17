@@ -11,7 +11,7 @@
  */
 
 import { siteData } from "@/content/siteData";
-import Section from "@/components/ContentRenderer/Section.astro";
+import ContentRenderer from "@/components/ContentRenderer/ContentRenderer.astro";
 import ConsentLayout from "./ConsentLayout.astro";
 import { query } from "@/utils/query";
 ---
@@ -26,7 +26,7 @@ import { query } from "@/utils/query";
       </p>
 
       {/* Social media icons */}
-      <Section
+      <ContentRenderer
         query={query("social-media")}
         variant="SocialMediaVariant"
         size="md"

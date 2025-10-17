@@ -3,7 +3,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteData } from "@/content/siteData";
 import { formatPhoneNumber } from "@/utils/string";
-import Section from "@/components/ContentRenderer/Section.astro";
+import ContentRenderer from "@/components/ContentRenderer/ContentRenderer.astro";
 import { getCollection } from "astro:content";
 
 // const contacts = await getCollection("contact");
@@ -17,7 +17,7 @@ const effectiveDate = "May 14, 2025";
 >
   <h1>Cookie Policy for {siteData.title}</h1>
 
-  <section
+  <ContentRenderer
     class="prose mx-auto py-[var(--spacing-lg)] px-[var(--spacing-lg)] w-9/10 lg:w-8/10"
   >
     <p>
@@ -89,7 +89,7 @@ const effectiveDate = "May 14, 2025";
       </li>
       <li>Address: {siteData.address}</li>
     </ul> -->
-  </section>
+  </ContentRenderer>
 
   <script type="module">
     document.addEventListener("DOMContentLoaded", () => {

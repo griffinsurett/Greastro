@@ -1,20 +1,21 @@
 ---
-// src/components/section/variants/CardVariant.astro
+// src/components/ContentRenderer/variants/CardVariant.astro
 /**
  * Card Variant - Feature Showcase Layout
- *
+ * 
  * Similar to GridVariant but uses FeatureCard with:
  * - Larger, more prominent cards
  * - Image support
  * - Hover lift animations
  * - Secondary button style
- *
+ * 
  * Best for features, services, products that need emphasis.
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
 import FeatureCard from "@/components/LoopComponents/FeatureCard.astro";
 import Button from "@/components/Button/Button";
+import { shouldShowCollectionCTA } from "../utils/helpers";
 
 interface Props extends BaseVariantProps {
   columns?: 1 | 2 | 3 | 4;
@@ -65,7 +66,7 @@ const columnClasses = {
   }
 
   {
-    collectionUrl && items.length > 0 && (
+    shouldShowCollectionCTA(collectionUrl, items.length) && (
       <div class="mt-12 text-center">
         <Button
           href={collectionUrl}

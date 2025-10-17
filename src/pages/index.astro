@@ -15,20 +15,6 @@ import {
 
 <BaseLayout title="Home" description={siteData.description}>
   <main class="flex-1">
-    <!-- Simple query - auto-populates from menu-items meta -->
-    <ContentRenderer
-      query={query("menu-items")
-        .where((entry) => {
-          const menus = entry.data.menu;
-          // Handle both single menu and array of menus
-          if (Array.isArray(menus)) {
-            return menus.some((m) => m.id === "main-menu");
-          }
-          return menus?.id === "main-menu";
-        })
-        .orderBy(sortBy("order", "asc"))}
-      variant="GridVariant"
-    />
 
     <!-- Hero ContentRenderer with static content -->
     <ContentRenderer

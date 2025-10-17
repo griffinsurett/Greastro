@@ -1,17 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/HeroVariant.astro
 /**
- * Hero Variant - Full-Width Hero Section
- * 
- * Large hero banner with:
- * - Optional background image with gradient overlay
- * - Large centered text
- * - Primary and secondary CTAs
- * - Minimum 60vh height
- * - Slot for additional content below
- * 
- * Can use collection (first item) or static props.
- * Best for homepage heroes, landing pages.
+ * Hero Variant - Full-width hero section with background image
+ * Features: Large centered text, primary/secondary CTAs, min 60vh height
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
@@ -20,12 +11,12 @@ import { ctaData } from "@/content/siteData";
 import { shouldShowCollectionCTA } from "../utils/helpers";
 
 interface Props extends BaseVariantProps {
-  image?: {              // Background image
+  image?: {
     src: string;
     alt: string;
   };
-  ctaText?: string;      // Primary button text
-  ctaLink?: string;      // Primary button URL
+  ctaText?: string;
+  ctaLink?: string;
 }
 
 const {
@@ -38,9 +29,9 @@ const {
   image,
   ctaText = ctaData.text,
   ctaLink = ctaData.link,
+  id,
 } = Astro.props as Props;
 
-// Use first collection item or static props
 const hero = items[0];
 const hasHeroContent = hero || title || description || image;
 const heroImage = image || hero?.image;
@@ -50,59 +41,49 @@ const heroLink = ctaLink || hero?.url;
 const viewAllText = `Explore ${collectionTitle || ""}`.trim();
 ---
 
-<section class={`relative ${className}`}>
-  {
-    hasHeroContent && (
-      <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
-        {/* Background image with gradient overlay */}
-        {imageSrc && (
-          <div class="absolute inset-0 -z-10">
-            <img
-              src={imageSrc}
-              alt={imageAlt}
-              class="w-full h-full object-cover"
-            />
-            <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
-          </div>
-        )}
+<section id={id} class={`relative ${className}`}>
+  {hasHeroContent && (
+    <div class="relative min-h-[60vh] flex items-center justify-center overflow-hidden">
+      {imageSrc && (
+        <div class="absolute inset-0 -z-10">
+          <img
+            src={imageSrc}
+            alt={imageAlt}
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
+        </div>
+      )}
 
-        {/* Hero content */}
-        <div class="relative text-center text-black px-8 max-w-3xl">
-          <h1 class="text-5xl md:text-6xl font-bold mb-4">
-            {title || hero?.title || "Welcome"}
-          </h1>
-          <p class="text-xl mb-8 opacity-95">
-            {description || hero?.description || ""}
-          </p>
+      <div class="relative text-center text-black px-8 max-w-3xl">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4">
+          {title || hero?.title || "Welcome"}
+        </h1>
+        <p class="text-xl mb-8 opacity-95">
+          {description || hero?.description || ""}
+        </p>
 
-          {/* CTAs */}
-          <div class="flex gap-4 justify-center flex-wrap">
-            {/* Primary CTA */}
-            {heroLink && (
-              <Button href={heroLink} variant="primary" size="lg">
-                {ctaText}
-              </Button>
-            )}
+        <div class="flex gap-4 justify-center flex-wrap">
+          {heroLink && (
+            <Button href={heroLink} variant="primary" size="lg">
+              {ctaText}
+            </Button>
+          )}
 
-            {/* Secondary CTA - collection link */}
-            {
-              shouldShowCollectionCTA(collectionUrl, items.length) && (
-                <Button
-                  href={collectionUrl}
-                  variant="ghost"
-                  size="lg"
-                  className="bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/20"
-                >
-                  {viewAllText}
-                </Button>
-              )
-            }
-          </div>
+          {shouldShowCollectionCTA(collectionUrl, items.length) && (
+            <Button
+              href={collectionUrl}
+              variant="ghost"
+              size="lg"
+              className="bg-white/10 backdrop-blur-sm text-white border-2 border-white/30 hover:bg-white/20"
+            >
+              {viewAllText}
+            </Button>
+          )}
         </div>
       </div>
-    )
-  }
+    </div>
+  )}
 
-  {/* Slot for additional content below hero */}
   <slot />
 </section>

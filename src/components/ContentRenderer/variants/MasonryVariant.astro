@@ -1,15 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/MasonryVariant.astro
 /**
- * Masonry Variant - Pinterest-Style Layout
- * 
- * CSS columns masonry layout with:
- * - Variable height items that flow naturally
- * - 1-4 responsive columns
- * - Compact, tiled appearance
- * - Context-aware CTA text (testimonials, portfolio, etc.)
- * 
- * Best for testimonials, galleries, mixed-height content.
+ * Masonry Variant - Pinterest-style CSS columns layout
+ * Features: Variable height items, 1-4 responsive columns, compact layout
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
@@ -25,21 +18,19 @@ const {
   className = '',
   collectionUrl,
   collectionTitle,
+  id,
 } = Astro.props as Props;
 
-// Smart CTA text based on collection type
 const viewAllText = collectionTitle?.toLowerCase().includes('testimonial') 
   ? 'Read More Reviews' 
   : collectionTitle?.toLowerCase().includes('portfolio')
   ? 'View Full Gallery'
   : `Browse All ${collectionTitle || ''}`.trim();
 
-// Ensure items is an array
 const safeItems = Array.isArray(items) ? items : [];
 ---
 
-<section class={`py-16 ${className}`}>
-  {/* Centered header */}
+<section id={id} class={`py-16 ${className}`}>
   {(title || description) && (
     <div class="text-center mb-12">
       {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
@@ -47,7 +38,6 @@ const safeItems = Array.isArray(items) ? items : [];
     </div>
   )}
   
-  {/* CSS columns masonry layout */}
   {safeItems.length > 0 && (
     <ul class="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 list-none">
       {safeItems.map((item) => item && (
@@ -58,7 +48,6 @@ const safeItems = Array.isArray(items) ? items : [];
     </ul>
   )}
   
-  {/* Purple CTA for visual distinction */}
   {shouldShowCollectionCTA(collectionUrl, safeItems.length) && (
     <div class="mt-12 text-center">
       <a 

@@ -1,14 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/ContactVariant.astro
 /**
- * Contact Variant - Contact Information Layout
- * 
- * Specialized layout for contact pages with:
- * - Contact cards (phone, email, etc.)
- * - Embedded social media ContentRenderer
- * - 1-3 column layouts
- * 
- * Combines ContactCard components with SocialMediaVariant.
+ * Contact Variant - Contact information with social media
+ * Features: Contact cards, embedded social media section, 1-3 columns
  */
 
 import ContentRenderer from "../ContentRenderer.astro";
@@ -30,6 +24,7 @@ const {
   columns = 2,
   collectionUrl,
   collectionTitle,
+  id,
 } = Astro.props as Props;
 
 const viewAllText = `Contact Us`;
@@ -41,33 +36,26 @@ const columnClasses = {
 };
 ---
 
-<ContentRenderer class={`py-16 ${className}`}>
-  {/* Centered header */}
-  {
-    (title || description) && (
-      <div class="text-center mb-12">
-        {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
-        {description && (
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>
-        )}
-      </div>
-    )
-  }
+<section id={id} class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="text-center mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && (
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>
+      )}
+    </div>
+  )}
 
-  {/* Grid of contact cards */}
-  {
-    items.length > 0 && (
-      <ul class={`grid ${columnClasses[columns]} gap-6 list-none`}>
-        {items.map((item) => (
-          <li>
-            <ContactCard {...item} />
-          </li>
-        ))}
-      </ul>
-    )
-  }
+  {items.length > 0 && (
+    <ul class={`grid ${columnClasses[columns]} gap-6 list-none`}>
+      {items.map((item) => (
+        <li>
+          <ContactCard {...item} />
+        </li>
+      ))}
+    </ul>
+  )}
 
-  {/* Embedded social media ContentRenderer - UPDATED TO USE QUERY */}
   <ContentRenderer
     query={query("social-media")}
     variant="SocialMediaVariant"
@@ -76,19 +64,16 @@ const columnClasses = {
     alignment="center"
   />
 
-  {/* Optional CTA */}
-  {
-    shouldShowCollectionCTA(collectionUrl, items.length) && (
-      <div class="mt-12 text-center">
-        <Button
-          href={collectionUrl}
-          rightIcon="lu:arrow-right"
-          variant="primary"
-          size="lg"
-        >
-          {viewAllText}
-        </Button>
-      </div>
-    )
-  }
-</ContentRenderer>
+  {shouldShowCollectionCTA(collectionUrl, items.length) && (
+    <div class="mt-12 text-center">
+      <Button
+        href={collectionUrl}
+        rightIcon="lu:arrow-right"
+        variant="primary"
+        size="lg"
+      >
+        {viewAllText}
+      </Button>
+    </div>
+  )}
+</section>

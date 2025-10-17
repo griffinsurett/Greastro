@@ -1,15 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/CardVariant.astro
 /**
- * Card Variant - Feature Showcase Layout
- * 
- * Similar to GridVariant but uses FeatureCard with:
- * - Larger, more prominent cards
- * - Image support
- * - Hover lift animations
- * - Secondary button style
- * 
- * Best for features, services, products that need emphasis.
+ * Card Variant - Feature showcase with prominent cards
+ * Features: Large cards, hover effects, images, 1-4 columns
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
@@ -29,6 +22,7 @@ const {
   columns = 3,
   collectionUrl,
   collectionTitle,
+  id,
 } = Astro.props as Props;
 
 const viewAllText = `Explore All ${collectionTitle || ""}`.trim();
@@ -41,42 +35,36 @@ const columnClasses = {
 };
 ---
 
-<section class={`py-16 ${className}`}>
-  {
-    (title || description) && (
-      <div class="text-center mb-12">
-        {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
-        {description && (
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>
-        )}
-      </div>
-    )
-  }
+<section id={id} class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="text-center mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && (
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>
+      )}
+    </div>
+  )}
 
-  {
-    items.length > 0 && (
-      <ul class={`grid ${columnClasses[columns]} gap-8 list-none`}>
-        {items.map((item) => (
-          <li>
-            <FeatureCard {...item} />
-          </li>
-        ))}
-      </ul>
-    )
-  }
+  {items.length > 0 && (
+    <ul class={`grid ${columnClasses[columns]} gap-8 list-none`}>
+      {items.map((item) => (
+        <li>
+          <FeatureCard {...item} />
+        </li>
+      ))}
+    </ul>
+  )}
 
-  {
-    shouldShowCollectionCTA(collectionUrl, items.length) && (
-      <div class="mt-12 text-center">
-        <Button
-          href={collectionUrl}
-          rightIcon="lu:chevron-right"
-          variant="secondary"
-          size="lg"
-        >
-          {viewAllText}
-        </Button>
-      </div>
-    )
-  }
+  {shouldShowCollectionCTA(collectionUrl, items.length) && (
+    <div class="mt-12 text-center">
+      <Button
+        href={collectionUrl}
+        rightIcon="lu:chevron-right"
+        variant="secondary"
+        size="lg"
+      >
+        {viewAllText}
+      </Button>
+    </div>
+  )}
 </section>

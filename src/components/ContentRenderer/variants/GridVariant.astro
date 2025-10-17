@@ -1,17 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/GridVariant.astro
 /**
- * Grid Variant - Default Section Layout
- * 
- * Responsive grid layout with:
- * - Configurable columns (1-6)
- * - Configurable gap spacing
- * - Optional title and description
- * - Optional "View All" link
- * - Uses GridCard for individual items
- * 
- * This is the default variant used when no variant is specified.
- * Works well for most content types - services, products, team members, etc.
+ * Grid Variant - Default responsive grid layout
+ * Features: 1-6 columns, configurable gap, optional "View All" link
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
@@ -20,8 +11,8 @@ import Button from "@/components/Button/Button";
 import { shouldShowCollectionCTA } from "../utils/helpers";
 
 interface Props extends BaseVariantProps {
-  columns?: 1 | 2 | 3 | 4 | 5 | 6;  // Number of columns in grid
-  gap?: "sm" | "md" | "lg" | "xl";  // Spacing between items
+  columns?: 1 | 2 | 3 | 4 | 5 | 6;
+  gap?: "sm" | "md" | "lg" | "xl";
 }
 
 const {
@@ -33,11 +24,11 @@ const {
   gap = "md",
   collectionUrl,
   collectionTitle,
+  id,
 } = Astro.props as Props;
 
 const viewAllText = `View All`;
 
-// Map gap sizes to Tailwind classes
 const gapClasses = {
   sm: "gap-2",
   md: "gap-4",
@@ -45,7 +36,6 @@ const gapClasses = {
   xl: "gap-8",
 };
 
-// Responsive column classes
 const columnClasses = {
   1: "grid-cols-1",
   2: "grid-cols-1 md:grid-cols-2",
@@ -56,45 +46,36 @@ const columnClasses = {
 };
 ---
 
-<section class={`py-16 ${className}`}>
-  {/* Optional section header */}
-  {
-    (title || description) && (
-      <div class="text-center mb-12">
-        {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
-        {description && (
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>
-        )}
-      </div>
-    )
-  }
+<section id={id} class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="text-center mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && (
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">{description}</p>
+      )}
+    </div>
+  )}
 
-  {/* Grid of items */}
-  {
-    items.length > 0 && (
-      <ul class={`grid ${columnClasses[columns]} ${gapClasses[gap]} list-none`}>
-        {items.map((item) => (
-          <li>
-            <GridCard {...item} />
-          </li>
-        ))}
-      </ul>
-    )
-  }
+  {items.length > 0 && (
+    <ul class={`grid ${columnClasses[columns]} ${gapClasses[gap]} list-none`}>
+      {items.map((item) => (
+        <li>
+          <GridCard {...item} />
+        </li>
+      ))}
+    </ul>
+  )}
 
-  {/* Optional "View All" link */}
-  {
-    shouldShowCollectionCTA(collectionUrl, items.length) && (
-      <div class="mt-12 text-center">
-        <Button
-          href={collectionUrl}
-          rightIcon="lu:arrow-right"
-          variant="primary"
-          size="lg"
-        >
-          {viewAllText}
-        </Button>
-      </div>
-    )
-  }
+  {shouldShowCollectionCTA(collectionUrl, items.length) && (
+    <div class="mt-12 text-center">
+      <Button
+        href={collectionUrl}
+        rightIcon="lu:arrow-right"
+        variant="primary"
+        size="lg"
+      >
+        {viewAllText}
+      </Button>
+    </div>
+  )}
 </section>

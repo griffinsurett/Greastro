@@ -1,9 +1,9 @@
-// src/components/section/Section.types.ts
+// src/components/ContentRenderer/ContentRenderer.types.ts
 /**
- * Section Type Definitions
- * 
- * Type definitions for the Section component and its variants.
- * Provides a consistent interface for all section variants.
+ * Content Renderer Type Definitions
+ *
+ * Type definitions for the Content Renderer component and its variants.
+ * Provides a consistent interface for all content renderer variants.
  */
 
 import type { Query } from '@/utils/query';
@@ -20,6 +20,7 @@ export interface BaseVariantProps {
   className?: string;          // Additional CSS classes
   collectionUrl?: string;      // URL to collection index page (for "View All" links)
   collectionTitle?: string;    // Display name for collection (for "View All" text)
+  id?: string;                 // Manual ID override (auto-generated if not provided)
 }
 
 /**

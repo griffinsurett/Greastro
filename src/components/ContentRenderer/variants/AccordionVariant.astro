@@ -1,15 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/AccordionVariant.astro
 /**
- * Accordion Variant - Expandable List Layout
- * 
- * Collapsible accordion interface with:
- * - Single or multiple expansion modes
- * - Client-side interactivity (React Accordion component)
- * - Perfect for FAQs, documentation
- * - Left-aligned header
- * 
- * Uses the Accordion React component with client:visible hydration.
+ * Accordion Variant - Collapsible Q&A layout
+ * Features: Single/multiple expansion, React component with client:visible
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
@@ -18,7 +11,7 @@ import Button from "@/components/Button/Button";
 import { shouldShowCollectionCTA } from "../utils/helpers";
 
 interface Props extends BaseVariantProps {
-  allowMultiple?: boolean;  // Allow multiple items expanded at once
+  allowMultiple?: boolean;
 }
 
 const {
@@ -29,43 +22,36 @@ const {
   allowMultiple = false,
   collectionUrl,
   collectionTitle,
+  id,
 } = Astro.props as Props;
 
 const viewAllText = `View All ${collectionTitle || ""}`.trim();
 ---
-<section class={`py-16 ${className}`}>
-  {/* Left-aligned header */}
-  {
-    (title || description) && (
-      <div class="mb-12">
-        {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
-        {description && (
-          <p class="text-lg text-gray-600 max-w-3xl">{description}</p>
-        )}
-      </div>
-    )
-  }
 
-  {/* Hydrated React accordion component */}
-  {
-    items.length > 0 && (
-      <Accordion items={items} allowMultiple={allowMultiple} client:visible />
-    )
-  }
+<section id={id} class={`py-16 ${className}`}>
+  {(title || description) && (
+    <div class="mb-12">
+      {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
+      {description && (
+        <p class="text-lg text-gray-600 max-w-3xl">{description}</p>
+      )}
+    </div>
+  )}
 
-  {/* Optional view all link */}
-  {
-    shouldShowCollectionCTA(collectionUrl, items.length) && (
-      <div class="mt-12 text-center">
-        <Button
-          href={collectionUrl}
-          rightIcon="lu:arrow-right"
-          variant="primary"
-          size="lg"
-        >
-          {viewAllText}
-        </Button>
-      </div>
-    )
-  }
+  {items.length > 0 && (
+    <Accordion items={items} allowMultiple={allowMultiple} client:visible />
+  )}
+
+  {shouldShowCollectionCTA(collectionUrl, items.length) && (
+    <div class="mt-12 text-center">
+      <Button
+        href={collectionUrl}
+        rightIcon="lu:arrow-right"
+        variant="primary"
+        size="lg"
+      >
+        {viewAllText}
+      </Button>
+    </div>
+  )}
 </section>

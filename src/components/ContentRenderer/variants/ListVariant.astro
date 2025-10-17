@@ -1,15 +1,8 @@
 ---
 // src/components/ContentRenderer/variants/ListVariant.astro
 /**
- * List Variant - Horizontal List Layout
- * 
- * Vertical list with horizontal cards:
- * - Side-by-side image and content
- * - Better for detailed content with images
- * - Full-width layout
- * - Custom "See Complete" CTA
- * 
- * Best for portfolios, case studies, detailed listings.
+ * List Variant - Vertical stack of horizontal cards
+ * Features: Side-by-side image/content, full width, left-aligned header
  */
 
 import type { BaseVariantProps } from "../ContentRenderer.types";
@@ -25,13 +18,13 @@ const {
   className = '',
   collectionUrl,
   collectionTitle,
+  id,
 } = Astro.props as Props;
 
 const viewAllText = `See Complete ${collectionTitle || 'List'}`;
 ---
 
-<section class={`py-16 ${className}`}>
-  {/* Left-aligned header */}
+<section id={id} class={`py-16 ${className}`}>
   {(title || description) && (
     <div class="mb-12">
       {title && <h2 class="text-4xl font-bold mb-4">{title}</h2>}
@@ -39,7 +32,6 @@ const viewAllText = `See Complete ${collectionTitle || 'List'}`;
     </div>
   )}
   
-  {/* Vertical stack of horizontal cards */}
   {items.length > 0 && (
     <ul class="flex flex-col gap-8 list-none">
       {items.map((item) => (
@@ -50,7 +42,6 @@ const viewAllText = `See Complete ${collectionTitle || 'List'}`;
     </ul>
   )}
   
-  {/* Inline CTA with arrow */}
   {shouldShowCollectionCTA(collectionUrl, items.length) && (
     <div class="mt-12">
       <a 

@@ -9,3 +9,4 @@ export function shouldShowCollectionCTA(
 ): boolean {
   return !!(collectionUrl && itemCount && itemCount > 0);
 }
+

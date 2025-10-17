@@ -7,12 +7,12 @@
  */
 
 /**
- * Check if a URL is active based on current path
+ * Check if a URL is active based on current path (EXACT MATCH ONLY)
  * Works for menus, breadcrumbs, sidebars, etc.
  * 
  * @param itemUrl - The URL to check
  * @param currentPath - Current page path
- * @returns True if the URL is active
+ * @returns True if the URL is active (exact match)
  */
 export function isActivePath(itemUrl: string | undefined, currentPath: string): boolean {
   if (!itemUrl) return false;
@@ -20,15 +20,8 @@ export function isActivePath(itemUrl: string | undefined, currentPath: string): 
   const normalizedItem = itemUrl.replace(/\/$/, '') || '/';
   const normalizedCurrent = currentPath.replace(/\/$/, '') || '/';
   
-  // Exact match
-  if (normalizedItem === normalizedCurrent) return true;
-  
-  // Parent path active (e.g., /blog active when on /blog/post)
-  if (normalizedItem !== '/' && normalizedCurrent.startsWith(normalizedItem + '/')) {
-    return true;
-  }
-  
-  return false;
+  // Only exact match
+  return normalizedItem === normalizedCurrent;
 }
 
 /**

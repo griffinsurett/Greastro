@@ -1,0 +1,95 @@
+---
+// src/components/ContentRenderer/variants/MenuVariant.astro
+/**
+ * Menu Variant - Responsive Navigation Menu
+ * 
+ * Single variant that handles both desktop and mobile rendering.
+ * Uses responsive classes to show/hide appropriate version.
+ */
+
+import type { BaseVariantProps } from "../ContentRenderer.types";
+import MenuList from '@/components/LoopTemplates/Menu/MenuList.astro';
+import MobileMenuDrawer from '@/components/HamburgerMenuDrawer';
+
+interface Props extends BaseVariantProps {
+  maxDepth?: number;
+  mode?: 'responsive' | 'desktop-only' | 'mobile-only';
+}
+
+const {
+  items = [],
+  className = "",
+  id,
+  maxDepth = 3,
+  mode = 'responsive',
+} = Astro.props as Props;
+
+/**
+ * Build hierarchical tree from flat items
+ * Uses parent references to create nested structure
+ */
+function buildTree(flatItems: any[]) {
+  const itemMap = new Map();
+  const roots: any[] = [];
+  
+  // First pass: create nodes
+  flatItems.forEach(item => {
+    itemMap.set(item.slug || item.id, { ...item, children: [] });
+  });
+  
+  // Second pass: build hierarchy
+  flatItems.forEach(item => {
+    const node = itemMap.get(item.slug || item.id);
+    const parentId = item.parent?.id || item.parent;
+    
+    if (parentId && itemMap.has(parentId)) {
+      itemMap.get(parentId).children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+  
+  // Sort by order field recursively
+  const sortTree = (nodes: any[]) => {
+    nodes.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    nodes.forEach(node => {
+      if (node.children?.length > 0) {
+        sortTree(node.children);
+      }
+    });
+  };
+  
+  sortTree(roots);
+  return roots;
+}
+
+const menuTree = buildTree(items);
+
+// Determine which versions to show based on mode
+const showDesktop = mode === 'responsive' || mode === 'desktop-only';
+const showMobile = mode === 'responsive' || mode === 'mobile-only';
+
+// Responsive visibility classes
+const desktopClasses = mode === 'responsive' ? 'hidden md:block' : '';
+const mobileClasses = mode === 'responsive' ? 'md:hidden' : '';
+---
+
+<div id={id} class={`menu-variant ${className}`}>
+  {showDesktop && (
+    <nav class={`menu-desktop ${desktopClasses}`} aria-label="Main navigation">
+      <MenuList items={menuTree} level={0} />
+    </nav>
+  )}
+  
+  {showMobile && (
+    <div class={`menu-mobile ${mobileClasses}`}>
+      <MobileMenuDrawer items={menuTree} client:visible />
+    </div>
+  )}
+</div>
+
+<style>
+  .menu-variant {
+    @apply w-full;
+  }
+</style>

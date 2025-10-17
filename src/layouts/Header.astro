@@ -1,0 +1,40 @@
+---
+// src/layouts/Header.astro
+/**
+ * Site Header with Navigation
+ */
+
+import ContentRenderer from '@/components/ContentRenderer/ContentRenderer.astro';
+import { query, sortBy } from '@/utils/query';
+import { siteData } from '@/content/siteData';
+
+const menuQuery = query('menu-items')
+  .where((entry) => {
+    const menus = entry.data.menu;
+    if (Array.isArray(menus)) {
+      return menus.some(m => m.id === 'main-menu');
+    }
+    return menus?.id === 'main-menu';
+  })
+  .orderBy(sortBy('order', 'asc'));
+---
+
+<header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo -->
+      <a 
+        href="/" 
+        class="text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors"
+      >
+        {siteData.title}
+      </a>
+      
+      <!-- Navigation Menu (responsive) -->
+      <ContentRenderer 
+        query={menuQuery}
+        variant="MenuVariant"
+      />
+    </div>
+  </div>
+</header>

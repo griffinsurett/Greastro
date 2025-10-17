@@ -19,6 +19,7 @@ import HeadTags from "./HeadTags.astro";
 import SEO from "./SEO.astro";
 import Theme from "./Theme.astro";
 import BodyTags from "./BodyTags.astro";
+import Header from "./Header.astro"; 
 import Footer from "./Footer.astro";
 
 export interface Props {
@@ -49,6 +50,8 @@ const { ...seoProps } = Astro.props;
   </head>
 
   <body class="antialiased">
+    <Header />
+
     {/* Body-level scripts and elements */}
     <BodyTags />
 

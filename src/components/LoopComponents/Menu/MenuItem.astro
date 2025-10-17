@@ -1,0 +1,91 @@
+---
+// src/components/LoopComponents/MenuItem.astro
+/**
+ * Single Menu Item Component
+ * 
+ * Renders individual menu link with dropdown support.
+ * Uses universal isActivePath utility.
+ */
+
+import MenuDropdown from '@/components/LoopTemplates/Menu/MenuDropdown.astro';
+import { isActivePath, hasActiveDescendant } from '@/utils/navigation';
+
+export interface Props {
+  title: string;
+  url?: string;
+  slug: string;
+  children?: any[];
+  openInNewTab?: boolean;
+  level?: number;
+  description?: string;
+  icon?: any;
+}
+
+const { 
+  title, 
+  url, 
+  slug,
+  children = [], 
+  openInNewTab = false,
+  level = 0,
+  description,
+  icon,
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const isActive = isActivePath(url, currentPath);
+const hasChildren = children.length > 0;
+const childIsActive = hasChildren ? hasActiveDescendant({ children }, currentPath) : false;
+const isTopLevel = level === 0;
+
+const linkClasses = isTopLevel
+  ? `
+    flex items-center gap-1 px-4 py-2 rounded-md transition-colors font-medium
+    ${isActive || childIsActive
+      ? 'text-blue-600 bg-blue-50'
+      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+    }
+  `
+  : `
+    flex items-center gap-1 px-4 py-2 text-sm transition-colors whitespace-nowrap
+    ${isActive
+      ? 'text-blue-600 bg-blue-50 font-medium'
+      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+    }
+  `;
+---
+
+<li 
+  class={`relative ${hasChildren ? 'group' : ''}`}
+  role={isTopLevel ? 'none' : 'menuitem'}
+>
+  <a 
+    href={url || '#'}
+    target={openInNewTab ? '_blank' : undefined}
+    rel={openInNewTab ? 'noopener noreferrer' : undefined}
+    class={linkClasses.trim()}
+    aria-current={isActive ? 'page' : undefined}
+    aria-haspopup={hasChildren ? 'true' : undefined}
+    aria-expanded={hasChildren ? 'false' : undefined}
+    title={description}
+    role={isTopLevel ? 'menuitem' : undefined}
+  >
+    {icon && <span class="icon">{icon}</span>}
+    <span>{title}</span>
+    {hasChildren && (
+      <svg 
+        class="w-4 h-4 transition-transform group-hover:rotate-180" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    )}
+  </a>
+  
+  {hasChildren && (
+    <MenuDropdown items={children} level={level + 1} />
+  )}
+</li>

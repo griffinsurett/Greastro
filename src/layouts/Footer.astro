@@ -2,13 +2,18 @@
 // src/layouts/Footer.astro
 /**
  * Footer Component
+ *
+ * Site-wide footer with:
+ * - Copyright notice
+ * - Social media links
+ * - Legal links (Privacy Policy, Cookie Policy)
+ * - Cookie preferences button (client-side)
  */
 
 import { siteData } from "@/content/siteData";
 import ContentRenderer from "@/components/ContentRenderer/ContentRenderer.astro";
 import ConsentLayout from "./ConsentLayout.astro";
-import { query, sortBy } from "@/utils/query";
-import { filterByMenu } from '@/utils/menuQueries';
+import { query } from "@/utils/query";
 ---
 
 <footer class="bg-gray-900 text-white mt-auto">
@@ -31,13 +36,13 @@ import { filterByMenu } from '@/utils/menuQueries';
 
       {/* Legal and privacy links */}
       <div class="flex flex-wrap items-center gap-4 text-sm">
-        
+        <a
           href="/privacy-policy"
           class="text-gray-400 hover:text-white transition-colors"
         >
           Privacy Policy
         </a>
-        
+        <a
           href="/cookie-policy"
           class="text-gray-400 hover:text-white transition-colors"
         >
@@ -46,18 +51,6 @@ import { filterByMenu } from '@/utils/menuQueries';
 
         <ConsentLayout />
       </div>
-    </div>
-    
-    {/* Optional footer menu */}
-    <div class="mt-6 pt-6 border-t border-gray-800">
-      <ContentRenderer
-        query={query('menu-items')
-          .where(filterByMenu('footer-menu'))
-          .orderBy(sortBy('order', 'asc'))
-        }
-        variant="MenuVariant"
-        mode="desktop-only"
-      />
     </div>
   </div>
 </footer>

@@ -12,4 +12,3 @@
 export * from './core';
 export * from './meta';
 export * from './prepare';
-export * from './references';

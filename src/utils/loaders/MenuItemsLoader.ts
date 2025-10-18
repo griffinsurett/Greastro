@@ -40,6 +40,28 @@ interface HierarchyInfo {
 }
 
 /**
+ * Helper function to normalize menu references
+ * Converts string or array to normalized reference object(s)
+ */
+function normalizeMenuReference(menu: any): any[] {
+  if (!menu) return [];
+  
+  if (Array.isArray(menu)) {
+    return menu.map(m => 
+      typeof m === 'string' 
+        ? { collection: 'menus', id: m }
+        : m
+    );
+  }
+  
+  const normalized = typeof menu === 'string'
+    ? { collection: 'menus', id: menu }
+    : menu;
+  
+  return [normalized];
+}
+
+/**
  * Create the menu items loader
  */
 export function MenuItemsLoader(): Loader {
@@ -363,9 +385,7 @@ function generateMenuItem(
   );
 
   // Normalize menu references
-  const menus = Array.isArray(menuConfig.menu) 
-    ? menuConfig.menu 
-    : [menuConfig.menu];
+  const menus = normalizeMenuReference(menuConfig.menu);
 
   return {
     title,
@@ -434,9 +454,8 @@ function processCollectionAddToMenu(
     // Title CAN be overridden here (addToMenu supports title)
     const title = menuConfig.title ?? meta.title ?? capitalize(collection);
     
-    const menus = Array.isArray(menuConfig.menu) 
-      ? menuConfig.menu 
-      : [menuConfig.menu];
+    // Normalize menu references
+    const menus = normalizeMenuReference(menuConfig.menu);
 
     store.set({
       id: itemId,
@@ -541,9 +560,8 @@ function createCollectionParentItem(
   // NO title override from menuConfig - that's only for addToMenu
   const title = meta.title ?? capitalize(collection);
   
-  const menus = Array.isArray(menuConfig.menu) 
-    ? menuConfig.menu 
-    : [menuConfig.menu];
+  // Normalize menu references
+  const menus = normalizeMenuReference(menuConfig.menu);
 
   store.set({
     id: parentId,
@@ -611,14 +629,13 @@ async function processItemMenus(
         parent = itemInfo?.parent ?? null;
       }
       
-      const menus = Array.isArray(menuConfig.menu) 
-        ? menuConfig.menu 
-        : [menuConfig.menu];
+      // Normalize menu references
+      const menus = normalizeMenuReference(menuConfig.menu);
 
       store.set({
         id: itemId,
         data: {
-          title: menuConfig.title, // Required in schema - CAN override
+          title: menuConfig.title ?? data.title ?? capitalize(slug),
           description: menuConfig.description ?? data.description,
           slug: itemSlug,
           url: itemSlug,

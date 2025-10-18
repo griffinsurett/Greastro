@@ -38,13 +38,5 @@
     "order": 2,
     "openInNewTab": false,
     "menu": "footer-menu"
-  },
-  {
-    "id": "contact",
-    "title": "Contact",
-    "slug": "/contact",
-    "order": 4,
-    "openInNewTab": false,
-    "menu": ["main-menu", "footer-menu"]
   }
 ]

@@ -1,13 +1,12 @@
 // src/utils/loaders/MenuItemsLoader.ts
 /**
- * Menu Items Loader - Simplified
+ * Menu Items Loader - With Semantic Auto-Generated IDs
  * 
- * ONLY loads menu items from:
- * 1. Static menu-items.json
- * 2. Items with addToMenu in frontmatter
- * 3. Collections with itemsAddToMenu in _meta.mdx
- * 
- * All filtering, hierarchy, and advanced logic happens at query time.
+ * Generates intelligent IDs based on context:
+ * - contact-us (root level)
+ * - contact-us-about-us (under about-us parent)
+ * - contact-us-main-menu (in specific menu, if relevant)
+ * - contact-us-about-us-1 (only if duplicate exists)
  */
 
 import { file } from 'astro/loaders';
@@ -19,6 +18,52 @@ import { shouldItemHavePage, shouldItemUseRootPath } from '@/utils/filesystem/pa
 
 const MENU_ITEMS_JSON_PATH = 'src/content/menu-items/menu-items.json';
 const MENUS_COLLECTION = 'menus' as const;
+
+// Track used IDs for auto-incrementing
+const usedIds = new Map<string, number>();
+
+/**
+ * Build semantic ID from context
+ * Includes parent and/or menu information to make IDs self-documenting
+ */
+function buildSemanticId(baseId: string, context: {
+  parent?: any;
+  menu?: any;
+  includeMenu?: boolean; // Set to true if you want menu in ID
+}): string {
+  const parts = [baseId];
+  
+  // Add parent if specified
+  if (context.parent) {
+    const parentId = typeof context.parent === 'string' 
+      ? context.parent 
+      : context.parent.id || String(context.parent);
+    parts.push(parentId);
+  }
+  
+  // Optionally add menu (useful if same item in multiple menus)
+  if (context.includeMenu && context.menu) {
+    const menuId = typeof context.menu === 'string'
+      ? context.menu
+      : Array.isArray(context.menu) 
+        ? (context.menu[0]?.id || String(context.menu[0]))
+        : (context.menu.id || String(context.menu));
+    parts.push(menuId);
+  }
+  
+  return parts.join('-');
+}
+
+/**
+ * Get unique ID with auto-increment only when truly needed
+ * Uses semantic context first, numbers only as last resort
+ */
+function getUniqueId(semanticId: string): string {
+  const count = usedIds.get(semanticId) || 0;
+  usedIds.set(semanticId, count + 1);
+  
+  return count === 0 ? semanticId : `${semanticId}-${count}`;
+}
 
 /**
  * Normalize menu reference to standard format
@@ -53,12 +98,17 @@ export function MenuItemsLoader(): Loader {
     async load(context: LoaderContext) {
       const { store, logger } = context;
 
+      // Clear ID tracking for fresh load
+      usedIds.clear();
+
       // Step 1: Load base menu items from JSON
       store.clear();
       await file(MENU_ITEMS_JSON_PATH).load(context);
 
-      // Step 2: Add URL field to manually loaded items
+      // Step 2: Track IDs from manually loaded items and add URL field
       for (const [id, entry] of store.entries()) {
+        usedIds.set(id, 1); // Mark as used
+        
         const data = entry.data;
         if (data && data.slug && !data.url) {
           store.set({
@@ -106,12 +156,6 @@ async function processItemMenus(
     const menuConfigs = ensureArray(data.addToMenu);
 
     for (const menuConfig of menuConfigs) {
-      const itemId = menuConfig.id ?? `${collection}-${slug}`;
-      
-      // Determine URL
-      const useRootPath = shouldItemUseRootPath(data, meta);
-      const itemSlug = menuConfig.slug ?? (useRootPath ? `/${slug}` : `/${collection}/${slug}`);
-      
       // Store parent as-is (hierarchy built at query time)
       let parent = null;
       if (menuConfig.parent !== undefined) {
@@ -119,6 +163,21 @@ async function processItemMenus(
       } else if (menuConfig.customHierarchy === false && data.parent) {
         parent = data.parent;
       }
+      
+      // Build semantic ID based on context
+      const baseId = menuConfig.id ?? `${collection}-${slug}`;
+      const semanticId = buildSemanticId(baseId, {
+        parent,
+        menu: menuConfig.menu,
+        includeMenu: false, // Set to true if you want menu in ID
+      });
+      
+      // Get unique ID (adds number only if semantic ID is taken)
+      const itemId = getUniqueId(semanticId);
+      
+      // Determine URL
+      const useRootPath = shouldItemUseRootPath(data, meta);
+      const itemSlug = menuConfig.slug ?? (useRootPath ? `/${slug}` : `/${collection}/${slug}`);
       
       const menus = normalizeMenuReference(menuConfig.menu);
 
@@ -157,7 +216,13 @@ async function processCollectionMenus(
       const menuConfigs = ensureArray(meta.addToMenu);
 
       for (const menuConfig of menuConfigs) {
-        const itemId = menuConfig.id ?? collection;
+        const baseId = menuConfig.id ?? collection;
+        const semanticId = buildSemanticId(baseId, {
+          parent: menuConfig.parent,
+          menu: menuConfig.menu,
+          includeMenu: false,
+        });
+        const itemId = getUniqueId(semanticId);
         const itemSlug = menuConfig.slug ?? `/${collection}`;
         const menus = normalizeMenuReference(menuConfig.menu);
 
@@ -204,8 +269,15 @@ async function processItemsAddToMenu(
       : menuConfig.attachTo;
     
     if (attachTo === collection && !store.has(collection)) {
+      const semanticId = buildSemanticId(collection, {
+        parent: null,
+        menu: menuConfig.menu,
+        includeMenu: false,
+      });
+      const parentId = getUniqueId(semanticId);
+      
       store.set({
-        id: collection,
+        id: parentId,
         data: {
           title: meta.title ?? capitalize(collection),
           description: meta.description,
@@ -232,13 +304,21 @@ async function processItemsAddToMenu(
       // Generate menu item
       const useRootPath = shouldItemUseRootPath(data, meta);
       const itemSlug = useRootPath ? `/${slug}` : `/${collection}/${slug}`;
-      const menuItemId = `${collection}-${slug}-auto`;
       
       // Simple parent logic
       let parent = attachTo;
       if (data.parent && menuConfig.respectHierarchy !== false) {
         parent = data.parent;
       }
+
+      // Build semantic ID with parent context
+      const baseId = `${collection}-${slug}-auto`;
+      const semanticId = buildSemanticId(baseId, {
+        parent,
+        menu: menuConfig.menu,
+        includeMenu: false,
+      });
+      const menuItemId = getUniqueId(semanticId);
 
       store.set({
         id: menuItemId,

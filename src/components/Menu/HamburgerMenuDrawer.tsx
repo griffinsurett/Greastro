@@ -43,7 +43,7 @@ export default function MobileMenuDrawer({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         position="center"
-        className="w-full max-w-full h-full bg-white p-0 rounded-none pt-20"
+        className="w-full max-w-full h-full bg-white p-0 rounded-none"
         overlayClass="bg-black/50"
         closeButton={false}
         ariaLabel="Mobile navigation menu"

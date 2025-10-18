@@ -274,65 +274,58 @@ function checkItemInclusion(
   );
 }
 
-/**
- * Check depth-related filters
- */
 function passesDepthFilters(
   itemInfo: HierarchyInfo,
-  filter: MenuFilterOptionsType = {}
+  filter?: MenuFilterOptionsType  // ✅ Make optional
 ): boolean {
   const { depth } = itemInfo;
   
-  if (filter.minDepth !== undefined && depth < filter.minDepth) {
+  // Use nullish coalescing for defaults
+  if ((filter?.minDepth ?? 0) > depth) {
     return false;
   }
   
-  if (filter.maxDepthTotal !== undefined && depth > filter.maxDepthTotal) {
+  if (filter?.maxDepthTotal !== undefined && depth > filter.maxDepthTotal) {
     return false;
   }
   
-  if (filter.onlyDepths && !filter.onlyDepths.includes(depth)) {
+  if (filter?.onlyDepths && !filter.onlyDepths.includes(depth)) {
     return false;
   }
   
-  if (filter.excludeDepths && filter.excludeDepths.includes(depth)) {
+  if (filter?.excludeDepths && filter.excludeDepths.includes(depth)) {
     return false;
   }
 
   return true;
 }
 
-/**
- * Check item type filters (roots, leaves, branches)
- */
 function passesTypeFilters(
   itemInfo: HierarchyInfo,
-  filter: MenuFilterOptionsType = {}
+  filter?: MenuFilterOptionsType  // ✅ Make optional
 ): boolean {
   const isRoot = itemInfo.depth === 0;
   const hasChildren = itemInfo.hasChildren;
   
-  if (filter.includeRoots === false && isRoot) return false;
-  if (filter.includeLeaves === false && !hasChildren) return false;
-  if (filter.includeBranches === false && hasChildren) return false;
+  // Use nullish coalescing with schema defaults
+  if ((filter?.includeRoots ?? true) === false && isRoot) return false;
+  if ((filter?.includeLeaves ?? true) === false && !hasChildren) return false;
+  if ((filter?.includeBranches ?? true) === false && hasChildren) return false;
 
   return true;
 }
 
-/**
- * Check tag-based filters
- */
 function passesTagFilters(
   data: any,
-  filter: MenuFilterOptionsType = {}
+  filter?: MenuFilterOptionsType  // ✅ Make optional
 ): boolean {
-  if (filter.tags && filter.tags.length > 0) {
+  if (filter?.tags && filter.tags.length > 0) {
     if (!data.tags || !data.tags.some((t: string) => filter.tags!.includes(t))) {
       return false;
     }
   }
   
-  if (filter.excludeTags && filter.excludeTags.length > 0) {
+  if (filter?.excludeTags && filter.excludeTags.length > 0) {
     if (data.tags && data.tags.some((t: string) => filter.excludeTags!.includes(t))) {
       return false;
     }
@@ -556,6 +549,7 @@ function processCollectionAddToMenu(
         menu: menus,
         parent: menuConfig.parent ?? null,
         openInNewTab: menuConfig.openInNewTab ?? false,
+        order: menuConfig.order,
         metadata: menuConfig.metadata,
       },
     });

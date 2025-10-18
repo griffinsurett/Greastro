@@ -13,7 +13,7 @@
 
 import type { CollectionEntry, CollectionKey } from 'astro:content';
 import type { SEOData, MetaData, ImageInput } from '@/content/schema';
-import { resolve } from '@/utils/collections/references';
+import { find, isCollectionReference } from '@/utils/query'; // ← Use query system
 
 /**
  * SEO props interface for page metadata
@@ -44,12 +44,19 @@ export interface SEOProps {
 export async function resolveAuthor(author: any): Promise<string | undefined> {
   if (!author) return undefined;
   
-  const resolved = await resolve(author);
+  // Handle array (get first)
+  const authorRef = Array.isArray(author) ? author[0] : author;
   
-  // Handle array (get first) or single
-  const authorData = Array.isArray(resolved) ? resolved[0] : resolved;
+  // Use query system instead of references.ts
+  if (isCollectionReference(authorRef)) {
+    const authorEntry = await find(authorRef.collection, authorRef.id);
+    if (authorEntry) {
+      const data = authorEntry.data as any;
+      return data.title || data.name;
+    }
+  }
   
-  return authorData?.title || authorData?.name;
+  return undefined;
 }
 
 /**

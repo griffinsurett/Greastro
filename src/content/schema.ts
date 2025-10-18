@@ -36,7 +36,7 @@ export const MenuReferenceField = {
 export const MenuItemFields = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
-  slug: z.string().optional(),
+  url: z.string().optional(),
   ...BaseMenuFields,
   menu: refSchema("menus"),
 });
@@ -144,7 +144,7 @@ export const AddToMenuFields = z.object({
   id: z.string().optional(),
   title: z.string().optional(),
   description: z.string().optional(),
-  slug: z.string().optional(),
+  url: z.string().optional(),
   
   // Hierarchy Overrides
   parent: z.string().nullable().optional(),

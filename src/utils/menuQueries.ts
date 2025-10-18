@@ -16,14 +16,16 @@ export function buildMenuTree(items: any[]): any[] {
   const roots: any[] = [];
   
   // First pass: create nodes with children arrays
+  // ✅ Use loader ID, not slug
   items.forEach(item => {
-    const id = item.slug || item.id;
+    const id = item.id || item.slug;  // Changed order!
     itemMap.set(id, { ...item, children: [] });
   });
   
   // Second pass: build hierarchy
   items.forEach(item => {
-    const node = itemMap.get(item.slug || item.id);
+    const id = item.id || item.slug;  // Changed order!
+    const node = itemMap.get(id);
     const parent = item.parent;
     
     if (parent) {

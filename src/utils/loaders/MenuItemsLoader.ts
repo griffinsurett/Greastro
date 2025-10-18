@@ -2,10 +2,10 @@
 /**
  * Menu Items Loader - With Semantic Auto-Generated IDs
  * 
- * Generates intelligent IDs based on context:
+ * Generates intelligent IDs based on full ancestor chain:
  * - contact-us (root level)
  * - contact-us-about-us (under about-us parent)
- * - contact-us-main-menu (in specific menu, if relevant)
+ * - contact-us-about-us-company (under about-us → company)
  * - contact-us-about-us-1 (only if duplicate exists)
  */
 
@@ -23,22 +23,58 @@ const MENUS_COLLECTION = 'menus' as const;
 const usedIds = new Map<string, number>();
 
 /**
- * Build semantic ID from context
- * Includes parent and/or menu information to make IDs self-documenting
+ * Get full ancestor chain for a parent reference
+ * Returns array of IDs from immediate parent to root
  */
-function buildSemanticId(baseId: string, context: {
-  parent?: any;
-  menu?: any;
-  includeMenu?: boolean; // Set to true if you want menu in ID
-}): string {
+function getAncestorChain(parentRef: any, store: any): string[] {
+  const ancestors: string[] = [];
+  let current = parentRef;
+  const visited = new Set<string>(); // Prevent infinite loops
+  
+  while (current) {
+    // Extract parent ID
+    const parentId = typeof current === 'string' 
+      ? current 
+      : current.id || String(current);
+    
+    // Prevent circular references
+    if (visited.has(parentId)) {
+      console.warn(`Circular parent reference detected: ${parentId}`);
+      break;
+    }
+    visited.add(parentId);
+    ancestors.push(parentId);
+    
+    // Look up parent in store
+    const parentEntry = store.get(parentId);
+    if (!parentEntry?.data?.parent) break;
+    
+    current = parentEntry.data.parent;
+  }
+  
+  return ancestors;
+}
+
+/**
+ * Build semantic ID from full ancestor path
+ * Walks up parent chain to ensure uniqueness across multi-level hierarchies
+ */
+function buildSemanticId(
+  baseId: string, 
+  context: {
+    parent?: any;
+    menu?: any;
+    includeMenu?: boolean;
+  },
+  store: any
+): string {
   const parts = [baseId];
   
-  // Add parent if specified
+  // Walk up the parent chain
   if (context.parent) {
-    const parentId = typeof context.parent === 'string' 
-      ? context.parent 
-      : context.parent.id || String(context.parent);
-    parts.push(parentId);
+    const ancestors = getAncestorChain(context.parent, store);
+    // Add in reverse order (grandparent, parent, child)
+    parts.push(...ancestors.reverse());
   }
   
   // Optionally add menu (useful if same item in multiple menus)
@@ -105,19 +141,14 @@ export function MenuItemsLoader(): Loader {
       store.clear();
       await file(MENU_ITEMS_JSON_PATH).load(context);
 
-      // Step 2: Track IDs from manually loaded items and add URL field
+      // Step 2: Track IDs from manually loaded items
       for (const [id, entry] of store.entries()) {
         usedIds.set(id, 1); // Mark as used
         
+        // Validate that url exists
         const data = entry.data;
-        if (data && data.slug && !data.url) {
-          store.set({
-            id,
-            data: {
-              ...data,
-              url: data.slug,
-            },
-          });
+        if (data && !data.url) {
+          console.warn(`Menu item ${id} missing url field`);
         }
       }
 
@@ -164,20 +195,24 @@ async function processItemMenus(
         parent = data.parent;
       }
       
-      // Build semantic ID based on context
+      // Build semantic ID based on full ancestor chain
       const baseId = menuConfig.id ?? `${collection}-${slug}`;
-      const semanticId = buildSemanticId(baseId, {
-        parent,
-        menu: menuConfig.menu,
-        includeMenu: false, // Set to true if you want menu in ID
-      });
+      const semanticId = buildSemanticId(
+        baseId,
+        {
+          parent,
+          menu: menuConfig.menu,
+          includeMenu: false, // Set to true if you want menu in ID
+        },
+        store
+      );
       
       // Get unique ID (adds number only if semantic ID is taken)
       const itemId = getUniqueId(semanticId);
       
       // Determine URL
       const useRootPath = shouldItemUseRootPath(data, meta);
-      const itemSlug = menuConfig.slug ?? (useRootPath ? `/${slug}` : `/${collection}/${slug}`);
+      const itemUrl = menuConfig.url ?? (useRootPath ? `/${slug}` : `/${collection}/${slug}`);
       
       const menus = normalizeMenuReference(menuConfig.menu);
 
@@ -186,8 +221,7 @@ async function processItemMenus(
         data: {
           title: menuConfig.title ?? data.title ?? capitalize(slug),
           description: menuConfig.description ?? data.description,
-          slug: itemSlug,
-          url: itemSlug,
+          url: itemUrl,
           menu: menus,
           parent,
           openInNewTab: menuConfig.openInNewTab ?? false,
@@ -217,13 +251,17 @@ async function processCollectionMenus(
 
       for (const menuConfig of menuConfigs) {
         const baseId = menuConfig.id ?? collection;
-        const semanticId = buildSemanticId(baseId, {
-          parent: menuConfig.parent,
-          menu: menuConfig.menu,
-          includeMenu: false,
-        });
+        const semanticId = buildSemanticId(
+          baseId,
+          {
+            parent: menuConfig.parent,
+            menu: menuConfig.menu,
+            includeMenu: false,
+          },
+          store
+        );
         const itemId = getUniqueId(semanticId);
-        const itemSlug = menuConfig.slug ?? `/${collection}`;
+        const itemUrl = menuConfig.url ?? `/${collection}`;
         const menus = normalizeMenuReference(menuConfig.menu);
 
         store.set({
@@ -231,8 +269,7 @@ async function processCollectionMenus(
           data: {
             title: menuConfig.title ?? meta.title ?? capitalize(collection),
             description: menuConfig.description ?? meta.description,
-            slug: itemSlug,
-            url: itemSlug,
+            url: itemUrl,
             menu: menus,
             parent: menuConfig.parent ?? null,
             openInNewTab: menuConfig.openInNewTab ?? false,
@@ -269,11 +306,15 @@ async function processItemsAddToMenu(
       : menuConfig.attachTo;
     
     if (attachTo === collection && !store.has(collection)) {
-      const semanticId = buildSemanticId(collection, {
-        parent: null,
-        menu: menuConfig.menu,
-        includeMenu: false,
-      });
+      const semanticId = buildSemanticId(
+        collection,
+        {
+          parent: null,
+          menu: menuConfig.menu,
+          includeMenu: false,
+        },
+        store
+      );
       const parentId = getUniqueId(semanticId);
       
       store.set({
@@ -281,7 +322,6 @@ async function processItemsAddToMenu(
         data: {
           title: meta.title ?? capitalize(collection),
           description: meta.description,
-          slug: `/${collection}`,
           url: `/${collection}`,
           menu: menus,
           parent: null,
@@ -303,7 +343,7 @@ async function processItemsAddToMenu(
 
       // Generate menu item
       const useRootPath = shouldItemUseRootPath(data, meta);
-      const itemSlug = useRootPath ? `/${slug}` : `/${collection}/${slug}`;
+      const itemUrl = useRootPath ? `/${slug}` : `/${collection}/${slug}`;
       
       // Simple parent logic
       let parent = attachTo;
@@ -311,13 +351,17 @@ async function processItemsAddToMenu(
         parent = data.parent;
       }
 
-      // Build semantic ID with parent context
+      // Build semantic ID with full ancestor chain
       const baseId = `${collection}-${slug}-auto`;
-      const semanticId = buildSemanticId(baseId, {
-        parent,
-        menu: menuConfig.menu,
-        includeMenu: false,
-      });
+      const semanticId = buildSemanticId(
+        baseId,
+        {
+          parent,
+          menu: menuConfig.menu,
+          includeMenu: false,
+        },
+        store
+      );
       const menuItemId = getUniqueId(semanticId);
 
       store.set({
@@ -325,8 +369,7 @@ async function processItemsAddToMenu(
         data: {
           title: data.title ?? capitalize(slug),
           description: data.description,
-          slug: itemSlug,
-          url: itemSlug,
+          url: itemUrl,
           menu: menus,
           parent,
           openInNewTab: menuConfig.openInNewTab ?? false,

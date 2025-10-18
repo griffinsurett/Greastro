@@ -2,20 +2,18 @@
 // src/layouts/Header.astro
 /**
  * Site Header with Navigation
+ * 
+ * Now uses query system to build menu at render time.
  */
 
 import ContentRenderer from '@/components/ContentRenderer/ContentRenderer.astro';
 import { query, sortBy } from '@/utils/query';
+import { filterByMenu } from '@/utils/menuQueries';
 import { siteData } from '@/content/siteData';
 
+// Query menu items at render time (not build time)
 const menuQuery = query('menu-items')
-  .where((entry) => {
-    const menus = entry.data.menu;
-    if (Array.isArray(menus)) {
-      return menus.some(m => m.id === 'main-menu');
-    }
-    return menus?.id === 'main-menu';
-  })
+  .where(filterByMenu('main-menu'))
   .orderBy(sortBy('order', 'asc'));
 ---
 <header class="sticky top-0 z-[99999] bg-white border-b border-gray-200 shadow-sm">
@@ -29,7 +27,7 @@ const menuQuery = query('menu-items')
         {siteData.title}
       </a>
       
-      <!-- Navigation Menu (responsive) -->
+      <!-- Navigation Menu using query -->
       <ContentRenderer 
         query={menuQuery}
         variant="MenuVariant"

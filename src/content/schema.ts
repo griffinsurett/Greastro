@@ -142,7 +142,7 @@ export const AddToMenuFields = z.object({
   
   // Basic Overrides
   id: z.string().optional(),
-  title: z.string(), // REQUIRED - label for this specific menu item
+  title: z.string().optional(),
   description: z.string().optional(),
   slug: z.string().optional(),
   

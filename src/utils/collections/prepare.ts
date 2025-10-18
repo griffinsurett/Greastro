@@ -4,19 +4,15 @@
  * 
  * This module handles transforming raw collection entries into "prepared" items
  * that are ready for use in pages and components. Preparation includes:
- * - Resolving collection references to actual data
  * - Adding slug and URL fields
- * - Processing nested references recursively
  * - Determining correct URL path (collection or root level)
  * 
- * The prepared items have all the data needed to render them without
- * additional lookups.
+ * References are NOT resolved here - components query for them as needed.
  */
 
 import type { CollectionKey, CollectionEntry } from 'astro:content';
 import type { MetaData, BaseData } from "@/content/schema";
 import { getItemKey } from './core';
-import { processDataForReferences } from './references';
 import { shouldItemHavePage, shouldItemUseRootPath } from '@/utils/pages';
 
 /**
@@ -28,29 +24,30 @@ export interface PreparedFields {
 }
 
 /**
- * A fully prepared collection item with all data resolved and URLs generated
+ * A fully prepared collection item with URLs generated
+ * Extends BaseData to include all common schema fields
  */
-export type PreparedItem = BaseData & PreparedFields & Record<string, any>;
+export type PreparedItem = BaseData & PreparedFields;
 
 /**
  * Prepare a single collection entry for use in pages/components
  * 
  * This function:
  * 1. Extracts the entry's unique identifier (slug/id)
- * 2. Recursively resolves any collection references to actual data
- * 3. Determines if item should use root path or collection path
- * 4. Generates URL if the item should have its own page
- * 5. Preserves any existing URL (e.g., from menu-items loader)
+ * 2. Determines if item should use root path or collection path
+ * 3. Generates URL if the item should have its own page
+ * 4. Preserves any existing URL (e.g., from menu-items loader)
+ * 5. Keeps references as-is (components will query for them)
  * 
  * @param entry - Raw collection entry from Astro
  * @param collection - Name of the collection this entry belongs to
  * @param meta - Collection metadata from _meta.mdx
- * @returns Prepared item with all fields resolved and ready to use
+ * @returns Prepared item with slug and URL ready to use
  * @example
  * const prepared = await prepareEntry(blogPost, 'blog', blogMeta);
  * // prepared.slug: 'my-post'
  * // prepared.url: '/blog/my-post' (or '/my-post' if rootPath: true)
- * // prepared.author: { name: 'Jane Doe', ... } // resolved from reference
+ * // prepared.author: { collection: 'authors', id: 'jane-doe' } // RAW reference
  */
 export async function prepareEntry<T extends CollectionKey>(
   entry: CollectionEntry<T>,
@@ -60,12 +57,11 @@ export async function prepareEntry<T extends CollectionKey>(
   // Get the unique identifier for this entry
   const identifier = getItemKey(entry);
   
-  // Resolve any collection references in the entry data
-  // (e.g., author reference -> full author object)
-  const processedData = await processDataForReferences(entry.data);
+  // Keep raw data - components will query for references themselves
+  const data = entry.data as Record<string, any>;
   
   // Check if this entry already has a URL (e.g., from a custom loader)
-  const hasExistingUrl = processedData.url !== undefined;
+  const hasExistingUrl = data.url !== undefined;
   
   // Determine if item should have a page
   const hasPage = shouldItemHavePage(entry, meta);
@@ -79,7 +75,7 @@ export async function prepareEntry<T extends CollectionKey>(
   
   // Return the prepared item with slug and conditional URL
   return {
-    ...processedData,
+    ...data,
     slug: identifier,
     ...(itemUrl && { url: itemUrl })
   } as PreparedItem;
@@ -97,7 +93,7 @@ export async function prepareEntry<T extends CollectionKey>(
  * @returns Array of prepared items
  * @example
  * const prepared = await prepareCollectionEntries(blogEntries, 'blog', blogMeta);
- * // Ready to use in Section component or page
+ * // Ready to use in ContentRenderer or page
  */
 export async function prepareCollectionEntries<T extends CollectionKey>(
   entries: CollectionEntry<T>[],

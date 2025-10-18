@@ -11,8 +11,10 @@
  * - Author information with avatar/initials
  * 
  * Used in BlogVariant for blog post listings.
- * Author data should already be resolved by prepareEntry.
+ * Author data is queried on-demand from references.
  */
+
+import { find, isCollectionReference } from '@/utils/query';
 
 export interface Props {
   title: string;
@@ -20,17 +22,26 @@ export interface Props {
   description?: string;
   date?: Date | string;
   tags?: string[];
-  author?: any; // Resolved author object from prepareEntry
+  author?: any; // Reference object: { collection: 'authors', id: 'jane-doe' }
 }
 
 const { title, url, description, date, tags, author } = Astro.props;
 
-// Extract author data - should already be resolved
-const authorName = author?.title || author?.name || '';
-const authorRole = author?.role || '';
+// Query for author data if reference exists
+let authorData: Record<string, any> | null = null;
+if (isCollectionReference(author)) {
+  const authorEntry = await find(author.collection, author.id);
+  if (authorEntry) {
+    authorData = authorEntry.data as Record<string, any>;
+  }
+}
+
+// Extract author display data
+const authorName = authorData?.title || authorData?.name || '';
+const authorRole = authorData?.role || '';
 
 // Generate initials from name
-const authorInitials = author?.initials || 
+const authorInitials = authorData?.initials || 
   (authorName ? authorName.split(' ').map((w: string) => w[0]).join('').toUpperCase() : '??');
 ---
 <article class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">

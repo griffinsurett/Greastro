@@ -1,10 +1,10 @@
 ---
-// src/components/LoopComponents/MenuDropdown.astro
+// src/components/LoopTemplates/Menu/MenuDropdown.astro
 /**
  * Menu Dropdown Component
  * 
  * Dropdown/submenu that appears on hover.
- * Recursively renders nested menu items.
+ * Controlled by global CSS using direct child selectors.
  */
 
 import MenuList from './MenuList.astro';
@@ -18,29 +18,8 @@ const { items = [], level = 1 } = Astro.props;
 ---
 
 <div 
-  class="
-    hidden group-hover:block
-    absolute top-full left-0 mt-0
-    animate-slide-down
-  "
+  class="menu-dropdown hidden absolute top-full left-0 mt-0"
   role="menu"
 >
   <MenuList items={items} level={level} />
 </div>
-
-<style>
-  @keyframes slide-down {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-slide-down {
-    animation: slide-down 0.2s ease-out;
-  }
-</style>

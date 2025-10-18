@@ -15,9 +15,10 @@ import type { AstroGlobal } from 'astro';
 import type { Query } from '@/utils/query';
 import type { CollectionKey } from 'astro:content';
 import { getQueryCollection } from './queryIntrospection';
+import { ScopedIdRegistry } from '@/utils/idRegistry';
 
-// Track ID usage per page
-const idRegistry = new Map<string, Map<string, number>>();
+// Use shared scoped ID registry
+const idRegistry = new ScopedIdRegistry();
 
 // Track multi-collection IDs (never get numbers)
 const multiCollectionIds = new Set<string>();
@@ -45,7 +46,7 @@ function checkAndResetIfNeeded(pagePath: string): void {
   
   // Switching to different page - clean up old page
   if (lastPagePath !== null && lastPagePath !== pagePath) {
-    idRegistry.delete(lastPagePath);
+    idRegistry.clearScope(lastPagePath);
     pageAccessTimes.delete(lastPagePath);
     
     multiCollectionIds.forEach(key => {
@@ -56,8 +57,8 @@ function checkAndResetIfNeeded(pagePath: string): void {
   }
   
   // New render cycle for same page (100ms+ gap) - reset counter
-  if (timeSinceLastAccess > RESET_THRESHOLD_MS && idRegistry.has(pagePath)) {
-    idRegistry.delete(pagePath);
+  if (timeSinceLastAccess > RESET_THRESHOLD_MS && idRegistry.has(pagePath, '')) {
+    idRegistry.clearScope(pagePath);
     
     multiCollectionIds.forEach(key => {
       if (key.startsWith(`${pagePath}:`)) {
@@ -100,7 +101,7 @@ function generateBaseId(collectionPart: string, pageSlug: string): string {
 }
 
 /**
- * Register ID and get counter
+ * Register ID and get counter using shared registry
  * - Multi-collection: ALWAYS returns 0 (no numbers)
  * - Single-collection first time: returns 0
  * - Single-collection duplicate: returns 1, 2, 3...
@@ -114,15 +115,8 @@ function registerAndGetCounter(pagePath: string, baseId: string, isMulti: boolea
     return 0;
   }
   
-  if (!idRegistry.has(pagePath)) {
-    idRegistry.set(pagePath, new Map());
-  }
-  
-  const pageRegistry = idRegistry.get(pagePath)!;
-  const currentCount = pageRegistry.get(baseId) || 0;
-  pageRegistry.set(baseId, currentCount + 1);
-  
-  return currentCount;
+  // Use shared scoped registry
+  return idRegistry.register(pagePath, baseId);
 }
 
 function formatFinalId(baseId: string, counter: number): string {
@@ -170,7 +164,7 @@ export function clearIdRegistry(): void {
   lastPagePath = null;
 }
 
-export function getIdRegistry(): Map<string, Map<string, number>> {
+export function getIdRegistry(): ScopedIdRegistry {
   return idRegistry;
 }
 

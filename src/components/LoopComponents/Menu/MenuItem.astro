@@ -1,10 +1,10 @@
 ---
-// src/components/LoopComponents/MenuItem.astro
+// src/components/LoopComponents/Menu/MenuItem.astro
 /**
  * Single Menu Item Component
  * 
  * Renders individual menu link with dropdown support.
- * Uses universal isActivePath utility.
+ * Uses global CSS with direct child selectors for infinite nesting.
  */
 
 import MenuDropdown from '@/components/LoopTemplates/Menu/MenuDropdown.astro';
@@ -56,7 +56,7 @@ const linkClasses = isTopLevel
 ---
 
 <li 
-  class={`relative ${hasChildren ? 'group' : ''}`}
+  class={`relative ${hasChildren ? 'menu-item' : ''}`}
   role={isTopLevel ? 'none' : 'menuitem'}
 >
   <a 
@@ -74,7 +74,7 @@ const linkClasses = isTopLevel
     <span>{title}</span>
     {hasChildren && (
       <svg 
-        class="w-4 h-4 transition-transform group-hover:rotate-180" 
+        class="w-4 h-4 transition-transform menu-arrow"
         fill="none" 
         stroke="currentColor" 
         viewBox="0 0 24 24"

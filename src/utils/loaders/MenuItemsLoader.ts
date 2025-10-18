@@ -15,12 +15,13 @@ import { getCollectionMeta, getCollectionNames } from '@/utils/collections';
 import { capitalize } from '@/utils/string';
 import { parseContentPath, isMetaFile } from '@/utils/paths';
 import { shouldItemHavePage, shouldItemUseRootPath } from '@/utils/filesystem/pageLogic';
+import { SimpleIdRegistry } from '@/utils/idRegistry';
 
 const MENU_ITEMS_JSON_PATH = 'src/content/menu-items/menu-items.json';
 const MENUS_COLLECTION = 'menus' as const;
 
-// Track used IDs for auto-incrementing
-const usedIds = new Map<string, number>();
+// Use shared ID registry
+const idRegistry = new SimpleIdRegistry();
 
 /**
  * Get full ancestor chain for a parent reference
@@ -91,14 +92,10 @@ function buildSemanticId(
 }
 
 /**
- * Get unique ID with auto-increment only when truly needed
- * Uses semantic context first, numbers only as last resort
+ * Get unique ID using shared registry
  */
 function getUniqueId(semanticId: string): string {
-  const count = usedIds.get(semanticId) || 0;
-  usedIds.set(semanticId, count + 1);
-  
-  return count === 0 ? semanticId : `${semanticId}-${count}`;
+  return idRegistry.getUniqueId(semanticId);
 }
 
 /**
@@ -135,15 +132,15 @@ export function MenuItemsLoader(): Loader {
       const { store, logger } = context;
 
       // Clear ID tracking for fresh load
-      usedIds.clear();
+      idRegistry.clear();
 
       // Step 1: Load base menu items from JSON
       store.clear();
       await file(MENU_ITEMS_JSON_PATH).load(context);
 
-      // Step 2: Track IDs from manually loaded items
+      // Step 2: Pre-register IDs from manually loaded items
       for (const [id, entry] of store.entries()) {
-        usedIds.set(id, 1); // Mark as used
+        idRegistry.getUniqueId(id); // Register existing IDs
         
         // Validate that url exists
         const data = entry.data;

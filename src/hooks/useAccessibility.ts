@@ -1,4 +1,4 @@
-// src/hooks/useAccessibility.ts
+// src/hooks/useAccessibility.ts - REPLACE ENTIRE FILE
 
 import { useCallback } from 'react';
 import type { A11yPreferences } from '@/components/accessibility/types';
@@ -69,8 +69,11 @@ function detachReadingMask() {
   }
 }
 
-function applyPreferences(prefs: A11yPreferences) {
+// EXPORT this so it can be used elsewhere
+export function applyPreferences(prefs: A11yPreferences) {
   const root = document.documentElement;
+  
+  console.log('🎨 Applying accessibility preferences:', prefs);
   
   // TEXT & TYPOGRAPHY
   root.style.setProperty('--a11y-font-size', `${prefs.text.fontSize}%`);
@@ -81,7 +84,9 @@ function applyPreferences(prefs: A11yPreferences) {
   root.style.fontWeight = prefs.text.fontWeight;
   
   // Apply text align to body
-  document.body.style.textAlign = prefs.text.textAlign;
+  if (document.body) {
+    document.body.style.textAlign = prefs.text.textAlign;
+  }
   
   // VISUAL ENHANCEMENTS
   root.setAttribute('data-a11y-links', prefs.visual.linkHighlight ? 'true' : 'false');
@@ -118,10 +123,20 @@ function applyPreferences(prefs: A11yPreferences) {
   root.setAttribute('data-a11y-images', prefs.content.hideImages ? 'hide' : 'show');
   root.setAttribute('data-a11y-sounds', prefs.content.muteSounds ? 'mute' : 'play');
   root.setAttribute('data-a11y-motion', prefs.content.reducedMotion ? 'reduced' : 'normal');
+  
+  console.log('✅ Accessibility preferences applied successfully');
+  console.log('📊 Font size:', root.style.getPropertyValue('--a11y-font-size'));
+  console.log('📊 Data attributes:', {
+    font: root.getAttribute('data-a11y-font'),
+    links: root.getAttribute('data-a11y-links'),
+    images: root.getAttribute('data-a11y-images'),
+  });
 }
 
 function removePreferences() {
   const root = document.documentElement;
+  
+  console.log('🧹 Removing all accessibility preferences');
   
   // Remove CSS variables
   root.style.removeProperty('--a11y-font-size');
@@ -130,7 +145,10 @@ function removePreferences() {
   root.style.removeProperty('--a11y-word-spacing');
   root.style.removeProperty('--a11y-animation-duration');
   root.style.fontWeight = '';
-  document.body.style.textAlign = '';
+  
+  if (document.body) {
+    document.body.style.textAlign = '';
+  }
   
   // Remove attributes
   root.removeAttribute('data-a11y-font');
@@ -148,34 +166,49 @@ function removePreferences() {
   // Detach handlers
   detachReadingGuide();
   detachReadingMask();
+  
+  console.log('✅ Preferences removed');
 }
 
 export function useAccessibility() {
   const getPreferences = useCallback((): A11yPreferences | null => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        console.log('📖 Retrieved preferences from localStorage:', parsed);
+        return parsed;
+      }
+      console.log('📭 No preferences found in localStorage');
+      return null;
     } catch (error) {
-      console.error('Failed to get accessibility preferences:', error);
+      console.error('❌ Failed to get accessibility preferences:', error);
       return null;
     }
   }, []);
 
   const setPreferences = useCallback((prefs: A11yPreferences) => {
     try {
+      console.log('💾 Saving preferences to localStorage:', prefs);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+      
+      // CRITICAL: Apply immediately after saving
       applyPreferences(prefs);
+      
+      console.log('✅ Preferences saved and applied');
     } catch (error) {
-      console.error('Failed to set accessibility preferences:', error);
+      console.error('❌ Failed to set accessibility preferences:', error);
     }
   }, []);
 
   const resetPreferences = useCallback(() => {
     try {
+      console.log('🔄 Resetting preferences');
       localStorage.removeItem(STORAGE_KEY);
       removePreferences();
+      console.log('✅ Preferences reset successfully');
     } catch (error) {
-      console.error('Failed to reset accessibility preferences:', error);
+      console.error('❌ Failed to reset accessibility preferences:', error);
     }
   }, []);
 

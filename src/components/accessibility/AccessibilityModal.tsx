@@ -1,8 +1,8 @@
-// src/components/accessibility/AccessibilityModal.tsx
+// src/components/accessibility/AccessibilityModal.tsx - REPLACE ENTIRE FILE
 
-import { useState, useMemo, useTransition, memo } from 'react';
+import { useState, useMemo, useTransition, memo, useEffect } from 'react';
 import Modal from '@/components/Modal';
-import { useAccessibility } from '@/hooks/useAccessibility';
+import { useAccessibility, applyPreferences } from '@/hooks/useAccessibility';
 import { DEFAULT_PREFS, type A11yPreferences } from './types';
 import Section from './controls/Section';
 import SliderControl from './controls/SliderControl';
@@ -20,10 +20,23 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
   const [isPending, startTransition] = useTransition();
   
   const initialPrefs = useMemo(() => {
-    return getPreferences() || DEFAULT_PREFS;
+    const stored = getPreferences();
+    console.log('🎬 Modal opened with preferences:', stored || 'none');
+    return stored || DEFAULT_PREFS;
   }, [getPreferences]);
 
   const [prefs, setPrefs] = useState<A11yPreferences>(initialPrefs);
+
+  // Apply preferences when modal opens (in case they weren't applied on load)
+  useEffect(() => {
+    if (isOpen) {
+      const currentPrefs = getPreferences();
+      if (currentPrefs) {
+        console.log('🔄 Modal opened - ensuring preferences are applied');
+        applyPreferences(currentPrefs);
+      }
+    }
+  }, [isOpen, getPreferences]);
 
   // Helper update functions
   const updateText = (key: keyof A11yPreferences['text'], value: any) => {
@@ -55,13 +68,22 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
   };
 
   const handleSave = () => {
-    setPreferences({ ...prefs, timestamp: Date.now() });
+    const updatedPrefs = { ...prefs, timestamp: Date.now() };
+    console.log('💾 Save button clicked, saving preferences:', updatedPrefs);
+    
+    // This will save AND apply via the hook
+    setPreferences(updatedPrefs);
+    
+    // Also apply directly to ensure it happens
+    applyPreferences(updatedPrefs);
+    
     startTransition(() => {
       onClose();
     });
   };
 
   const handleReset = () => {
+    console.log('🔄 Reset button clicked');
     resetPreferences();
     setPrefs(DEFAULT_PREFS);
     startTransition(() => {

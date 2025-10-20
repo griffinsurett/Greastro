@@ -1,14 +1,29 @@
-// src/components/accessibility/AccessibilityButton.tsx
+// src/components/accessibility/AccessibilityButton.tsx - REPLACE ENTIRE FILE
 
-import { useState, useTransition, lazy, Suspense, memo } from 'react';
+import { useState, useTransition, lazy, Suspense, memo, useEffect } from 'react';
+import { useAccessibility, applyPreferences } from '@/hooks/useAccessibility';
 
 const AccessibilityModal = lazy(() => import('./AccessibilityModal'));
 
 function AccessibilityButton() {
   const [showModal, setShowModal] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { getPreferences } = useAccessibility();
+
+  // Apply preferences when component mounts
+  useEffect(() => {
+    console.log('🚀 AccessibilityButton mounted, checking for existing preferences');
+    const prefs = getPreferences();
+    if (prefs) {
+      console.log('✅ Found existing preferences, applying now');
+      applyPreferences(prefs);
+    } else {
+      console.log('📭 No existing preferences found');
+    }
+  }, [getPreferences]);
 
   const handleOpenModal = () => {
+    console.log('🖱️ Accessibility button clicked');
     startTransition(() => {
       setShowModal(true);
     });

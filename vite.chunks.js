@@ -1,7 +1,5 @@
 // vite.chunks.js
-/**
- * Code splitting configuration for optimal bundle sizes
- */
+
 export function manualChunks(id) {
   // React vendor bundle
   if (
@@ -15,6 +13,11 @@ export function manualChunks(id) {
   // Consent system (lazy loaded)
   if (id.includes('/components/consent/')) {
     return 'consent';
+  }
+  
+  // ADD THIS: Accessibility system (lazy loaded)
+  if (id.includes('/components/accessibility/')) {
+    return 'accessibility';
   }
   
   // Modal system

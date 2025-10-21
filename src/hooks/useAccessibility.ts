@@ -1,9 +1,8 @@
 // src/hooks/useAccessibility.ts - REPLACE ENTIRE FILE
 
-import { useCallback } from 'react';
-import type { A11yPreferences } from '@/components/accessibility/types';
-
-const STORAGE_KEY = 'user-a11y-prefs';
+import { useEffect } from 'react';
+import useLocalStorage from './useLocalStorage';
+import { DEFAULT_PREFS, type A11yPreferences } from '@/components/accessibility/types';
 
 // Cursor tracking handlers
 let guideHandler: ((e: MouseEvent) => void) | null = null;
@@ -21,7 +20,6 @@ function attachReadingGuide() {
   
   document.addEventListener('mousemove', guideHandler, { passive: true });
   
-  // Create guide element if it doesn't exist
   if (!document.querySelector('[data-reading-guide]')) {
     const guide = document.createElement('div');
     guide.setAttribute('data-reading-guide', 'true');
@@ -69,7 +67,6 @@ function detachReadingMask() {
   }
 }
 
-// EXPORT this so it can be used elsewhere
 export function applyPreferences(prefs: A11yPreferences) {
   const root = document.documentElement;
   
@@ -83,7 +80,6 @@ export function applyPreferences(prefs: A11yPreferences) {
   root.setAttribute('data-a11y-font', prefs.text.fontFamily);
   root.style.fontWeight = prefs.text.fontWeight;
   
-  // Apply text align to body
   if (document.body) {
     document.body.style.textAlign = prefs.text.textAlign;
   }
@@ -125,12 +121,6 @@ export function applyPreferences(prefs: A11yPreferences) {
   root.setAttribute('data-a11y-motion', prefs.content.reducedMotion ? 'reduced' : 'normal');
   
   console.log('✅ Accessibility preferences applied successfully');
-  console.log('📊 Font size:', root.style.getPropertyValue('--a11y-font-size'));
-  console.log('📊 Data attributes:', {
-    font: root.getAttribute('data-a11y-font'),
-    links: root.getAttribute('data-a11y-links'),
-    images: root.getAttribute('data-a11y-images'),
-  });
 }
 
 function removePreferences() {
@@ -166,51 +156,48 @@ function removePreferences() {
   // Detach handlers
   detachReadingGuide();
   detachReadingMask();
-  
-  console.log('✅ Preferences removed');
 }
 
+/**
+ * Hook to manage accessibility preferences using existing useLocalStorage
+ */
 export function useAccessibility() {
-  const getPreferences = useCallback((): A11yPreferences | null => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        console.log('📖 Retrieved preferences from localStorage:', parsed);
-        return parsed;
-      }
-      console.log('📭 No preferences found in localStorage');
-      return null;
-    } catch (error) {
-      console.error('❌ Failed to get accessibility preferences:', error);
-      return null;
+  // Use existing hook with validation
+  const [prefs, setPrefs] = useLocalStorage<A11yPreferences>(
+    'user-a11y-prefs',
+    DEFAULT_PREFS,
+    {
+      raw: false, // Use JSON mode
+      syncTabs: true, // Sync across tabs
+      validate: (value) => {
+        // Basic validation
+        return (
+          value &&
+          typeof value === 'object' &&
+          'text' in value &&
+          'visual' in value &&
+          'reading' in value &&
+          'content' in value
+        );
+      },
     }
-  }, []);
+  );
 
-  const setPreferences = useCallback((prefs: A11yPreferences) => {
-    try {
-      console.log('💾 Saving preferences to localStorage:', prefs);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-      
-      // CRITICAL: Apply immediately after saving
-      applyPreferences(prefs);
-      
-      console.log('✅ Preferences saved and applied');
-    } catch (error) {
-      console.error('❌ Failed to set accessibility preferences:', error);
-    }
-  }, []);
+  // Apply preferences whenever they change (including cross-tab sync)
+  useEffect(() => {
+    console.log('🔄 Preferences changed, applying:', prefs);
+    applyPreferences(prefs);
+  }, [prefs]);
 
-  const resetPreferences = useCallback(() => {
-    try {
-      console.log('🔄 Resetting preferences');
-      localStorage.removeItem(STORAGE_KEY);
-      removePreferences();
-      console.log('✅ Preferences reset successfully');
-    } catch (error) {
-      console.error('❌ Failed to reset accessibility preferences:', error);
-    }
-  }, []);
+  const resetPreferences = () => {
+    console.log('🔄 Resetting to default preferences');
+    removePreferences();
+    setPrefs(DEFAULT_PREFS);
+  };
 
-  return { getPreferences, setPreferences, resetPreferences };
+  return {
+    preferences: prefs,
+    setPreferences: setPrefs,
+    resetPreferences,
+  };
 }

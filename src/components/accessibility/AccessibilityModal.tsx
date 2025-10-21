@@ -1,9 +1,9 @@
 // src/components/accessibility/AccessibilityModal.tsx - REPLACE ENTIRE FILE
 
-import { useState, useMemo, useTransition, memo, useEffect } from 'react';
+import { useState, useEffect, useTransition, memo } from 'react';
 import Modal from '@/components/Modal';
-import { useAccessibility, applyPreferences } from '@/hooks/useAccessibility';
-import { DEFAULT_PREFS, type A11yPreferences } from './types';
+import { useAccessibility } from '@/hooks/useAccessibility';
+import type { A11yPreferences } from './types';
 import Section from './controls/Section';
 import SliderControl from './controls/SliderControl';
 import ToggleControl from './controls/ToggleControl';
@@ -16,76 +16,57 @@ interface AccessibilityModalProps {
 }
 
 function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
-  const { getPreferences, setPreferences, resetPreferences } = useAccessibility();
+  const { preferences, setPreferences, resetPreferences } = useAccessibility();
   const [isPending, startTransition] = useTransition();
   
-  const initialPrefs = useMemo(() => {
-    const stored = getPreferences();
-    console.log('🎬 Modal opened with preferences:', stored || 'none');
-    return stored || DEFAULT_PREFS;
-  }, [getPreferences]);
+  // Local state for editing (only save on "Save" click)
+  const [localPrefs, setLocalPrefs] = useState<A11yPreferences>(preferences);
 
-  const [prefs, setPrefs] = useState<A11yPreferences>(initialPrefs);
-
-  // Apply preferences when modal opens (in case they weren't applied on load)
+  // Sync local state when preferences change (cross-tab sync)
   useEffect(() => {
-    if (isOpen) {
-      const currentPrefs = getPreferences();
-      if (currentPrefs) {
-        console.log('🔄 Modal opened - ensuring preferences are applied');
-        applyPreferences(currentPrefs);
-      }
-    }
-  }, [isOpen, getPreferences]);
+    setLocalPrefs(preferences);
+  }, [preferences]);
 
-  // Helper update functions
   const updateText = (key: keyof A11yPreferences['text'], value: any) => {
-    setPrefs((prev) => ({
+    setLocalPrefs((prev) => ({
       ...prev,
       text: { ...prev.text, [key]: value },
     }));
   };
 
   const updateVisual = (key: keyof A11yPreferences['visual'], value: any) => {
-    setPrefs((prev) => ({
+    setLocalPrefs((prev) => ({
       ...prev,
       visual: { ...prev.visual, [key]: value },
     }));
   };
 
   const updateReading = (key: keyof A11yPreferences['reading'], value: any) => {
-    setPrefs((prev) => ({
+    setLocalPrefs((prev) => ({
       ...prev,
       reading: { ...prev.reading, [key]: value },
     }));
   };
 
   const updateContent = (key: keyof A11yPreferences['content'], value: any) => {
-    setPrefs((prev) => ({
+    setLocalPrefs((prev) => ({
       ...prev,
       content: { ...prev.content, [key]: value },
     }));
   };
 
   const handleSave = () => {
-    const updatedPrefs = { ...prefs, timestamp: Date.now() };
-    console.log('💾 Save button clicked, saving preferences:', updatedPrefs);
-    
-    // This will save AND apply via the hook
-    setPreferences(updatedPrefs);
-    
-    // Also apply directly to ensure it happens
-    applyPreferences(updatedPrefs);
-    
+    console.log('💾 Saving preferences');
+    setPreferences({ ...localPrefs, timestamp: Date.now(), version: '1.0' });
     startTransition(() => {
       onClose();
     });
   };
 
   const handleReset = () => {
-    console.log('🔄 Reset button clicked');
+    console.log('🔄 Resetting preferences');
     resetPreferences();
-    setPrefs(DEFAULT_PREFS);
+    setLocalPrefs(preferences);
     startTransition(() => {
       onClose();
     });
@@ -104,7 +85,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
       <div className="mb-6">
         <h2 className="text-3xl font-bold mb-2">Reading Preferences</h2>
         <p className="text-sm text-gray-600">
-          Customize how content appears on this site. These preferences are saved locally and only affect your viewing experience.
+          Customize how content appears on this site. These preferences are saved locally and sync across tabs.
         </p>
       </div>
 
@@ -113,7 +94,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <SliderControl
           label="Font Size"
           description="Adjust the size of text throughout the site"
-          value={prefs.text.fontSize}
+          value={localPrefs.text.fontSize}
           min={100}
           max={200}
           step={10}
@@ -124,7 +105,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <SliderControl
           label="Line Height"
           description="Spacing between lines of text"
-          value={prefs.text.lineHeight}
+          value={localPrefs.text.lineHeight}
           min={1.5}
           max={2.5}
           step={0.1}
@@ -134,7 +115,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <SliderControl
           label="Letter Spacing"
           description="Space between individual letters"
-          value={prefs.text.letterSpacing}
+          value={localPrefs.text.letterSpacing}
           min={0}
           max={0.3}
           step={0.05}
@@ -145,7 +126,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <SliderControl
           label="Word Spacing"
           description="Space between words"
-          value={prefs.text.wordSpacing}
+          value={localPrefs.text.wordSpacing}
           min={0}
           max={0.5}
           step={0.1}
@@ -156,7 +137,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <SelectControl
           label="Font Family"
           description="Choose a font that's easier for you to read"
-          value={prefs.text.fontFamily}
+          value={localPrefs.text.fontFamily}
           options={[
             { value: 'default', label: 'Site Default' },
             { value: 'dyslexia', label: 'Dyslexia-Friendly (OpenDyslexic)' },
@@ -167,7 +148,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
 
         <ButtonGroupControl
           label="Font Weight"
-          value={prefs.text.fontWeight}
+          value={localPrefs.text.fontWeight}
           options={[
             { value: 'normal', label: 'Normal' },
             { value: 'semibold', label: 'Semibold' },
@@ -178,7 +159,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
 
         <ButtonGroupControl
           label="Text Alignment"
-          value={prefs.text.textAlign}
+          value={localPrefs.text.textAlign}
           options={[
             { value: 'left', label: 'Left' },
             { value: 'justify', label: 'Justify' },
@@ -192,27 +173,27 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <ToggleControl
           label="Highlight Links"
           description="Add background color to all clickable links"
-          checked={prefs.visual.linkHighlight}
+          checked={localPrefs.visual.linkHighlight}
           onChange={(checked) => updateVisual('linkHighlight', checked)}
         />
 
         <ToggleControl
           label="Highlight Headings"
           description="Emphasize page headings with background and border"
-          checked={prefs.visual.titleHighlight}
+          checked={localPrefs.visual.titleHighlight}
           onChange={(checked) => updateVisual('titleHighlight', checked)}
         />
 
         <ToggleControl
           label="Boost Contrast"
           description="Slightly increase overall contrast (may make colors more vibrant)"
-          checked={prefs.visual.contrastBoost}
+          checked={localPrefs.visual.contrastBoost}
           onChange={(checked) => updateVisual('contrastBoost', checked)}
         />
 
         <ButtonGroupControl
           label="Color Saturation"
-          value={prefs.visual.saturation}
+          value={localPrefs.visual.saturation}
           options={[
             { value: 'normal', label: 'Normal' },
             { value: 'low', label: 'Low' },
@@ -228,35 +209,35 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <ToggleControl
           label="Reading Guide"
           description="Horizontal line that follows your cursor to help track lines"
-          checked={prefs.reading.readingGuide}
+          checked={localPrefs.reading.readingGuide}
           onChange={(checked) => updateReading('readingGuide', checked)}
         />
 
         <ToggleControl
           label="Reading Mask"
           description="Dim the page except for the area around your cursor"
-          checked={prefs.reading.readingMask}
+          checked={localPrefs.reading.readingMask}
           onChange={(checked) => updateReading('readingMask', checked)}
         />
 
         <ToggleControl
           label="Focus Highlighting"
           description="Add strong outline to focused elements for easier keyboard navigation"
-          checked={prefs.reading.focusHighlight}
+          checked={localPrefs.reading.focusHighlight}
           onChange={(checked) => updateReading('focusHighlight', checked)}
         />
 
         <ToggleControl
           label="Big Cursor"
           description="Increase cursor size for better visibility"
-          checked={prefs.reading.bigCursor}
+          checked={localPrefs.reading.bigCursor}
           onChange={(checked) => updateReading('bigCursor', checked)}
         />
 
         <ToggleControl
           label="Pause Animations"
           description="Stop all animations and auto-playing content"
-          checked={prefs.reading.pauseAnimations}
+          checked={localPrefs.reading.pauseAnimations}
           onChange={(checked) => updateReading('pauseAnimations', checked)}
         />
       </Section>
@@ -266,21 +247,21 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
         <ToggleControl
           label="Hide Images"
           description="Replace images with their text descriptions"
-          checked={prefs.content.hideImages}
+          checked={localPrefs.content.hideImages}
           onChange={(checked) => updateContent('hideImages', checked)}
         />
 
         <ToggleControl
           label="Mute Sounds"
           description="Hide all audio and video elements"
-          checked={prefs.content.muteSounds}
+          checked={localPrefs.content.muteSounds}
           onChange={(checked) => updateContent('muteSounds', checked)}
         />
 
         <ToggleControl
           label="Reduce Motion"
           description="Minimize all animations and transitions (recommended for vestibular disorders)"
-          checked={prefs.content.reducedMotion}
+          checked={localPrefs.content.reducedMotion}
           onChange={(checked) => updateContent('reducedMotion', checked)}
         />
       </Section>
@@ -292,7 +273,7 @@ function AccessibilityModal({ isOpen, onClose }: AccessibilityModalProps) {
           <li>These preferences only change how content appears to you visually</li>
           <li>They don't affect the underlying accessibility of the site</li>
           <li>If you use screen readers or assistive technology, those will continue working normally</li>
-          <li>Settings are saved in your browser and won't sync across devices</li>
+          <li>Settings are saved in your browser and sync across tabs automatically</li>
           <li>For accessibility support, please <a href="/contact" className="underline text-blue-600 hover:text-blue-700">contact us</a></li>
         </ul>
       </div>

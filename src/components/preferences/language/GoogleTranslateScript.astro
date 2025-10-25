@@ -3,19 +3,48 @@
 /**
  * Google Translate Script Loader
  * 
- * Loads Google Translate and manages language switching via cookies.
- * Only applies language when explicitly changed by user, not on every page load.
+ * Loads Google Translate API only. Language application is handled by useLanguage hook.
+ * This prevents duplicate application logic and infinite reload loops.
  */
 ---
 
 <script is:inline>
-  // Global flags to prevent race conditions
   window.__googleTranslateReady__ = false;
   window.__googleTranslateApplying__ = false;
 
-  /**
-   * Get Google Translate cookie value
-   */
+  // Prevent scroll restoration on reload
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  window.initializeGoogleTranslate = function() {
+    if (typeof google === 'undefined' || !google.translate) {
+      console.error('❌ Google Translate API not available');
+      return;
+    }
+
+    const checkReady = setInterval(function() {
+      if (google.translate.TranslateElement) {
+        clearInterval(checkReady);
+        
+        new google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            includedLanguages: '',
+            autoDisplay: false,
+          },
+          'google_translate_element'
+        );
+
+        setTimeout(function() {
+          window.__googleTranslateReady__ = true;
+          console.log('✅ Google Translate ready');
+          // ✅ REMOVED AUTO-APPLY LOGIC - Let React hook handle it
+        }, 1000);
+      }
+    }, 100);
+  };
+
   function getCookie(name) {
     const value = '; ' + document.cookie;
     const parts = value.split('; ' + name + '=');
@@ -23,115 +52,99 @@
     return '';
   }
 
-  /**
-   * Initialize Google Translate widget
-   * Called by Google Translate script via callback
-   */
-  window.initializeGoogleTranslate = function() {
-    if (typeof google === 'undefined' || !google.translate) {
-      console.error('❌ Google Translate API not available');
-      return;
-    }
-
-    // Wait for TranslateElement to be available
-    const checkReady = setInterval(function() {
-      if (google.translate.TranslateElement) {
-        clearInterval(checkReady);
-        
-        // Initialize the widget (hidden)
-        new google.translate.TranslateElement(
-          {
-            pageLanguage: 'en',
-            includedLanguages: '', // Empty = all languages
-            autoDisplay: false,
-          },
-          'google_translate_element'
-        );
-
-        // Mark as ready after initialization
-        setTimeout(function() {
-          window.__googleTranslateReady__ = true;
-          
-          // Sync localStorage with actual cookie state on load
-          const currentCookie = getCookie('googtrans');
-          const savedLanguage = localStorage.getItem('user-language');
-          
-          // Only auto-apply if there's a mismatch AND we're not already applying
-          if (savedLanguage && !window.__googleTranslateApplying__) {
-            const expectedCookie = savedLanguage === 'en' ? '' : '/en/' + savedLanguage;
-            
-            if (currentCookie !== expectedCookie) {
-              console.log('🔄 Syncing language: localStorage=' + savedLanguage + ', cookie=' + currentCookie);
-              window.applyGoogleTranslateLanguage(savedLanguage);
-            }
-          }
-        }, 1000);
-      }
-    }, 100);
-  };
-
-  /**
-   * Apply a language by setting Google Translate cookie
-   * This will trigger a page reload
-   */
   window.applyGoogleTranslateLanguage = function(languageCode) {
-    // Wait for Google Translate to be ready
     if (!window.__googleTranslateReady__) {
+      console.log('⏳ Waiting for Google Translate...');
       setTimeout(function() {
         window.applyGoogleTranslateLanguage(languageCode);
       }, 500);
       return;
     }
 
-    // Prevent multiple simultaneous applications
     if (window.__googleTranslateApplying__) {
-      console.log('⏳ Already applying language, skipping');
+      console.log('🔒 Already applying language, skipping');
+      return;
+    }
+
+    // ✅ FIX: Check if we just reloaded for this language
+    const justApplied = sessionStorage.getItem('language-just-applied');
+    if (justApplied === languageCode) {
+      console.log('🔒 Language "' + languageCode + '" was just applied, skipping');
+      sessionStorage.removeItem('language-just-applied');
       return;
     }
 
     const currentCookie = getCookie('googtrans');
-    const expectedCookie = languageCode && languageCode !== 'en' 
-      ? '/en/' + languageCode 
-      : '';
+    const expectedCookie = languageCode && languageCode !== 'en' ?
+      '/en/' + languageCode : '';
     
-    // ✅ CRITICAL: Only reload if language is actually changing
     if (currentCookie === expectedCookie) {
-      console.log('✅ Already in target language: ' + languageCode);
+      console.log('✅ Language already applied');
       return;
     }
 
-    console.log('🌐 Applying language: ' + languageCode);
+    console.log('🌍 Applying language: ' + languageCode);
     window.__googleTranslateApplying__ = true;
+    
+    // ✅ Safety timeout in case reload fails
+    setTimeout(function() {
+      window.__googleTranslateApplying__ = false;
+      console.warn('⚠️ Language apply timeout - resetting flag');
+    }, 5000);
 
-    // Reset to English
     if (!languageCode || languageCode === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+      sessionStorage.setItem('scrollToTop', 'true');
+      sessionStorage.setItem('language-just-applied', 'en');
       window.location.reload();
       return;
     }
 
-    // Apply translation
+    window.__googleTranslateApplying__ = true;
     const cookieValue = '/en/' + languageCode;
     document.cookie = 'googtrans=' + cookieValue + '; path=/';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
+    
+    sessionStorage.setItem('scrollToTop', 'true');
+    sessionStorage.setItem('language-just-applied', languageCode);
+    
     window.location.reload();
   };
+
+  // Check on page load if we should scroll to top
+  (function() {
+    if (sessionStorage.getItem('scrollToTop') === 'true') {
+      sessionStorage.removeItem('scrollToTop');
+      window.scrollTo(0, 0);
+      
+      // Also prevent any scroll restoration
+      setTimeout(function() {
+        window.scrollTo(0, 0);
+      }, 0);
+      
+      // Extra insurance
+      document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo(0, 0);
+      });
+    }
+  })();
 
   // Load Google Translate script
   (function() {
     const script = document.createElement('script');
     script.src = 'https://translate.google.com/translate_a/element.js?cb=initializeGoogleTranslate';
     script.async = true;
+    script.onerror = function() {
+      console.error('❌ Failed to load Google Translate script');
+    };
     document.head.appendChild(script);
   })();
 </script>
 
-<!-- Hidden container for Google Translate widget -->
 <div id="google_translate_element" style="display: none;"></div>
 
 <style>
-  /* Hide all Google Translate UI elements */
   .goog-te-banner-frame,
   .goog-te-balloon-frame,
   .goog-te-gadget,
@@ -143,7 +156,6 @@
     display: none !important;
   }
 
-  /* Prevent Google Translate from adding top margin */
   body {
     top: 0 !important;
   }

@@ -3,11 +3,13 @@
  * Language Preference Hook
  *
  * Manages language preference using localStorage with cross-tab sync.
- * Google Translate handles the actual translation via cookies.
+ * Single source of truth for language application to prevent infinite reload loops.
  */
 
+import { useEffect, useRef } from "react";
 import useLocalStorage from "./useLocalStorage";
 import { defaultLanguage, getLanguageByCode } from "@/utils/languages";
+import type { Language } from "@/utils/languages";
 
 export function useLanguage() {
   const defaultCode = defaultLanguage?.code || "en";
@@ -22,9 +24,30 @@ export function useLanguage() {
     }
   );
 
-  /**
-   * Change language - only triggers when user explicitly selects
-   */
+  const prevLanguageRef = useRef(languageCode);
+
+  // Apply language whenever it changes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // ✅ FIX: Only apply if language actually changed
+    if (prevLanguageRef.current === languageCode) {
+      console.log(`🔒 Language unchanged (${languageCode}), skipping apply`);
+      return;
+    }
+    prevLanguageRef.current = languageCode;
+
+    const applyFn = (window as any).applyGoogleTranslateLanguage;
+
+    if (!applyFn) {
+      console.warn("⚠️  Google Translate not ready yet");
+      return;
+    }
+
+    console.log(`🔄 Language changed to: ${languageCode}`);
+    applyFn(languageCode);
+  }, [languageCode]);
+
   const changeLanguage = (code: string) => {
     const language = getLanguageByCode?.(code);
     if (!language) {
@@ -32,22 +55,13 @@ export function useLanguage() {
       return;
     }
 
-    // Update localStorage
+    console.log(`📝 User selected language: ${code}`);
     setLanguageCode(code);
-    
-    // Apply via Google Translate (will trigger page reload)
-    if (typeof window !== 'undefined') {
-      const applyFn = (window as any).applyGoogleTranslateLanguage;
-      if (applyFn) {
-        applyFn(code);
-      } else {
-        console.warn("⚠️  Google Translate not ready yet");
-      }
-    }
   };
 
   const resetLanguage = () => {
-    changeLanguage(defaultCode);
+    console.log('🔄 Resetting to default language');
+    setLanguageCode(defaultCode);
   };
 
   const currentLanguage = getLanguageByCode?.(languageCode) ||

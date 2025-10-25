@@ -3,7 +3,7 @@
  * Language Preference Hook
  *
  * Manages language preference using localStorage with cross-tab sync.
- * Single source of truth for language application to prevent infinite reload loops.
+ * Single source of truth for language application.
  */
 
 import { useEffect, useRef } from "react";
@@ -25,12 +25,20 @@ export function useLanguage() {
   );
 
   const prevLanguageRef = useRef(languageCode);
+  const isInitialMount = useRef(true);
 
   // Apply language whenever it changes
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // ✅ FIX: Only apply if language actually changed
+    // Skip on initial mount if language hasn't changed
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevLanguageRef.current = languageCode;
+      return;
+    }
+
+    // Only apply if language actually changed
     if (prevLanguageRef.current === languageCode) {
       console.log(`🔒 Language unchanged (${languageCode}), skipping apply`);
       return;

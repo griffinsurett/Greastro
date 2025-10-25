@@ -4,7 +4,6 @@
  * Google Translate Script Loader
  * 
  * Loads Google Translate API only. Language application is handled by useLanguage hook.
- * This prevents duplicate application logic and infinite reload loops.
  */
 ---
 
@@ -39,7 +38,6 @@
         setTimeout(function() {
           window.__googleTranslateReady__ = true;
           console.log('✅ Google Translate ready');
-          // ✅ REMOVED AUTO-APPLY LOGIC - Let React hook handle it
         }, 1000);
       }
     }, 100);
@@ -66,7 +64,7 @@
       return;
     }
 
-    // ✅ FIX: Check if we just reloaded for this language
+    // Check if we just reloaded for this language
     const justApplied = sessionStorage.getItem('language-just-applied');
     if (justApplied === languageCode) {
       console.log('🔒 Language "' + languageCode + '" was just applied, skipping');
@@ -75,35 +73,35 @@
     }
 
     const currentCookie = getCookie('googtrans');
-    
-    // ✅ FIX: English should have NO cookie (not empty string cookie)
     const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
     
     if (currentCookie === expectedCookie) {
-      console.log('✅ Language already applied');
+      console.log('✅ Language already applied: ' + languageCode);
       return;
     }
 
     console.log('🌍 Applying language: ' + languageCode);
     window.__googleTranslateApplying__ = true;
     
-    // ✅ Safety timeout in case reload fails
+    // Safety timeout in case reload fails
     setTimeout(function() {
       window.__googleTranslateApplying__ = false;
       console.warn('⚠️ Language apply timeout - resetting flag');
     }, 5000);
 
-    // ✅ FIX: English should clear cookies and reload (same as other languages)
+    // Clear all Google Translate cookies first
+    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+    
+    // For English, just clear cookies and reload
     if (languageCode === 'en') {
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
       sessionStorage.setItem('scrollToTop', 'true');
       sessionStorage.setItem('language-just-applied', 'en');
       window.location.reload();
       return;
     }
 
-    // All other languages
+    // For other languages, set the cookie
     const cookieValue = '/en/' + languageCode;
     document.cookie = 'googtrans=' + cookieValue + '; path=/;';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
@@ -120,12 +118,10 @@
       sessionStorage.removeItem('scrollToTop');
       window.scrollTo(0, 0);
       
-      // Also prevent any scroll restoration
       setTimeout(function() {
         window.scrollTo(0, 0);
       }, 0);
       
-      // Extra insurance
       document.addEventListener('DOMContentLoaded', function() {
         window.scrollTo(0, 0);
       });

@@ -3,8 +3,10 @@
 /**
  * Google Translate Script Loader
  * 
- * Loads Google Translate API only. Language application is handled by useLanguage hook.
- * This prevents duplicate application logic and infinite reload loops.
+ * CRITICAL: This script must handle:
+ * 1. Prevent infinite reload loops
+ * 2. Actually clear cookies for English
+ * 3. Handle race conditions between localStorage and cookies
  */
 ---
 
@@ -15,6 +17,13 @@
   // Prevent scroll restoration on reload
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
+  }
+
+  function getCookie(name) {
+    const value = '; ' + document.cookie;
+    const parts = value.split('; ' + name + '=');
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
   }
 
   window.initializeGoogleTranslate = function() {
@@ -40,40 +49,13 @@
           window.__googleTranslateReady__ = true;
           console.log('✅ Google Translate ready');
           
-          // CRITICAL FIX: Check if we need to apply language from localStorage on page load
-          const storedLanguage = localStorage.getItem('user-language');
-          const justApplied = sessionStorage.getItem('language-just-applied');
-          
-          // Clear the flag immediately so it doesn't block future attempts
-          if (justApplied) {
-            sessionStorage.removeItem('language-just-applied');
-          }
-          
-          // Only auto-apply if we just reloaded AND cookies don't match stored preference
-          if (storedLanguage && justApplied === storedLanguage) {
-            console.log('🔄 Checking if language needs to be applied: ' + storedLanguage);
-            
-            const currentCookie = getCookie('googtrans');
-            const expectedCookie = storedLanguage === 'en' ? '' : '/en/' + storedLanguage;
-            
-            if (currentCookie !== expectedCookie) {
-              console.log('⚠️ Cookie mismatch detected, applying language: ' + storedLanguage);
-              window.applyGoogleTranslateLanguage(storedLanguage);
-            } else {
-              console.log('✅ Cookies match, language already applied');
-            }
-          }
+          // CRITICAL: Do NOT auto-apply on page load
+          // Let the React hook handle all application logic
+          // This prevents infinite loops from auto-applying
         }, 1000);
       }
     }, 100);
   };
-
-  function getCookie(name) {
-    const value = '; ' + document.cookie;
-    const parts = value.split('; ' + name + '=');
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return '';
-  }
 
   window.applyGoogleTranslateLanguage = function(languageCode) {
     if (!window.__googleTranslateReady__) {
@@ -89,46 +71,103 @@
       return;
     }
 
-    const currentCookie = getCookie('googtrans');
+    // CRITICAL FIX #1: Check sessionStorage FIRST before doing anything
+    const justApplied = sessionStorage.getItem('language-just-applied');
+    const reloadAttempt = parseInt(sessionStorage.getItem('language-reload-attempt') || '0');
     
-    // CRITICAL FIX: Proper cookie comparison for English
-    // English should have NO cookie at all (empty string)
-    // All other languages should have '/en/CODE' format
+    // If we just reloaded for this language, check if we need another attempt
+    if (justApplied === languageCode) {
+      const currentCookie = getCookie('googtrans');
+      const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
+      
+      // Cookies match - we're done!
+      if (currentCookie === expectedCookie) {
+        console.log('✅ Language successfully applied: ' + languageCode);
+        sessionStorage.removeItem('language-just-applied');
+        sessionStorage.removeItem('language-reload-attempt');
+        return;
+      }
+      
+      // Cookies don't match but we've tried 3 times - give up to prevent infinite loop
+      if (reloadAttempt >= 3) {
+        console.error('❌ Failed to apply language after 3 attempts, giving up to prevent infinite loop');
+        sessionStorage.removeItem('language-just-applied');
+        sessionStorage.removeItem('language-reload-attempt');
+        return;
+      }
+      
+      // Cookies don't match and we haven't tried too many times - try again
+      console.warn('⚠️ Language not applied correctly, attempting again (attempt ' + (reloadAttempt + 1) + '/3)');
+    }
+
+    const currentCookie = getCookie('googtrans');
     const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
     
-    // FIXED: Don't check sessionStorage here - check actual cookie state
-    if (currentCookie === expectedCookie) {
-      console.log('✅ Language already applied: ' + languageCode + ' (cookie matches)');
+    // Language already correctly applied
+    if (currentCookie === expectedCookie && !justApplied) {
+      console.log('✅ Language already applied: ' + languageCode);
       return;
     }
 
-    console.log('🌍 Applying language: ' + languageCode + ' (current: "' + currentCookie + '", expected: "' + expectedCookie + '")');
+    console.log('🌍 Applying language: ' + languageCode);
+    console.log('   Current cookie: "' + currentCookie + '"');
+    console.log('   Expected cookie: "' + expectedCookie + '"');
+    
     window.__googleTranslateApplying__ = true;
     
-    // Safety timeout in case reload fails
+    // Safety timeout
     setTimeout(function() {
       window.__googleTranslateApplying__ = false;
       console.warn('⚠️ Language apply timeout - resetting flag');
     }, 5000);
 
-    // Set flag before reload so we can check after reload
+    // Set flags before reload
     sessionStorage.setItem('language-just-applied', languageCode);
+    sessionStorage.setItem('language-reload-attempt', String(reloadAttempt + 1));
     sessionStorage.setItem('scrollToTop', 'true');
 
-    // English should clear cookies and reload
+    // CRITICAL FIX #2: For English, clear ALL possible cookie variations
     if (languageCode === 'en') {
-      console.log('🧹 Clearing cookies for English');
+      console.log('🧹 Clearing ALL cookies for English (attempt ' + (reloadAttempt + 1) + ')');
+      
+      // Clear with path=/
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
-      // Also try without domain in case
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=;';
-      window.location.reload();
+      
+      // Clear with domain
+      const domain = window.location.hostname;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + domain;
+      
+      // Clear with dot-prefixed domain
+      if (domain.indexOf('.') > -1) {
+        const dotDomain = '.' + domain.split('.').slice(-2).join('.');
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + dotDomain;
+      }
+      
+      // Clear /googtrans/ cookie too (Google sometimes uses this)
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/googtrans/;';
+      
+      // Extra: clear any localhost variations
+      if (domain === 'localhost' || domain.startsWith('localhost:')) {
+        document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost';
+      }
+      
+      // Verify cookies are cleared before reload
+      setTimeout(function() {
+        const stillThere = getCookie('googtrans');
+        if (stillThere) {
+          console.error('⚠️ Warning: googtrans cookie still present: "' + stillThere + '"');
+        } else {
+          console.log('✅ Cookies cleared successfully');
+        }
+        window.location.reload();
+      }, 100);
       return;
     }
 
     // All other languages - set cookie and reload
     const cookieValue = '/en/' + languageCode;
     console.log('🍪 Setting cookie: googtrans=' + cookieValue);
+    
     document.cookie = 'googtrans=' + cookieValue + '; path=/;';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
     
@@ -141,12 +180,10 @@
       sessionStorage.removeItem('scrollToTop');
       window.scrollTo(0, 0);
       
-      // Also prevent any scroll restoration
       setTimeout(function() {
         window.scrollTo(0, 0);
       }, 0);
       
-      // Extra insurance
       document.addEventListener('DOMContentLoaded', function() {
         window.scrollTo(0, 0);
       });

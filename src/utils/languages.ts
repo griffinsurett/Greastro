@@ -1,24 +1,17 @@
-// src/config/languages.ts
+// src/utils/languages.ts
 /**
  * Language Configuration
  * 
- * Defines supported languages for Google Translate integration.
- * Add or remove languages as needed.
+ * Simple list of supported languages for Google Translate.
  */
 
 export interface Language {
-  code: string;      // Google Translate language code
-  name: string;      // Display name
-  nativeName: string; // Name in native language
-  flag?: string;     // Optional emoji flag
+  code: string;
+  name: string;
+  nativeName: string;
+  flag?: string;
 }
 
-/**
- * Supported languages for translation
- * 
- * Google Translate language codes:
- * https://cloud.google.com/translate/docs/languages
- */
 export const supportedLanguages: Language[] = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
   { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
@@ -36,14 +29,8 @@ export const supportedLanguages: Language[] = [
   { code: 'iw', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱' },
 ];
 
-/**
- * Default language (site's native language)
- */
 export const defaultLanguage: Language = supportedLanguages[0];
 
-/**
- * Get language by code
- */
 export function getLanguageByCode(code: string): Language | undefined {
   return supportedLanguages.find(lang => lang.code === code);
 }

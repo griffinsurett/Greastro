@@ -1,4 +1,16 @@
 ---
+// src/layouts/PreferencesLayout.astro
+/**
+ * Preferences Layout
+ * 
+ * Consolidates all user preference systems:
+ * - Cookie consent (localStorage-based)
+ * - Accessibility preferences
+ * - Language switcher (Google Translate)
+ * 
+ * All use the same lazy-load, zero-impact pattern.
+ */
+
 // Cookie Consent Preferences
 import CookiePreferencesButton from "@/components/preferences/consent/CookiePreferencesButton";
 import CookieConsentBanner from "@/components/preferences/consent/CookieConsentBanner";
@@ -6,10 +18,22 @@ import CookieConsentBanner from "@/components/preferences/consent/CookieConsentB
 // Accessibility Preferences
 import AccessibilityButton from "@/components/preferences/accessibility/AccessibilityButton";
 import "../styles/accessibility.css";
+
+// Language Switcher
+import LanguageSwitcher from "@/components/preferences/language/LanguageSwitcher";
+import GoogleTranslateScript from "@/components/preferences/language/GoogleTranslateScript.astro";
+import "../styles/language-switcher.css";
 ---
+
+{/* Google Translate Script - Only loads if user has language preference */}
+<GoogleTranslateScript />
+
+{/* Language Switcher - Client-side only */}
+<LanguageSwitcher client:visible />
+
 {/* Cookie Preferences Button - Client-side only */}
 <CookiePreferencesButton client:visible />
 <CookieConsentBanner client:idle />
 
-{/* Accessibility Button - Client-side only, rendered in Footer */}
+{/* Accessibility Button - Client-side only */}
 <AccessibilityButton client:visible />

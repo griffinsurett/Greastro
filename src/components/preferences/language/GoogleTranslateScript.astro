@@ -1,0 +1,149 @@
+---
+// src/components/preferences/language/GoogleTranslateScript.astro
+/**
+ * Google Translate Script Loader
+ * 
+ * Loads Google Translate and manages language switching via cookies.
+ * Page reloads are required for translation changes.
+ */
+---
+
+<script is:inline>
+  window.__googleTranslateReady__ = false;
+  window.__googleTranslateApplying__ = false;
+
+  // Prevent scroll restoration on reload
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  window.initializeGoogleTranslate = function() {
+    if (typeof google === 'undefined' || !google.translate) {
+      console.error('❌ Google Translate API not available');
+      return;
+    }
+
+    const checkReady = setInterval(function() {
+      if (google.translate.TranslateElement) {
+        clearInterval(checkReady);
+        
+        new google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            includedLanguages: '',
+            autoDisplay: false,
+          },
+          'google_translate_element'
+        );
+
+        setTimeout(function() {
+          window.__googleTranslateReady__ = true;
+          
+          const savedLanguage = localStorage.getItem('user-language');
+          const currentCookie = getCookie('googtrans');
+          
+          if (savedLanguage && !window.__googleTranslateApplying__) {
+            const expectedCookie = '/en/' + savedLanguage;
+            
+            if (savedLanguage !== 'en' && currentCookie !== expectedCookie) {
+              window.applyGoogleTranslateLanguage(savedLanguage);
+            }
+          }
+        }, 1000);
+      }
+    }, 100);
+  };
+
+  function getCookie(name) {
+    const value = '; ' + document.cookie;
+    const parts = value.split('; ' + name + '=');
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+
+  window.applyGoogleTranslateLanguage = function(languageCode) {
+    if (!window.__googleTranslateReady__) {
+      setTimeout(function() {
+        window.applyGoogleTranslateLanguage(languageCode);
+      }, 500);
+      return;
+    }
+
+    if (window.__googleTranslateApplying__) {
+      return;
+    }
+
+    const currentCookie = getCookie('googtrans');
+    const expectedCookie = languageCode && languageCode !== 'en' ? '/en/' + languageCode : '';
+    
+    if (currentCookie === expectedCookie) {
+      return;
+    }
+
+    if (!languageCode || languageCode === 'en') {
+      window.__googleTranslateApplying__ = true;
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+      
+      // Store intent to scroll to top
+      sessionStorage.setItem('scrollToTop', 'true');
+      
+      window.location.reload();
+      return;
+    }
+
+    window.__googleTranslateApplying__ = true;
+    const cookieValue = '/en/' + languageCode;
+    document.cookie = 'googtrans=' + cookieValue + '; path=/';
+    document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
+    
+    // Store intent to scroll to top
+    sessionStorage.setItem('scrollToTop', 'true');
+    
+    window.location.reload();
+  };
+
+  // Check on page load if we should scroll to top
+  (function() {
+    if (sessionStorage.getItem('scrollToTop') === 'true') {
+      sessionStorage.removeItem('scrollToTop');
+      window.scrollTo(0, 0);
+      
+      // Also prevent any scroll restoration
+      setTimeout(function() {
+        window.scrollTo(0, 0);
+      }, 0);
+      
+      // Extra insurance
+      document.addEventListener('DOMContentLoaded', function() {
+        window.scrollTo(0, 0);
+      });
+    }
+  })();
+
+  (function() {
+    const script = document.createElement('script');
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=initializeGoogleTranslate';
+    script.async = true;
+    document.head.appendChild(script);
+  })();
+</script>
+
+<div id="google_translate_element" style="display: none;"></div>
+
+<style>
+  .goog-te-banner-frame,
+  .goog-te-balloon-frame,
+  .goog-te-gadget,
+  .skiptranslate,
+  iframe.goog-te-menu-frame,
+  #google_translate_element,
+  body > .skiptranslate,
+  iframe.skiptranslate {
+    display: none !important;
+  }
+
+  body {
+    top: 0 !important;
+  }
+</style>

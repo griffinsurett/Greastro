@@ -11,13 +11,18 @@ export function manualChunks(id) {
   }
   
   // Consent system (lazy loaded)
-  if (id.includes('/components/consent/')) {
+  if (id.includes('/components/preferences/consent/')) {
     return 'consent';
   }
   
-  // ADD THIS: Accessibility system (lazy loaded)
-  if (id.includes('/components/accessibility/')) {
+  // Accessibility system (lazy loaded)
+  if (id.includes('/components/preferences/accessibility/')) {
     return 'accessibility';
+  }
+  
+  // Language switcher (lazy loaded)
+  if (id.includes('/components/preferences/language/')) {
+    return 'language';
   }
   
   // Modal system

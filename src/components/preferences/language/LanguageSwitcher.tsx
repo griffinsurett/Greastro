@@ -62,14 +62,16 @@ export default function LanguageSwitcher() {
         ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="language-switcher-button"
+        className="language-switcher-button notranslate"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label="Choose language"
       >
-        <span className="text-xl leading-none notranslate" aria-hidden="true">
-          {currentLanguage.flag}
-        </span>
+        {currentLanguage.flag && (
+          <span className="text-xl leading-none notranslate" aria-hidden="true">
+            {currentLanguage.flag}
+          </span>
+        )}
         <span className="notranslate">{currentLanguage.nativeName}</span>
         <svg
           className={`w-4 h-4 transition-transform ${
@@ -91,7 +93,7 @@ export default function LanguageSwitcher() {
 
       <div
         ref={dropdownRef}
-        className="language-dropdown notranslate"
+        className="language-dropdown"
         role="listbox"
         aria-hidden={!isOpen}
         aria-label="Available languages"
@@ -102,15 +104,17 @@ export default function LanguageSwitcher() {
             type="button"
             role="option"
             aria-selected={language.code === currentLanguage.code}
-            className="language-option"
+            className="language-option notranslate"
             onClick={() => handleLanguageChange(language.code)}
           >
-            <span className="language-option-flag" aria-hidden="true">
-              {language.flag}
-            </span>
+            {language.flag && (
+              <span className="language-option-flag notranslate" aria-hidden="true">
+                {language.flag}
+              </span>
+            )}
             <div className="language-option-text">
-              <div>{language.nativeName}</div>
-              <div className="language-option-native">{language.name}</div>
+              <div className="notranslate">{language.nativeName}</div>
+              <div className="language-option-native notranslate">{language.name}</div>
             </div>
             {language.code === currentLanguage.code && (
               <svg

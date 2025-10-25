@@ -1,20 +1,20 @@
 // src/hooks/useLanguage.ts
 /**
  * Language Preference Hook
- * 
+ *
  * Manages language preference using localStorage with cross-tab sync.
  */
 
-import { useEffect } from 'react';
-import useLocalStorage from './useLocalStorage';
-import { defaultLanguage, getLanguageByCode } from '@/config/languages';
-import type { Language } from '@/config/languages';
+import { useEffect } from "react";
+import useLocalStorage from "./useLocalStorage";
+import { defaultLanguage, getLanguageByCode } from "@/utils/languages";
+import type { Language } from "@/utils/languages";
 
 export function useLanguage() {
-  const defaultCode = defaultLanguage?.code || 'en';
-  
+  const defaultCode = defaultLanguage?.code || "en";
+
   const [languageCode, setLanguageCode] = useLocalStorage<string>(
-    'user-language',
+    "user-language",
     defaultCode,
     {
       raw: true,
@@ -25,12 +25,12 @@ export function useLanguage() {
 
   // Apply language whenever it changes
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     const applyFn = (window as any).applyGoogleTranslateLanguage;
-    
+
     if (!applyFn) {
-      console.warn('⚠️  Google Translate not ready yet');
+      console.warn("⚠️  Google Translate not ready yet");
       return;
     }
 
@@ -43,7 +43,7 @@ export function useLanguage() {
       console.error(`Invalid language code: ${code}`);
       return;
     }
-    
+
     setLanguageCode(code);
   };
 
@@ -51,12 +51,13 @@ export function useLanguage() {
     setLanguageCode(defaultCode);
   };
 
-  const currentLanguage = getLanguageByCode?.(languageCode) || defaultLanguage || {
-    code: 'en',
-    name: 'English',
-    nativeName: 'English',
-    flag: '🇺🇸'
-  };
+  const currentLanguage = getLanguageByCode?.(languageCode) ||
+    defaultLanguage || {
+      code: "en",
+      name: "English",
+      nativeName: "English",
+      flag: "🇺🇸",
+    };
 
   return {
     currentLanguage,

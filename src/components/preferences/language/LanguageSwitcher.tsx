@@ -1,14 +1,14 @@
 // src/components/preferences/language/LanguageSwitcher.tsx
 /**
  * Language Switcher Component
- * 
+ *
  * Dropdown for changing site language via Google Translate.
  */
 
-import { useState, useRef, useEffect } from 'react';
-import { useLanguage } from '@/hooks/useLanguage';
-import { supportedLanguages } from '@/config/languages';
-import '@/styles/language-switcher.css';
+import { useState, useRef, useEffect } from "react";
+import { useLanguage } from "@/hooks/useLanguage";
+import { supportedLanguages } from "@/utils/languages";
+import "@/styles/language-switcher.css";
 
 export default function LanguageSwitcher() {
   const { currentLanguage, changeLanguage } = useLanguage();
@@ -30,23 +30,24 @@ export default function LanguageSwitcher() {
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
   // Close on escape key
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === "Escape" && isOpen) {
         setIsOpen(false);
         buttonRef.current?.focus();
       }
     }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
     }
   }, [isOpen]);
 
@@ -73,7 +74,9 @@ export default function LanguageSwitcher() {
         )}
         <span>{currentLanguage.nativeName}</span>
         <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

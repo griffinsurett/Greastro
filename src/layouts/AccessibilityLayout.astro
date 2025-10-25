@@ -1,7 +1,15 @@
 ---
 // src/layouts/AccessibilityLayout.astro
+/**
+ * Accessibility Layout
+ * 
+ * Loads the accessibility button component (shown in footer).
+ * Also imports the accessibility CSS for preference application.
+ */
+
 import AccessibilityButton from '@/components/accessibility/AccessibilityButton';
 import "../styles/accessibility.css";
 ---
 
-<AccessibilityButton client:idle />
+{/* Accessibility Button - Client-side only, rendered in Footer */}
+<AccessibilityButton client:visible />

@@ -21,7 +21,6 @@ import Theme from "./Theme.astro";
 import BodyTags from "./BodyTags.astro";
 import Header from "./Header.astro"; 
 import Footer from "./Footer.astro";
-import AccessibilityLayout from "./AccessibilityLayout.astro"; // ADD THIS LINE
 
 export interface Props {
   [key: string]: any;  // Accept any props for SEO component
@@ -56,15 +55,12 @@ const { ...seoProps } = Astro.props;
     {/* Body-level scripts and elements */}
     <BodyTags />
 
-        {/* ADD THIS: Accessibility widget */}
-    <AccessibilityLayout />
-
     {/* Main app container with flex column for sticky footer */}
     <div id="app" class="min-h-screen flex flex-col">
       {/* Page content goes here */}
       <slot />
       
-      {/* Footer at bottom */}
+      {/* Footer at bottom - now contains both consent and accessibility */}
       <Footer />
     </div>
   </body>

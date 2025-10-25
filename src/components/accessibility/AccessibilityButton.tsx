@@ -1,5 +1,4 @@
-// src/components/accessibility/AccessibilityButton.tsx - REPLACE ENTIRE FILE
-
+// src/components/accessibility/AccessibilityButton.tsx
 import { useState, useTransition, lazy, Suspense, memo } from 'react';
 
 const AccessibilityModal = lazy(() => import('./AccessibilityModal'));
@@ -9,9 +8,14 @@ function AccessibilityButton() {
   const [isPending, startTransition] = useTransition();
 
   const handleOpenModal = () => {
-    console.log('🖱️ Accessibility button clicked');
     startTransition(() => {
       setShowModal(true);
+    });
+  };
+
+  const handleCloseModal = () => {
+    startTransition(() => {
+      setShowModal(false);
     });
   };
 
@@ -19,23 +23,24 @@ function AccessibilityButton() {
     <>
       <button
         onClick={handleOpenModal}
+        className="text-gray-400 hover:text-white transition-colors inline-flex items-center gap-2"
+        type="button"
+        aria-label="Manage reading preferences"
         disabled={isPending}
-        className="fixed bottom-6 right-6 z-[9999] p-4 bg-blue-600 text-white rounded-full shadow-xl hover:bg-blue-700 transition-all hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2"
-        aria-label="Open reading preferences"
-        title="Reading Preferences"
       >
+        Reading Preferences
         <svg
-          className="w-6 h-6"
-          viewBox="0 0 24 24"
+          className="w-4 h-4"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          viewBox="0 0 24 24"
         >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 16v-4" />
-          <path d="M12 8h.01" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          />
         </svg>
       </button>
 
@@ -43,7 +48,7 @@ function AccessibilityButton() {
         <Suspense fallback={null}>
           <AccessibilityModal
             isOpen={showModal}
-            onClose={() => setShowModal(false)}
+            onClose={handleCloseModal}
           />
         </Suspense>
       )}

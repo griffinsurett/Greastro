@@ -8,11 +8,13 @@
  * - Social media links
  * - Legal links (Privacy Policy, Cookie Policy)
  * - Cookie preferences button (client-side)
+ * - Reading preferences button (client-side)
  */
 
 import { siteData } from "@/content/siteData";
 import ContentRenderer from "@/components/ContentRenderer/ContentRenderer.astro";
 import ConsentLayout from "./ConsentLayout.astro";
+import AccessibilityLayout from "./AccessibilityLayout.astro";
 import { query } from "@/utils/query";
 ---
 
@@ -49,7 +51,11 @@ import { query } from "@/utils/query";
           Cookie Policy
         </a>
 
+        {/* Cookie consent preferences */}
         <ConsentLayout />
+
+        {/* Reading preferences */}
+        <AccessibilityLayout />
       </div>
     </div>
   </div>

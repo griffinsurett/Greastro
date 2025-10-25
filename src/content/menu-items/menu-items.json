@@ -2,7 +2,7 @@
   {
     "id": "home",
     "title": "Home",
-    "slug": "/",
+    "url": "/",
     "order": 0,
     "openInNewTab": false,
     "menu": "main-menu"
@@ -10,7 +10,7 @@
   {
     "id": "about-us",
     "title": "About Us",
-    "slug": "/about-us",
+    "url": "/about-us",
     "order": 3,
     "openInNewTab": false,
     "menu": "main-menu"
@@ -18,7 +18,7 @@
   {
     "id": "privacy-policy",
     "title": "Privacy Policy",
-    "slug": "/privacy-policy",
+    "url": "/privacy-policy",
     "order": 0,
     "openInNewTab": false,
     "menu": "footer-menu"
@@ -26,7 +26,7 @@
   {
     "id": "cookie-policy",
     "title": "Cookie Policy",
-    "slug": "/cookie-policy",
+    "url": "/cookie-policy",
     "order": 1,
     "openInNewTab": false,
     "menu": "footer-menu"
@@ -34,7 +34,7 @@
   {
     "id": "terms-of-service",
     "title": "Terms of Service",
-    "slug": "/terms-of-service",
+    "url": "/terms-of-service",
     "order": 2,
     "openInNewTab": false,
     "menu": "footer-menu"

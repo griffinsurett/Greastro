@@ -3,10 +3,8 @@
 /**
  * Google Translate Script Loader
  * 
- * Loads Google Translate and manages language switching via cookies.
- * Page reloads are required for translation changes.
- * 
- * FIXED: English reset now properly clears translation state
+ * Loads Google Translate API only. Language application is handled by useLanguage hook.
+ * This prevents duplicate application logic and infinite reload loops.
  */
 ---
 
@@ -40,17 +38,8 @@
 
         setTimeout(function() {
           window.__googleTranslateReady__ = true;
-          
-          const savedLanguage = localStorage.getItem('user-language');
-          const currentCookie = getCookie('googtrans');
-          
-          if (savedLanguage && !window.__googleTranslateApplying__) {
-            const expectedCookie = savedLanguage === 'en' ? '/en/en' : '/en/' + savedLanguage;
-            
-            if (currentCookie !== expectedCookie) {
-              window.applyGoogleTranslateLanguage(savedLanguage);
-            }
-          }
+          console.log('✅ Google Translate ready');
+          // ✅ REMOVED AUTO-APPLY LOGIC - Let React hook handle it
         }, 1000);
       }
     }, 100);
@@ -65,6 +54,7 @@
 
   window.applyGoogleTranslateLanguage = function(languageCode) {
     if (!window.__googleTranslateReady__) {
+      console.log('⏳ Waiting for Google Translate...');
       setTimeout(function() {
         window.applyGoogleTranslateLanguage(languageCode);
       }, 500);
@@ -72,48 +62,54 @@
     }
 
     if (window.__googleTranslateApplying__) {
+      console.log('🔒 Already applying language, skipping');
+      return;
+    }
+
+    // ✅ FIX: Check if we just reloaded for this language
+    const justApplied = sessionStorage.getItem('language-just-applied');
+    if (justApplied === languageCode) {
+      console.log('🔒 Language "' + languageCode + '" was just applied, skipping');
+      sessionStorage.removeItem('language-just-applied');
       return;
     }
 
     const currentCookie = getCookie('googtrans');
-    const expectedCookie = languageCode === 'en' ? '/en/en' : '/en/' + languageCode;
     
-    // If cookie matches, no need to reload
+    // ✅ FIX: English should have NO cookie (not empty string cookie)
+    const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
+    
     if (currentCookie === expectedCookie) {
+      console.log('✅ Language already applied');
       return;
     }
 
-    // Reset to English: Set /en/en cookie
-    if (!languageCode || languageCode === 'en') {
-      window.__googleTranslateApplying__ = true;
-      
-      // Set cookie explicitly to /en/en to reset translation
-      const resetValue = '/en/en';
-      document.cookie = 'googtrans=' + resetValue + '; path=/';
-      document.cookie = 'googtrans=' + resetValue + '; path=/; domain=' + window.location.hostname;
-      document.cookie = 'googtrans=' + resetValue + '; path=/; domain=.' + window.location.hostname;
-      
-      // Also clear any variations to ensure clean state
+    console.log('🌍 Applying language: ' + languageCode);
+    window.__googleTranslateApplying__ = true;
+    
+    // ✅ Safety timeout in case reload fails
+    setTimeout(function() {
+      window.__googleTranslateApplying__ = false;
+      console.warn('⚠️ Language apply timeout - resetting flag');
+    }, 5000);
+
+    // ✅ FIX: English should clear cookies and reload (same as other languages)
+    if (languageCode === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
-      
-      // Store intent to scroll to top
       sessionStorage.setItem('scrollToTop', 'true');
-      
+      sessionStorage.setItem('language-just-applied', 'en');
       window.location.reload();
       return;
     }
 
-    // Set other language
-    window.__googleTranslateApplying__ = true;
+    // All other languages
     const cookieValue = '/en/' + languageCode;
-    document.cookie = 'googtrans=' + cookieValue + '; path=/';
+    document.cookie = 'googtrans=' + cookieValue + '; path=/;';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
-    document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=.' + window.location.hostname;
     
-    // Store intent to scroll to top
     sessionStorage.setItem('scrollToTop', 'true');
+    sessionStorage.setItem('language-just-applied', languageCode);
     
     window.location.reload();
   };
@@ -136,10 +132,14 @@
     }
   })();
 
+  // Load Google Translate script
   (function() {
     const script = document.createElement('script');
     script.src = 'https://translate.google.com/translate_a/element.js?cb=initializeGoogleTranslate';
     script.async = true;
+    script.onerror = function() {
+      console.error('❌ Failed to load Google Translate script');
+    };
     document.head.appendChild(script);
   })();
 </script>

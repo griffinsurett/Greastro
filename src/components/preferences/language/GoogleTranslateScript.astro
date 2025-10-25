@@ -75,8 +75,9 @@
     }
 
     const currentCookie = getCookie('googtrans');
-    const expectedCookie = languageCode && languageCode !== 'en' ?
-      '/en/' + languageCode : '';
+    
+    // ✅ FIX: English should have NO cookie (not empty string cookie)
+    const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
     
     if (currentCookie === expectedCookie) {
       console.log('✅ Language already applied');
@@ -92,7 +93,8 @@
       console.warn('⚠️ Language apply timeout - resetting flag');
     }, 5000);
 
-    if (!languageCode || languageCode === 'en') {
+    // ✅ FIX: English should clear cookies and reload (same as other languages)
+    if (languageCode === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
       sessionStorage.setItem('scrollToTop', 'true');
@@ -101,9 +103,9 @@
       return;
     }
 
-    window.__googleTranslateApplying__ = true;
+    // All other languages
     const cookieValue = '/en/' + languageCode;
-    document.cookie = 'googtrans=' + cookieValue + '; path=/';
+    document.cookie = 'googtrans=' + cookieValue + '; path=/;';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
     
     sessionStorage.setItem('scrollToTop', 'true');

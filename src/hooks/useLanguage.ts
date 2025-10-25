@@ -3,12 +3,11 @@
  * Language Preference Hook
  *
  * Manages language preference using localStorage with cross-tab sync.
+ * Google Translate handles the actual translation via cookies.
  */
 
-import { useEffect } from "react";
 import useLocalStorage from "./useLocalStorage";
 import { defaultLanguage, getLanguageByCode } from "@/utils/languages";
-import type { Language } from "@/utils/languages";
 
 export function useLanguage() {
   const defaultCode = defaultLanguage?.code || "en";
@@ -23,20 +22,9 @@ export function useLanguage() {
     }
   );
 
-  // Apply language whenever it changes
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const applyFn = (window as any).applyGoogleTranslateLanguage;
-
-    if (!applyFn) {
-      console.warn("⚠️  Google Translate not ready yet");
-      return;
-    }
-
-    applyFn(languageCode);
-  }, [languageCode]);
-
+  /**
+   * Change language - only triggers when user explicitly selects
+   */
   const changeLanguage = (code: string) => {
     const language = getLanguageByCode?.(code);
     if (!language) {
@@ -44,11 +32,22 @@ export function useLanguage() {
       return;
     }
 
+    // Update localStorage
     setLanguageCode(code);
+    
+    // Apply via Google Translate (will trigger page reload)
+    if (typeof window !== 'undefined') {
+      const applyFn = (window as any).applyGoogleTranslateLanguage;
+      if (applyFn) {
+        applyFn(code);
+      } else {
+        console.warn("⚠️  Google Translate not ready yet");
+      }
+    }
   };
 
   const resetLanguage = () => {
-    setLanguageCode(defaultCode);
+    changeLanguage(defaultCode);
   };
 
   const currentLanguage = getLanguageByCode?.(languageCode) ||

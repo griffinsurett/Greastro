@@ -17,4 +17,27 @@
 
 <!-- Additional head tags can be added here as needed -->
 <!-- Example: Google Analytics, Plausible, font preloads, etc. -->
- 
+<!-- CRITICAL: Language Script - Prevents Translation Flicker -->
+<script is:inline>
+  // Apply language cookie immediately before page renders
+  (function() {
+    const savedLang = localStorage.getItem('user-language');
+    
+    if (savedLang && savedLang !== 'en') {
+      // Hide content until translated
+      document.documentElement.style.visibility = 'hidden';
+      
+      // Set cookie before Google Translate loads
+      const expires = new Date();
+      expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000);
+      document.cookie = 'googtrans=/en/' + savedLang + ';expires=' + expires.toUTCString() + ';path=/';
+      
+      // Show content after a brief delay (Google Translate will have applied by then)
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          document.documentElement.style.visibility = 'visible';
+        }, 300);
+      });
+    }
+  })();
+</script>

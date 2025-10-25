@@ -39,7 +39,6 @@
         setTimeout(function() {
           window.__googleTranslateReady__ = true;
           console.log('✅ Google Translate ready');
-          // ✅ REMOVED AUTO-APPLY LOGIC - Let React hook handle it
         }, 1000);
       }
     }, 100);
@@ -66,7 +65,7 @@
       return;
     }
 
-    // ✅ FIX: Check if we just reloaded for this language
+    // Check if we just reloaded for this language
     const justApplied = sessionStorage.getItem('language-just-applied');
     if (justApplied === languageCode) {
       console.log('🔒 Language "' + languageCode + '" was just applied, skipping');
@@ -76,24 +75,26 @@
 
     const currentCookie = getCookie('googtrans');
     
-    // ✅ FIX: English should have NO cookie (not empty string cookie)
+    // CRITICAL FIX: Proper cookie comparison for English
+    // English should have NO cookie at all (empty string)
+    // All other languages should have '/en/CODE' format
     const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
     
     if (currentCookie === expectedCookie) {
-      console.log('✅ Language already applied');
+      console.log('✅ Language already applied: ' + languageCode);
       return;
     }
 
     console.log('🌍 Applying language: ' + languageCode);
     window.__googleTranslateApplying__ = true;
     
-    // ✅ Safety timeout in case reload fails
+    // Safety timeout in case reload fails
     setTimeout(function() {
       window.__googleTranslateApplying__ = false;
       console.warn('⚠️ Language apply timeout - resetting flag');
     }, 5000);
 
-    // ✅ FIX: English should clear cookies and reload (same as other languages)
+    // English should clear cookies and reload
     if (languageCode === 'en') {
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
@@ -103,7 +104,7 @@
       return;
     }
 
-    // All other languages
+    // All other languages - set cookie and reload
     const cookieValue = '/en/' + languageCode;
     document.cookie = 'googtrans=' + cookieValue + '; path=/;';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;

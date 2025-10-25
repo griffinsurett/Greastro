@@ -39,6 +39,30 @@
         setTimeout(function() {
           window.__googleTranslateReady__ = true;
           console.log('✅ Google Translate ready');
+          
+          // CRITICAL FIX: Check if we need to apply language from localStorage on page load
+          const storedLanguage = localStorage.getItem('user-language');
+          const justApplied = sessionStorage.getItem('language-just-applied');
+          
+          // Clear the flag immediately so it doesn't block future attempts
+          if (justApplied) {
+            sessionStorage.removeItem('language-just-applied');
+          }
+          
+          // Only auto-apply if we just reloaded AND cookies don't match stored preference
+          if (storedLanguage && justApplied === storedLanguage) {
+            console.log('🔄 Checking if language needs to be applied: ' + storedLanguage);
+            
+            const currentCookie = getCookie('googtrans');
+            const expectedCookie = storedLanguage === 'en' ? '' : '/en/' + storedLanguage;
+            
+            if (currentCookie !== expectedCookie) {
+              console.log('⚠️ Cookie mismatch detected, applying language: ' + storedLanguage);
+              window.applyGoogleTranslateLanguage(storedLanguage);
+            } else {
+              console.log('✅ Cookies match, language already applied');
+            }
+          }
         }, 1000);
       }
     }, 100);
@@ -65,14 +89,6 @@
       return;
     }
 
-    // Check if we just reloaded for this language
-    const justApplied = sessionStorage.getItem('language-just-applied');
-    if (justApplied === languageCode) {
-      console.log('🔒 Language "' + languageCode + '" was just applied, skipping');
-      sessionStorage.removeItem('language-just-applied');
-      return;
-    }
-
     const currentCookie = getCookie('googtrans');
     
     // CRITICAL FIX: Proper cookie comparison for English
@@ -80,12 +96,13 @@
     // All other languages should have '/en/CODE' format
     const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
     
+    // FIXED: Don't check sessionStorage here - check actual cookie state
     if (currentCookie === expectedCookie) {
-      console.log('✅ Language already applied: ' + languageCode);
+      console.log('✅ Language already applied: ' + languageCode + ' (cookie matches)');
       return;
     }
 
-    console.log('🌍 Applying language: ' + languageCode);
+    console.log('🌍 Applying language: ' + languageCode + ' (current: "' + currentCookie + '", expected: "' + expectedCookie + '")');
     window.__googleTranslateApplying__ = true;
     
     // Safety timeout in case reload fails
@@ -94,23 +111,26 @@
       console.warn('⚠️ Language apply timeout - resetting flag');
     }, 5000);
 
+    // Set flag before reload so we can check after reload
+    sessionStorage.setItem('language-just-applied', languageCode);
+    sessionStorage.setItem('scrollToTop', 'true');
+
     // English should clear cookies and reload
     if (languageCode === 'en') {
+      console.log('🧹 Clearing cookies for English');
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
-      sessionStorage.setItem('scrollToTop', 'true');
-      sessionStorage.setItem('language-just-applied', 'en');
+      // Also try without domain in case
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=;';
       window.location.reload();
       return;
     }
 
     // All other languages - set cookie and reload
     const cookieValue = '/en/' + languageCode;
+    console.log('🍪 Setting cookie: googtrans=' + cookieValue);
     document.cookie = 'googtrans=' + cookieValue + '; path=/;';
     document.cookie = 'googtrans=' + cookieValue + '; path=/; domain=' + window.location.hostname;
-    
-    sessionStorage.setItem('scrollToTop', 'true');
-    sessionStorage.setItem('language-just-applied', languageCode);
     
     window.location.reload();
   };

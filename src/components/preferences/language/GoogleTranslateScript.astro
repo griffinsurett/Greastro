@@ -39,7 +39,6 @@
         setTimeout(function() {
           window.__googleTranslateReady__ = true;
           console.log('✅ Google Translate ready');
-          // ✅ REMOVED AUTO-APPLY LOGIC - Let React hook handle it
         }, 1000);
       }
     }, 100);
@@ -66,7 +65,7 @@
       return;
     }
 
-    // ✅ FIX: Check if we just reloaded for this language
+    // Check if we just reloaded for this language
     const justApplied = sessionStorage.getItem('language-just-applied');
     if (justApplied === languageCode) {
       console.log('🔒 Language "' + languageCode + '" was just applied, skipping');
@@ -76,7 +75,7 @@
 
     const currentCookie = getCookie('googtrans');
     
-    // ✅ FIX: English should have NO cookie (not empty string cookie)
+    // ✅ FIX: Complete ternary operator for English detection
     const expectedCookie = languageCode === 'en' ? '' : '/en/' + languageCode;
     
     if (currentCookie === expectedCookie) {
@@ -87,18 +86,26 @@
     console.log('🌍 Applying language: ' + languageCode);
     window.__googleTranslateApplying__ = true;
     
-    // ✅ Safety timeout in case reload fails
+    // Safety timeout in case reload fails
     setTimeout(function() {
       window.__googleTranslateApplying__ = false;
       console.warn('⚠️ Language apply timeout - resetting flag');
     }, 5000);
 
-    // ✅ FIX: English should clear cookies and reload (same as other languages)
+    // ✅ CRITICAL: English must clear ALL cookies and reload
     if (languageCode === 'en') {
+      // Clear both path and domain cookies
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+      
+      // Also clear the /auto/ variants that Google sometimes creates
+      document.cookie = 'googtrans=/auto/en; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=/auto/en; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + window.location.hostname;
+      
       sessionStorage.setItem('scrollToTop', 'true');
       sessionStorage.setItem('language-just-applied', 'en');
+      
+      console.log('🔄 Clearing cookies and reloading for English');
       window.location.reload();
       return;
     }

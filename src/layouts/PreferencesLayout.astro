@@ -1,0 +1,15 @@
+---
+// Cookie Consent Preferences
+import CookiePreferencesButton from "@/components/preferences/consent/CookiePreferencesButton";
+import CookieConsentBanner from "@/components/preferences/consent/CookieConsentBanner";
+
+// Accessibility Preferences
+import AccessibilityButton from "@/components/preferences/accessibility/AccessibilityButton";
+import "../styles/accessibility.css";
+---
+{/* Cookie Preferences Button - Client-side only */}
+<CookiePreferencesButton client:visible />
+<CookieConsentBanner client:idle />
+
+{/* Accessibility Button - Client-side only, rendered in Footer */}
+<AccessibilityButton client:visible />

@@ -17,16 +17,3 @@
 
 <!-- Additional head tags can be added here as needed -->
 <!-- Example: Google Analytics, Plausible, font preloads, etc. -->
-<!-- CRITICAL: Language Script - Prevents Translation Flicker -->
-<!-- ONLY set cookie early - don't hide content -->
-<script is:inline>
-  // Set cookie before Google Translate loads (prevents reload loop)
-  (function() {
-    const savedLang = localStorage.getItem('user-language');
-    if (savedLang && savedLang !== 'en') {
-      const expires = new Date();
-      expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000);
-      document.cookie = 'googtrans=/en/' + savedLang + ';expires=' + expires.toUTCString() + ';path=/';
-    }
-  })();
-</script>

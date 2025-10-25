@@ -73,18 +73,5 @@ import {
       title="Recent Updates"
       description="Latest from our blog and portfolio"
     />
-    <ContentRenderer
-      query={query("menu-items")
-        .where((entry) => {
-          const menus = entry.data.menu;
-          // Handle both single menu and array of menus
-          if (Array.isArray(menus)) {
-            return menus.some((m) => m.id === "footer-menu");
-          }
-          return menus?.id === "footer-menu";
-        })
-        .orderBy(sortBy("order", "asc"))}
-      variant="GridVariant"
-    />
   </main>
 </BaseLayout>

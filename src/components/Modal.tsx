@@ -160,7 +160,7 @@ function Modal({
   // Render modal as a portal to document.body
   return createPortal(
     <div
-      className={`fixed inset-0 z-[10000] ${POSITION_CLASSES[position]} ${overlayClass} transform transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      className={`fixed inset-0 z-[99999] ${POSITION_CLASSES[position]} ${overlayClass} transform transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       onClick={handleOverlayClick}
       onTransitionEnd={handleAnimationEnd}
       role="dialog"

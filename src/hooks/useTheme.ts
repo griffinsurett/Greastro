@@ -1,6 +1,7 @@
 // src/hooks/useTheme.ts
 import { useEffect } from 'react';
 import useLocalStorage from './useLocalStorage';
+import { getStorageItem } from '@/utils/storage';
 
 export type Theme = 'light' | 'dark';
 
@@ -20,7 +21,7 @@ export function useTheme() {
     if (typeof window === 'undefined') return 'light';
     
     try {
-      const stored = window.localStorage.getItem('theme');
+      const stored = getStorageItem('theme');
       if (stored === 'light' || stored === 'dark') return stored;
       
       // No stored preference - check OS preference
@@ -82,7 +83,7 @@ export function useTheme() {
     
     const handleChange = (e: MediaQueryListEvent) => {
       try {
-        const stored = localStorage.getItem('theme');
+        const stored = getStorageItem('theme');
         // Only auto-switch if user hasn't explicitly set a preference
         if (stored !== 'light' && stored !== 'dark') {
           setTheme(e.matches ? 'dark' : 'light');

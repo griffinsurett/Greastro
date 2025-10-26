@@ -1,5 +1,6 @@
 // src/hooks/useLocalStorage.tsx
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getStorageItem, setStorageItem, removeStorageItem } from "@/utils/storage";
 
 type Serializer<T> = (value: T) => string;
 type Deserializer<T> = (value: string) => T;
@@ -26,6 +27,9 @@ interface UseLocalStorageOptions<T> {
  * - Optional validator to reject bad values
  * - Optional JSON mode (default is raw string/primitive storage)
  * - Cross-tab sync via "storage" events
+ * 
+ * Uses shared storage utilities from @/utils/storage for consistency
+ * across vanilla scripts and React components.
  */
 export default function useLocalStorage<T = string>(
   key: string,
@@ -49,13 +53,15 @@ export default function useLocalStorage<T = string>(
         ? (initialRef.current as () => T)()
         : initialRef.current as T;
     }
+    
     try {
-      const rawVal = window.localStorage.getItem(key);
+      const rawVal = getStorageItem(key);
       if (rawVal != null) {
         const parsed = deserialize(rawVal);
         if (!validate || validate(parsed)) return parsed;
       }
     } catch {}
+    
     return typeof initialRef.current === "function"
       ? (initialRef.current as () => T)()
       : initialRef.current as T;
@@ -68,7 +74,7 @@ export default function useLocalStorage<T = string>(
     try {
       // Validate before writing
       if (validate && !validate(value)) return;
-      window.localStorage.setItem(key, serialize(value));
+      setStorageItem(key, serialize(value));
     } catch {}
   }, [key, value, serialize, validate]);
 

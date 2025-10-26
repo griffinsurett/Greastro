@@ -61,7 +61,11 @@
         setCookie('googtrans', '/en/' + languageCode, 365);
       }
       
-      window.location.reload();
+      // Scroll to top before reload
+      window.scrollTo(0, 0);
+      
+      // Use href assignment instead of reload()
+      window.location.href = window.location.href;
     };
 
     // Load Google Translate script
@@ -92,7 +96,11 @@
         document.cookie = 'googtrans=/en/' + languageCode + ';expires=' + expires.toUTCString() + ';path=/';
       }
       
-      window.location.reload();
+      // Scroll to top before reload
+      window.scrollTo(0, 0);
+      
+      // Use href assignment instead of reload()
+      window.location.href = window.location.href;
     };
   }
 </script>

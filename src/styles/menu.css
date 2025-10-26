@@ -1,0 +1,27 @@
+/* src/styles/menu.css */
+
+/* Menu hover behavior - works for infinite nesting */
+.menu-item:hover > .menu-dropdown {
+  display: block;
+}
+
+/* Arrow rotation on hover */
+.menu-item:hover > a .menu-arrow {
+  transform: rotate(180deg);
+}
+
+/* Dropdown animation */
+.menu-dropdown {
+  animation: menu-slide-down 0.2s ease-out;
+}
+
+@keyframes menu-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

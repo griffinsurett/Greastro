@@ -8,8 +8,11 @@
 
 import { useEffect, useRef } from "react";
 import useLocalStorage from "./useLocalStorage";
-import { defaultLanguage, getLanguageByCode } from "@/utils/languages";
-import type { Language } from "@/utils/languages";
+import {
+  defaultLanguage,
+  getLanguageByCode,
+} from "@/utils/languageTranslation/languages";
+import type { Language } from "@/utils/languageTranslation/languages";
 
 export function useLanguage() {
   const defaultCode = defaultLanguage?.code || "en";
@@ -60,7 +63,7 @@ export function useLanguage() {
   };
 
   const resetLanguage = () => {
-    console.log('🔄 Resetting to default language');
+    console.log("🔄 Resetting to default language");
     setLanguageCode(defaultCode);
   };
 

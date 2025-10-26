@@ -1,13 +1,16 @@
 // src/components/preferences/language/LanguageSwitcher.tsx
 /**
  * Language Switcher Component
- * 
+ *
  * Simple dropdown that reads current language from localStorage
  * and calls window.changeLanguage() to switch.
  */
 
 import { useState, useRef, useEffect } from "react";
-import { supportedLanguages, getLanguageByCode } from "@/utils/languages";
+import {
+  supportedLanguages,
+  getLanguageByCode,
+} from "@/utils/languageTranslation/languages";
 import "@/styles/language-switcher.css";
 
 export default function LanguageSwitcher() {
@@ -17,8 +20,8 @@ export default function LanguageSwitcher() {
 
   // Get current language from localStorage
   const getCurrentLanguage = () => {
-    if (typeof window === 'undefined') return supportedLanguages[0];
-    const code = localStorage.getItem('user-language') || 'en';
+    if (typeof window === "undefined") return supportedLanguages[0];
+    const code = localStorage.getItem("user-language") || "en";
     return getLanguageByCode(code) || supportedLanguages[0];
   };
 
@@ -39,7 +42,8 @@ export default function LanguageSwitcher() {
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
@@ -60,9 +64,9 @@ export default function LanguageSwitcher() {
 
   const handleLanguageChange = (code: string) => {
     setIsOpen(false);
-    
+
     // Update localStorage and reload page
-    if (typeof window !== 'undefined' && (window as any).changeLanguage) {
+    if (typeof window !== "undefined" && (window as any).changeLanguage) {
       (window as any).changeLanguage(code);
     }
   };
@@ -85,7 +89,9 @@ export default function LanguageSwitcher() {
         )}
         <span className="notranslate">{currentLanguage.nativeName}</span>
         <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -117,13 +123,18 @@ export default function LanguageSwitcher() {
             onClick={() => handleLanguageChange(language.code)}
           >
             {language.flag && (
-              <span className="language-option-flag notranslate" aria-hidden="true">
+              <span
+                className="language-option-flag notranslate"
+                aria-hidden="true"
+              >
                 {language.flag}
               </span>
             )}
             <div className="language-option-text">
               <div className="notranslate">{language.nativeName}</div>
-              <div className="language-option-native notranslate">{language.name}</div>
+              <div className="language-option-native notranslate">
+                {language.name}
+              </div>
             </div>
             {language.code === currentLanguage.code && (
               <svg

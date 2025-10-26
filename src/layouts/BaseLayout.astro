@@ -21,6 +21,7 @@ import Theme from "./Theme.astro";
 import BodyTags from "./BodyTags.astro";
 import Header from "./Header.astro"; 
 import Footer from "./Footer.astro";
+import LanguageDetectionScript from "@/components/preferences/language/LanguageDetectionScript.astro";
 
 export interface Props {
   [key: string]: any;  // Accept any props for SEO component
@@ -34,6 +35,8 @@ const { ...seoProps } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <LanguageDetectionScript />
+
     <meta name="generator" content={Astro.generator} />
 
     {/* Theme setup (favicons, theme color) */}

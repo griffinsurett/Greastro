@@ -1,0 +1,128 @@
+---
+// src/components/preferences/language/LanguageDetectionScript.astro
+import { getSupportedLanguageCodes, GOOGLE_TRANSLATE_ARTIFACTS } from "@/utils/languageDetection";
+
+const supportedCodes = getSupportedLanguageCodes();
+const artifacts = GOOGLE_TRANSLATE_ARTIFACTS;
+---
+
+<style is:inline>
+  body.translating {
+    visibility: hidden !important;
+  }
+  
+  html.translating-mode body {
+    visibility: hidden !important;
+  }
+</style>
+
+<script is:inline define:vars={{ supportedCodes, artifacts }}>
+  (function() {
+    let savedLang = localStorage.getItem('user-language');
+    
+    if (!savedLang) {
+      const browserLang = navigator.language || navigator.userLanguage;
+      const langCode = browserLang.split('-')[0].toLowerCase();
+      
+      if (supportedCodes.includes(langCode) && langCode !== 'en') {
+        savedLang = langCode;
+        localStorage.setItem('user-language', savedLang);
+        console.log('🌍 Auto-detected browser language:', savedLang);
+      }
+    }
+    
+    if (!savedLang || savedLang === 'en') {
+      return;
+    }
+    
+    document.documentElement.classList.add('translating-mode');
+    
+    const expires = new Date();
+    expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000);
+    document.cookie = 'googtrans=/en/' + savedLang + ';expires=' + expires.toUTCString() + ';path=/';
+    
+    const cacheKey = 'translated_body_' + savedLang + '_' + window.location.pathname;
+    const cachedBody = localStorage.getItem(cacheKey);
+    
+    let revealed = false;
+    
+    function revealBody() {
+      if (!revealed) {
+        revealed = true;
+        document.documentElement.classList.remove('translating-mode');
+        if (document.body) {
+          document.body.classList.remove('translating');
+        }
+      }
+    }
+    
+    function waitForBody() {
+      if (document.body) {
+        document.body.classList.add('translating');
+        
+        if (cachedBody) {
+          try {
+            document.body.innerHTML = cachedBody;
+            document.documentElement.classList.add('translated-ltr');
+            document.body.classList.add('translated-ltr');
+            console.log('✅ Instant cached translation');
+          } catch (e) {
+            console.error('Cache injection failed:', e);
+          }
+          revealBody();
+        } else {
+          setTimeout(revealBody, 1500);
+        }
+      } else {
+        setTimeout(waitForBody, 10);
+      }
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', waitForBody);
+    } else {
+      waitForBody();
+    }
+    
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const isTranslated = 
+          document.querySelector('font[style*="vertical-align"]') ||
+          document.documentElement.classList.contains('translated-ltr') ||
+          document.documentElement.classList.contains('translated-rtl');
+        
+        if (isTranslated && !cachedBody) {
+          try {
+            const bodyClone = document.body.cloneNode(true);
+            
+            // Use injected artifacts list
+            artifacts.forEach(function(selector) {
+              const elements = bodyClone.querySelectorAll(selector);
+              elements.forEach(function(el) { el.remove(); });
+            });
+            
+            const allElements = bodyClone.querySelectorAll('*');
+            allElements.forEach(function(el) {
+              el.removeAttribute('data-gtranslate');
+              el.removeAttribute('data-goog-translate');
+              
+              if (el.style.top && el === document.body) {
+                el.style.top = '';
+              }
+            });
+            
+            const cleanHTML = bodyClone.innerHTML;
+            localStorage.setItem(cacheKey, cleanHTML);
+            console.log('💾 Cached clean translation');
+          } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+              Object.keys(localStorage)
+                .filter(function(k) { return k.startsWith('translated_body_'); })
+                .forEach(function(k) { localStorage.removeItem(k); });
+            }
+          }
+        }
+      }, 2000);
+    });
+  })();
+</script>
